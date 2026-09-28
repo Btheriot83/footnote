@@ -70,13 +70,13 @@ export function SharedNote() {
   }, [data]);
 
   return (
-    <div className="desk-page flex min-h-dvh flex-col lg:h-dvh">
+    <div className="desk-page flex min-h-dvh flex-col lg:h-dvh" data-page="s" data-ready>
       <header className="flex h-[68px] shrink-0 items-center gap-4 px-4 sm:px-6">
         <Link href="/" className="rounded-sm">
           <Wordmark size={26} />
         </Link>
-        <span className="smallcaps hidden text-ink-2 sm:inline">Shared note · read-only</span>
-        <Link href="/" className={cx(btn.base, btn.secondary, btn.sm, "ml-auto")}>
+        <span className="smallcaps on-wood-2 hidden sm:inline">Shared note · read-only</span>
+        <Link href="/" data-page-turn className={cx(btn.base, btn.secondary, btn.sm, "ml-auto")}>
           Make notes like this
         </Link>
       </header>
@@ -129,7 +129,7 @@ export function SharedNote() {
                     </span>
                     <span className="inline-flex items-center gap-1.5">
                       <span className="h-[6px] w-[6px] rounded-full bg-faint" /> Added from the transcript
-                      <sup className="font-semibold text-accent">1</sup>
+                      <span className="fn-mark !cursor-default" aria-hidden>1</span>
                     </span>
                     {audible && <span className="hidden italic sm:inline">Click a number to hear the moment.</span>}
                   </p>
@@ -142,6 +142,7 @@ export function SharedNote() {
                       inlineQuotes={!wide}
                       onCite={audible && playable ? (id) => playSegment(playable, id) : undefined}
                       playingId={playingNow?.single ? playingNow.id : null}
+                      audible={audible}
                     />
                   </div>
                 </div>

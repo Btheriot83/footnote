@@ -528,6 +528,8 @@ export function MeetingPane({
               nudge ? btn.primary : btn.secondary,
               "h-10 shrink-0 px-4 text-[10.5px] sm:px-5",
               nudge && "ring-[5px] ring-white/45",
+              // Phones: while the sample plays, the header is for play/skip; the nudge offers Enhance at the end.
+              samplePlaying && "max-sm:hidden",
             )}
           >
             {streaming ? (
@@ -604,7 +606,7 @@ export function MeetingPane({
                 }
               }}
               onBlur={(e) => e.target.value !== e.target.value.trim() && patchMeetingState(meeting.id, { title: e.target.value.trim() })}
-              className="block w-full resize-none overflow-hidden bg-transparent [field-sizing:content] [text-wrap:balance] font-serif text-[34px] font-medium leading-[1.1] tracking-[-0.022em] text-ink placeholder:text-faint focus:outline-none sm:text-[46px]"
+              className="block w-full resize-none overflow-hidden bg-transparent [field-sizing:content] [text-wrap:pretty] font-serif text-[34px] font-medium leading-[1.1] tracking-[-0.022em] text-ink placeholder:text-faint focus:outline-none sm:text-[46px]"
             />
             <div className="mt-2.5 flex flex-wrap items-center gap-x-2 text-[16.5px] italic text-muted sm:text-[18px]">
               <span>{formatDate(meeting.createdAt)}</span>
@@ -769,7 +771,7 @@ export function MeetingPane({
                     </span>
                     <span className="inline-flex items-center gap-1.5">
                       <span className="h-[6px] w-[6px] rounded-full bg-faint" /> Added from the transcript
-                      <sup className="font-semibold text-accent">1</sup>
+                      <span className="fn-mark !cursor-default" aria-hidden>1</span>
                     </span>
                     <span className="hidden italic sm:inline">
                       {audible ? "Hover a number to see who said it. Click to hear it." : "Hover a number to see who said it."}
