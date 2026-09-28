@@ -59,6 +59,3 @@ ${transcriptBlock(opts.segments, opts.maxChars)}
 
 Write the enhanced notes now.`;
 }
-
-export const ASK_SYSTEM = `You answer questions about a single meeting using only its transcript and the user's notes.
-Every sentence of your answer must cite the transcript segment ids that support it in "cites". If the transcript does not contain the answer, say so plainly in one sentence with an empty cites list. Be brief: at most 3 short sentences.`;

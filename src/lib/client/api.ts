@@ -118,13 +118,39 @@ export async function transcribeChunk(blob: Blob, durationMs: number): Promise<s
 export interface AskSentence {
   text: string;
   cites: string[];
+  newParagraph?: boolean;
 }
 
-export async function askMeeting(question: string, userNotes: string, segments: Segment[]): Promise<AskSentence[]> {
+export async function askMeeting(
+  question: string,
+  userNotes: string,
+  segments: Segment[],
+  opts?: { recipe?: string },
+): Promise<AskSentence[]> {
   const res = await fetch("/api/ask", {
     method: "POST",
     headers: headers({ "Content-Type": "application/json" }),
-    body: JSON.stringify({ question, userNotes, transcriptSegments: toWire(segments) }),
+    body: JSON.stringify({ question, userNotes, transcriptSegments: toWire(segments), recipe: opts?.recipe }),
+  });
+  if (!res.ok) throw await errorFrom(res);
+  const data = (await res.json()) as { sentences: AskSentence[] };
+  return data.sentences;
+}
+
+/** Asks across several meetings. Returned cites look like "m2:s14" (meeting ref : segment id). */
+export async function askMeetings(
+  question: string,
+  meetings: { ref: string; title: string; date: string; notes: string; segments: Segment[] }[],
+): Promise<AskSentence[]> {
+  const res = await fetch("/api/ask", {
+    method: "POST",
+    headers: headers({ "Content-Type": "application/json" }),
+    body: JSON.stringify({
+      question,
+      userNotes: "",
+      meetings: meetings.map(({ ref, title, date, notes }) => ({ ref, title, date, notes })),
+      transcriptSegments: meetings.flatMap((m) => toWire(m.segments).map((s) => ({ ...s, id: `${m.ref}:${s.id}` }))),
+    }),
   });
   if (!res.ok) throw await errorFrom(res);
   const data = (await res.json()) as { sentences: AskSentence[] };

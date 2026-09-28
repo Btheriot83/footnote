@@ -26,6 +26,7 @@ import { numberFootnotes } from "@/lib/citations";
 import { ApiError, streamEnhance } from "@/lib/client/api";
 import { hasRecording, playCall, playSegment, segmentAt, stopClip, useClip } from "@/lib/client/clip-player";
 import { stopLive } from "@/lib/client/live-controller";
+import { takePendingFocus } from "@/lib/client/pending-focus";
 import { markSampleTyping, pauseSample, playSample, skipSampleToEnd } from "@/lib/client/sample-controller";
 import { useSession } from "@/lib/client/session";
 import { deleteMeeting, getMeeting, patchMeetingState, useMeeting } from "@/lib/client/store";
@@ -240,6 +241,21 @@ export function MeetingPane({
 
   useEffect(() => () => abortRef.current?.abort(), []);
   useEffect(() => () => stopClip(), [meetingId]);
+
+  // Arriving from "Ask your meetings": reveal the cited line.
+  const clickCite = receipts.clickCite;
+  useEffect(() => {
+    if (!loaded) return;
+    const reveal = () => {
+      const id = takePendingFocus(meetingId);
+      if (!id) return;
+      setMobileTab("transcript");
+      setTimeout(() => clickCite(id), 120);
+    };
+    reveal();
+    window.addEventListener("footnote:pending-focus", reveal);
+    return () => window.removeEventListener("footnote:pending-focus", reveal);
+  }, [loaded, meetingId, clickCite]);
 
   if (!m) {
     return (

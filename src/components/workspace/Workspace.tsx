@@ -14,6 +14,8 @@ import { useUserKey } from "@/lib/client/settings";
 import { createMeeting, flushSaves, getMeeting, loadMeeting } from "@/lib/client/store";
 import { SAMPLE_TEMPLATE, SAMPLE_TITLE } from "@/lib/sample";
 import type { Meeting } from "@/lib/types";
+import { setPendingFocus } from "@/lib/client/pending-focus";
+import { AskAllDialog } from "./AskAllDialog";
 import { MeetingPane } from "./MeetingPane";
 import { focusNotes } from "./Notepad";
 import { NewMeetingDialog, type StartOptions } from "./NewMeetingDialog";
@@ -53,9 +55,9 @@ export function Workspace() {
   const [ready, setReady] = useState(false);
   const [query, setQuery] = useState("");
   const [drawer, setDrawer] = useState(false);
-  const [dialog, setDialog] = useState<null | { kind: "new" } | { kind: "start"; meetingId: string } | { kind: "settings" }>(
-    null,
-  );
+  const [dialog, setDialog] = useState<
+    null | { kind: "new" } | { kind: "start"; meetingId: string } | { kind: "settings" } | { kind: "ask"; question?: string }
+  >(null);
   const lastCapture = useRef<{ meetingId: string; mic: boolean; tab: boolean } | null>(null);
   const enhanceRef = useRef<(() => void) | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -208,6 +210,10 @@ export function Workspace() {
         setDrawer(false);
         setDialog({ kind: "settings" });
       }}
+      onAskAll={(question) => {
+        setDrawer(false);
+        setDialog({ kind: "ask", question });
+      }}
       hasKey={!!userKey}
     />
   );
@@ -269,6 +275,19 @@ export function Workspace() {
         liveElsewhere={session.kind === "live"}
       />
       <SettingsDialog open={dialog?.kind === "settings"} onClose={() => setDialog(null)} />
+      <AskAllDialog
+        open={dialog?.kind === "ask"}
+        initialQuestion={dialog?.kind === "ask" ? dialog.question : undefined}
+        meetings={meetings as Meeting[] | undefined}
+        onClose={() => setDialog(null)}
+        onSettings={() => setDialog({ kind: "settings" })}
+        onOpenSource={(meetingId, segmentId) => {
+          setDialog(null);
+          setPendingFocus(meetingId, segmentId);
+          if (meetingId === activeId) window.dispatchEvent(new Event("footnote:pending-focus"));
+          else void loadMeeting(meetingId).then(() => select(meetingId));
+        }}
+      />
       <Toaster />
     </div>
   );

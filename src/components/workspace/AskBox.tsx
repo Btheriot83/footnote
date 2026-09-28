@@ -1,11 +1,34 @@
 "use client";
 import { useState } from "react";
-import { AskIcon } from "@/components/icons";
-import { cx } from "@/components/ui";
+import { AskIcon, CheckIcon, CopyIcon, ListIcon, MailIcon } from "@/components/icons";
+import { btn, cx } from "@/components/ui";
 import type { Receipts } from "@/components/receipts/useReceipts";
+import { RECIPES, type Recipe } from "@/lib/ask";
 import { askMeeting, ApiError, type AskSentence } from "@/lib/client/api";
+import { toast } from "@/lib/client/toast";
 import { formatClock } from "@/lib/format";
 import type { Meeting } from "@/lib/types";
+
+const RECIPE_ICONS: Record<Recipe["id"], React.ReactNode> = {
+  "follow-up": <MailIcon size={16} />,
+  actions: <ListIcon size={16} />,
+  "open-questions": <AskIcon size={16} />,
+};
+
+/** Groups sentences into paragraphs (or list items) where the model asked for a break. */
+export function toBlocks(sentences: AskSentence[]): AskSentence[][] {
+  const blocks: AskSentence[][] = [];
+  for (const s of sentences) {
+    if (s.newParagraph || blocks.length === 0) blocks.push([s]);
+    else blocks[blocks.length - 1].push(s);
+  }
+  return blocks;
+}
+
+export function answerToText(sentences: AskSentence[], layout: "prose" | "email" | "list"): string {
+  const blocks = toBlocks(sentences).map((b) => b.map((s) => s.text).join(" "));
+  return layout === "list" ? blocks.map((b) => `- ${b}`).join("\n") : blocks.join("\n\n");
+}
 
 export function AskBox({
   meeting,
@@ -19,23 +42,23 @@ export function AskBox({
   onCite?: (id: string) => void;
 }) {
   const [q, setQ] = useState("");
-  const [asked, setAsked] = useState("");
+  const [asked, setAsked] = useState<{ label: string; layout: "prose" | "email" | "list" } | null>(null);
   const [answer, setAnswer] = useState<AskSentence[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
+  const [copied, setCopied] = useState(false);
   const byId = new Map(meeting.segments.map((s) => [s.id, s]));
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    const question = q.trim();
-    if (!question || loading) return;
+  async function run(question: string, recipe?: Recipe) {
+    if (loading) return;
     setLoading(true);
     setError(null);
-    setAsked(question);
+    setCopied(false);
+    setAsked({ label: recipe?.label ?? question, layout: recipe?.layout ?? "prose" });
     setAnswer(null);
     try {
-      setAnswer(await askMeeting(question, meeting.notes, meeting.segments));
-      setQ("");
+      setAnswer(await askMeeting(question, meeting.notes, meeting.segments, { recipe: recipe?.id }));
+      if (!recipe) setQ("");
     } catch (err) {
       setError(err instanceof ApiError ? err : new ApiError("error", "Something went wrong.", 0));
     } finally {
@@ -43,9 +66,78 @@ export function AskBox({
     }
   }
 
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    const question = q.trim();
+    if (question) void run(question);
+  }
+
+  async function copy() {
+    if (!answer || !asked) return;
+    try {
+      await navigator.clipboard.writeText(answerToText(answer, asked.layout));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      toast("Couldn't access the clipboard.", { tone: "error" });
+    }
+  }
+
+  const marker = (c: string) => {
+    const seg = byId.get(c);
+    if (!seg) return null;
+    return (
+      <button
+        key={c}
+        type="button"
+        className="fn-mark ml-0.5 tabular-nums"
+        data-active={receipts.activeSegments.has(c)}
+        onMouseEnter={() => receipts.hoverCites([c])}
+        onMouseLeave={() => receipts.hoverCites(null)}
+        onFocus={() => receipts.hoverCites([c])}
+        onClick={() => {
+          receipts.clickCite(c);
+          onCite?.(c);
+        }}
+        aria-label={`Source: ${seg.label || seg.speaker} at ${formatClock(seg.t)}`}
+      >
+        {formatClock(seg.t)}
+      </button>
+    );
+  };
+
+  const sentence = (s: AskSentence, i: number) => (
+    <span key={i}>
+      {s.text}
+      {s.cites.map(marker)}{" "}
+    </span>
+  );
+
   return (
-    <section className="mt-14 border-t border-rule pt-6" aria-label="Ask this meeting">
-      <form onSubmit={submit} className="relative">
+    <section className="mt-16 border-t border-rule pt-8" aria-labelledby="ask-heading">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <h2 id="ask-heading" className="font-serif text-[22px] leading-tight text-ink">
+          Ask this meeting
+        </h2>
+        <p className="text-[13px] text-muted">Answers cite the transcript, like the notes do.</p>
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        {RECIPES.map((r) => (
+          <button
+            key={r.id}
+            type="button"
+            disabled={loading}
+            onClick={() => void run(r.question, r)}
+            className={cx(btn.base, btn.secondary, "h-9 rounded-full px-3.5 text-[14px] font-normal text-ink-2")}
+          >
+            <span className="text-muted">{RECIPE_ICONS[r.id]}</span>
+            {r.label}
+          </button>
+        ))}
+      </div>
+
+      <form onSubmit={submit} className="relative mt-3">
         <label htmlFor="ask" className="sr-only">
           Ask this meeting
         </label>
@@ -54,7 +146,7 @@ export function AskBox({
           id="ask"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Ask this meeting… e.g. “What did they say about budget?”"
+          placeholder="Or ask anything… “What did they say about budget?”"
           className="h-12 w-full rounded-2xl border border-rule bg-paper/50 pl-11 pr-20 text-[15.5px] placeholder:text-faint focus:border-rule-strong focus:bg-sheet focus:outline-none"
         />
         <button
@@ -62,13 +154,38 @@ export function AskBox({
           disabled={!q.trim() || loading}
           className="absolute right-2 top-1/2 h-8 -translate-y-1/2 rounded-lg bg-ink px-3 text-[13.5px] font-medium text-paper disabled:opacity-40"
         >
-          {loading ? "…" : "Ask"}
+          Ask
         </button>
       </form>
-      {(loading || answer || error) && (
-        <div className="animate-fade-up mt-3 rounded-2xl bg-paper/60 px-4 py-3.5">
-          <p className="text-[13px] text-muted">{asked}</p>
-          {loading && <p className="mt-1.5 font-serif text-[17px] text-faint">Looking through the transcript…</p>}
+
+      {(loading || answer || error) && asked && (
+        <div
+          className={cx(
+            "animate-fade-up mt-4 rounded-2xl px-5 py-4",
+            asked.layout === "email" ? "border border-rule bg-white shadow-card" : "bg-paper/60",
+          )}
+          aria-live="polite"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[13px] font-medium text-muted">{asked.label}</p>
+            {answer && answer.length > 0 && (
+              <button
+                type="button"
+                onClick={() => void copy()}
+                className="-mr-2 inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-[13px] text-muted hover:bg-paper-2 hover:text-ink"
+              >
+                {copied ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
+                {copied ? "Copied" : asked.layout === "email" ? "Copy email" : "Copy"}
+              </button>
+            )}
+          </div>
+          {loading && (
+            <div className="mt-3 space-y-2.5" role="status" aria-label="Reading the transcript">
+              {[88, 72, 80].map((w, i) => (
+                <div key={i} className="h-[13px] animate-pulse rounded-full bg-paper-2" style={{ width: `${w}%` }} />
+              ))}
+            </div>
+          )}
           {error && (
             <p className="mt-1.5 text-[14.5px] text-ink-2">
               {error.message}{" "}
@@ -79,38 +196,25 @@ export function AskBox({
               )}
             </p>
           )}
-          {answer && (
-            <p className="mt-1.5 font-serif text-[17.5px] leading-relaxed text-ink">
-              {answer.length === 0 && "No answer found in this meeting."}
-              {answer.map((s, i) => (
-                <span key={i}>
-                  {s.text}
-                  {s.cites.map((c) => {
-                    const seg = byId.get(c);
-                    if (!seg) return null;
-                    return (
-                      <button
-                        key={c}
-                        type="button"
-                        className={cx("fn-mark ml-0.5 tabular-nums")}
-                        data-active={receipts.activeSegments.has(c)}
-                        onMouseEnter={() => receipts.hoverCites([c])}
-                        onMouseLeave={() => receipts.hoverCites(null)}
-                        onFocus={() => receipts.hoverCites([c])}
-                        onClick={() => {
-                          receipts.clickCite(c);
-                          onCite?.(c);
-                        }}
-                        aria-label={`Source: ${seg.label || seg.speaker} at ${formatClock(seg.t)}`}
-                      >
-                        {formatClock(seg.t)}
-                      </button>
-                    );
-                  })}{" "}
-                </span>
-              ))}
-            </p>
-          )}
+          {answer &&
+            (answer.length === 0 ? (
+              <p className="mt-1.5 font-serif text-[17.5px] text-ink">Nothing in this meeting answers that.</p>
+            ) : asked.layout === "list" ? (
+              <ul className="mt-2 space-y-2">
+                {toBlocks(answer).map((b, bi) => (
+                  <li key={bi} className="relative pl-5 font-serif text-[17.5px] leading-relaxed text-ink">
+                    <span className="absolute left-1 top-[0.72em] h-[5px] w-[5px] rounded-full bg-ink/60" aria-hidden />
+                    {b.map(sentence)}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="mt-2 space-y-3 font-serif text-[17.5px] leading-relaxed text-ink">
+                {toBlocks(answer).map((b, bi) => (
+                  <p key={bi}>{b.map(sentence)}</p>
+                ))}
+              </div>
+            ))}
         </div>
       )}
     </section>
