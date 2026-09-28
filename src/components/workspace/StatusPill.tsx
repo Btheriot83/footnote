@@ -18,7 +18,7 @@ export function Waveform({ active }: { active: boolean }) {
   }, [level, active]);
   return (
     <span className="flex h-5 items-center gap-[2px]" aria-hidden>
-      {history.current.map((v, i) => (
+      {(active ? history.current : Array<number>(BARS).fill(0.08)).map((v, i) => (
         <span
           key={i}
           className="w-[2px] rounded-full bg-faint transition-[height] duration-100"

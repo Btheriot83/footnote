@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Workspace } from "@/components/workspace/Workspace";
+import { WorkspaceLoader } from "@/components/workspace/WorkspaceLoader";
 
 export const metadata: Metadata = {
   title: "Workspace",
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function AppPage() {
   return (
     <Suspense fallback={<div className="h-dvh bg-paper" />}>
-      <Workspace />
+      <WorkspaceLoader />
     </Suspense>
   );
 }

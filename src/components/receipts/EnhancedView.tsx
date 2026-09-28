@@ -65,7 +65,9 @@ export function EnhancedView({ notes, numbers, segmentsById, receipts, streaming
                     {b.text}
                     {b.origin === "ai" && <span className="sr-only"> (added by AI)</span>}
                   </span>
-                  {b.cites.map((c, ci) => {
+                  {[...b.cites]
+                    .sort((a, z) => (numbers.get(a) ?? 0) - (numbers.get(z) ?? 0))
+                    .map((c, ci) => {
                     const n = numbers.get(c);
                     const seg = segmentsById.get(c);
                     if (!n) return null;
