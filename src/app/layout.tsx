@@ -18,11 +18,14 @@ export const metadata: Metadata = {
   },
   description:
     "Type rough notes during the call. Footnote turns them into clear notes where every line links to the exact moment it was said. Runs in your browser, keeps meetings on your device, and it's free and open source with your own key.",
+  metadataBase: new URL("https://footnote-receipts.vercel.app"),
   openGraph: {
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Footnote: meeting notes with receipts" }],
     title: "Footnote: meeting notes with receipts",
     description: "AI meeting notes where every line links to the moment it was said, and you can hear it. Local-first, free with your own key.",
     type: "website",
   },
+  twitter: { card: "summary_large_image", images: ["/og.png"] },
 };
 
 export const viewport: Viewport = {
