@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { Dialog } from "@/components/Dialog";
 import { Pen } from "@/components/receipts/Pen";
 import { AskIcon } from "@/components/icons";
@@ -109,7 +109,7 @@ export function AskAllDialog({ open, onClose, meetings, initialQuestion, onOpenS
   };
 
   /** One chip per source meeting at the end of each paragraph, listing the moments it cites. */
-  const sources = (b: AskSentence[], bi: number) => {
+  const sources = (b: AskSentence[], bi: number | string) => {
     const groups = new Map<string, string[]>();
     for (const c of b.flatMap((s) => s.cites)) {
       const [ref, sid] = c.split(":");
@@ -240,9 +240,15 @@ export function AskAllDialog({ open, onClose, meetings, initialQuestion, onOpenS
                 <p>Nothing in your meetings answers that.</p>
               ) : (
                 toBlocks(answer).map((b, bi) => (
+                  // Each sentence carries its own receipt, right after it.
                   <p key={bi}>
-                    {b.map((s) => s.text).join(" ")}
-                    {sources(b, bi)}
+                    {b.map((s, si) => (
+                      <Fragment key={si}>
+                        {si > 0 && " "}
+                        {s.text}
+                        {sources([s], `${bi}.${si}`)}
+                      </Fragment>
+                    ))}
                   </p>
                 ))
               )}

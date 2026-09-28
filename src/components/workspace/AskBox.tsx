@@ -1,7 +1,8 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { AskIcon, CheckIcon, CopyIcon, ListIcon, MailIcon } from "@/components/icons";
 import { btn, cx } from "@/components/ui";
+import { splitLastWord } from "@/components/receipts/EnhancedView";
 import { Pen } from "@/components/receipts/Pen";
 import type { Receipts } from "@/components/receipts/useReceipts";
 import { RECIPES, type Recipe } from "@/lib/ask";
@@ -148,27 +149,35 @@ export function AskBox({
     );
   };
 
-  const block = (b: AskSentence[], bi: number) => {
-    const cites = blockCites(b, order);
-    const open = expanded.has(bi) || cites.length <= VISIBLE_CITES;
-    const shownCites = open ? cites : cites.slice(0, VISIBLE_CITES - 1);
-    return (
-      <>
-        {b.map((s) => s.text).join(" ")}
-        <span className="whitespace-nowrap">{shownCites.map(marker)}</span>
-        {!open && (
-          <button
-            type="button"
-            className="fn-mark"
-            onClick={() => setExpanded((x) => new Set(x).add(bi))}
-            aria-label={`Show ${cites.length - shownCites.length} more sources`}
-          >
-            +{cites.length - shownCites.length}
-          </button>
-        )}
-      </>
-    );
-  };
+  // Each sentence carries its own receipts, right after it; a long run folds behind "+n".
+  const block = (b: AskSentence[], bi: number) =>
+    b.map((s, si) => {
+      const cites = blockCites([s], order);
+      const key = bi * 1000 + si;
+      const open = expanded.has(key) || cites.length <= VISIBLE_CITES;
+      const shownCites = open ? cites : cites.slice(0, VISIBLE_CITES - 1);
+      const [head, last] = splitLastWord(s.text);
+      return (
+        <Fragment key={si}>
+          {si > 0 && " "}
+          {head}
+          <span className="whitespace-nowrap">
+            {last}
+            {shownCites.map(marker)}
+            {!open && (
+              <button
+                type="button"
+                className="fn-mark"
+                onClick={() => setExpanded((x) => new Set(x).add(key))}
+                aria-label={`Show ${cites.length - shownCites.length} more sources`}
+              >
+                +{cites.length - shownCites.length}
+              </button>
+            )}
+          </span>
+        </Fragment>
+      );
+    });
 
   return (
     <section className="mt-16 border-t border-rule pt-8" aria-labelledby="ask-heading">
