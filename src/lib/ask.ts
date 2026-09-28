@@ -18,8 +18,10 @@ export const RECIPES: Recipe[] = [
     layout: "email",
     instructions: `Write a short follow-up email from the note-taker ("You" in the transcript) to the other people on the call.
 Structure: a greeting line; one or two sentences thanking them and recapping what matters to them; the agreed next steps with owners and dates; a one-line sign-off. Start a new paragraph (newParagraph: true) for the recap, for the next steps and for the sign-off.
-Address only the people who actually spoke on the call. Write it the way the note-taker would: warm, plain, specific, no filler, no subject line, no placeholders like [Name].
-Keep sentences short, one point each, so every sentence carries its own receipt of one to three lines.
+Greet only the people who have lines in the transcript, by first name (a speaker labeled "Dana (Acme)" is Dana). People who were only mentioned did not attend: don't greet them, though you may name them in the body.
+Sign off with the note-taker's own first name only if the notes or the transcript clearly give it; otherwise use a closing like "Best," or "Thanks again." with no name. Never sign as "You".
+Write it the way the note-taker would: warm, plain, specific, no filler, no subject line, no placeholders like [Name].
+Keep every sentence under 20 words, one point each; the recap is at most two sentences. Cite only the one or two most specific lines for each sentence.
 Every sentence that states a fact, number, date or commitment must cite the transcript lines it comes from. Only the greeting and the sign-off may have empty cites.`,
   },
   {
@@ -29,7 +31,7 @@ Every sentence that states a fact, number, date or commitment must cite the tran
     layout: "list",
     instructions: `List every action item that was agreed or promised, one per sentence, each with newParagraph: true.
 Format each as "Owner: what they will do (by when)", leaving out "(by when)" if no date was said. Use names as said; the note-taker is "You".
-Cite the line where each commitment was made. If there are none, say so in one sentence with empty cites.`,
+Cite the one or two lines where each commitment was made. If there are none, say so in one sentence with empty cites.`,
   },
   {
     id: "open-questions",
@@ -37,7 +39,7 @@ Cite the line where each commitment was made. If there are none, say so in one s
     question: "What is still unresolved?",
     layout: "list",
     instructions: `List the questions, risks and decisions that were raised but not settled, one per sentence, each with newParagraph: true.
-Be specific (who is waiting on what). Cite the lines where each was raised. If everything was settled, say so in one sentence with empty cites.`,
+Be specific (who is waiting on what). Cite the one or two lines where each was raised. If everything was settled, say so in one sentence with empty cites.`,
   },
 ];
 
@@ -49,6 +51,7 @@ export const ASK_SYSTEM = `You answer questions about meetings using only their 
 Receipts are mandatory: every sentence that states a fact, number, date, name or commitment must list the transcript segment ids that support it in "cites", exactly as written in the transcript (like "s12" or "m2:s12"). If you cannot cite it, do not say it.
 If the transcripts do not contain the answer, say so plainly in one sentence with an empty cites list.
 Set newParagraph to true only where a new paragraph or list item should start.
+Keep each sentence under 25 words. Cite the one or two most specific lines per sentence, not every line that touches the topic.
 Unless told otherwise, be brief: at most 3 short sentences.`;
 
 export const answerSchema = z.object({
@@ -81,7 +84,7 @@ export function validateAnswer(
   let dropped = 0;
   const sentences: AnswerSentence[] = [];
   for (const s of list as { text?: unknown; cites?: unknown; newParagraph?: unknown }[]) {
-    const text = typeof s?.text === "string" ? s.text.replace(/\s*\[[a-z0-9:]+\]/gi, "").trim() : "";
+    const text = typeof s?.text === "string" ? fixSignOff(s.text.replace(/\s*\[[a-z0-9:]+\]/gi, "").trim()) : "";
     if (!text) continue;
     const cites = Array.isArray(s.cites)
       ? [...new Set(s.cites.filter((c): c is string => typeof c === "string").map((c) => c.trim().replace(/^\[|\]$/g, "")))].filter(
@@ -99,6 +102,20 @@ export function validateAnswer(
     sentences.push({ text, cites, ...(s.newParagraph === true ? { newParagraph: true } : {}) });
   }
   return { sentences, dropped };
+}
+
+/**
+ * "You" is the transcript's label for the note-taker, not a name. Models sometimes sign
+ * emails with it ("Thanks again, You"); drop it rather than send that.
+ */
+export function fixSignOff(text: string): string {
+  if (/^you[.!]?$/i.test(text)) return "";
+  const m = text.match(/^(.*?\S)\s*(?:,|\n|—|-)\s*You[.!]?$/);
+  if (m && m[1].split(/\s+/).length <= 5) {
+    const head = m[1].replace(/[,\s]+$/, "");
+    return /[.!?]$/.test(head) ? head : head + ".";
+  }
+  return text;
 }
 
 export interface AskSegment {

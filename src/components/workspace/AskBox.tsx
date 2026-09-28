@@ -7,6 +7,7 @@ import { RECIPES, type Recipe } from "@/lib/ask";
 import { askMeeting, ApiError, type AskSentence } from "@/lib/client/api";
 import { toast } from "@/lib/client/toast";
 import { formatClock } from "@/lib/format";
+import { cachedRecipe, isFullSampleTranscript } from "@/lib/sample/cached-asks";
 import type { Meeting } from "@/lib/types";
 
 const RECIPE_ICONS: Record<Recipe["id"], React.ReactNode> = {
@@ -24,6 +25,17 @@ export function toBlocks(sentences: AskSentence[]): AskSentence[][] {
   }
   return blocks;
 }
+
+/**
+ * One compact set of receipts per paragraph (or list item) instead of a chip after every
+ * sentence: the unique cited lines, in the order they were said.
+ */
+export function blockCites(block: AskSentence[], order: (id: string) => number): string[] {
+  return [...new Set(block.flatMap((s) => s.cites))].sort((a, b) => order(a) - order(b));
+}
+
+/** Receipts beyond this many fold behind a "+n" that opens them. */
+export const VISIBLE_CITES = 4;
 
 export function answerToText(sentences: AskSentence[], layout: "prose" | "email" | "list"): string {
   const blocks = toBlocks(sentences).map((b) => b.map((s) => s.text).join(" "));
@@ -47,7 +59,11 @@ export function AskBox({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
   const [copied, setCopied] = useState(false);
+  const [cached, setCached] = useState(false);
+  const [expanded, setExpanded] = useState<Set<number>>(new Set());
   const byId = new Map(meeting.segments.map((s) => [s.id, s]));
+  const order = (id: string) => byId.get(id)?.t ?? 0;
+  const isSample = isFullSampleTranscript(meeting);
 
   async function run(question: string, recipe?: Recipe) {
     if (loading) return;
@@ -56,11 +72,21 @@ export function AskBox({
     setCopied(false);
     setAsked({ label: recipe?.label ?? question, layout: recipe?.layout ?? "prose" });
     setAnswer(null);
+    setCached(false);
+    setExpanded(new Set());
     try {
       setAnswer(await askMeeting(question, meeting.notes, meeting.segments, { recipe: recipe?.id }));
       if (!recipe) setQ("");
     } catch (err) {
-      setError(err instanceof ApiError ? err : new ApiError("error", "Something went wrong.", 0));
+      const e = err instanceof ApiError ? err : new ApiError("error", "Something went wrong.", 0);
+      // No AI available right now: the sample's recipes have answers computed ahead of time.
+      const fallback = (e.code === "no_key" || e.code === "limit") && cachedRecipe(meeting, recipe?.id);
+      if (fallback) {
+        setAnswer(fallback);
+        setCached(true);
+      } else {
+        setError(e);
+      }
     } finally {
       setLoading(false);
     }
@@ -106,12 +132,27 @@ export function AskBox({
     );
   };
 
-  const sentence = (s: AskSentence, i: number) => (
-    <span key={i}>
-      {s.text}
-      {s.cites.map(marker)}{" "}
-    </span>
-  );
+  const block = (b: AskSentence[], bi: number) => {
+    const cites = blockCites(b, order);
+    const open = expanded.has(bi) || cites.length <= VISIBLE_CITES;
+    const shownCites = open ? cites : cites.slice(0, VISIBLE_CITES - 1);
+    return (
+      <>
+        {b.map((s) => s.text).join(" ")}
+        <span className="whitespace-nowrap">{shownCites.map(marker)}</span>
+        {!open && (
+          <button
+            type="button"
+            className="fn-mark ml-0.5"
+            onClick={() => setExpanded((x) => new Set(x).add(bi))}
+            aria-label={`Show ${cites.length - shownCites.length} more sources`}
+          >
+            +{cites.length - shownCites.length}
+          </button>
+        )}
+      </>
+    );
+  };
 
   return (
     <section className="mt-16 border-t border-rule pt-8" aria-labelledby="ask-heading">
@@ -167,7 +208,17 @@ export function AskBox({
           aria-live="polite"
         >
           <div className="flex items-center justify-between gap-3">
-            <p className="text-[13px] font-medium text-muted">{asked.label}</p>
+            <p className="flex items-center gap-2 text-[13px] font-medium text-muted">
+              {asked.label}
+              {cached && (
+                <span
+                  className="rounded-full border border-rule px-2 py-0.5 text-[11px] font-medium uppercase tracking-[0.06em]"
+                  title="No AI key is available right now, so this answer was computed ahead of time from the sample call."
+                >
+                  Cached demo
+                </span>
+              )}
+            </p>
             {answer && answer.length > 0 && (
               <button
                 type="button"
@@ -194,6 +245,11 @@ export function AskBox({
                   Add your key
                 </button>
               )}
+              {error.code === "no_key" && isSample && (
+                <span className="mt-1 block text-[13.5px] text-muted">
+                  The three one-click recipes above still work here, as cached demos.
+                </span>
+              )}
             </p>
           )}
           {answer &&
@@ -204,14 +260,14 @@ export function AskBox({
                 {toBlocks(answer).map((b, bi) => (
                   <li key={bi} className="relative pl-5 font-serif text-[17.5px] leading-relaxed text-ink">
                     <span className="absolute left-1 top-[0.72em] h-[5px] w-[5px] rounded-full bg-ink/60" aria-hidden />
-                    {b.map(sentence)}
+                    {block(b, bi)}
                   </li>
                 ))}
               </ul>
             ) : (
               <div className="mt-2 space-y-3 font-serif text-[17.5px] leading-relaxed text-ink">
                 {toBlocks(answer).map((b, bi) => (
-                  <p key={bi}>{b.map(sentence)}</p>
+                  <p key={bi}>{block(b, bi)}</p>
                 ))}
               </div>
             ))}

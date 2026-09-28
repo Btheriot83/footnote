@@ -6,10 +6,14 @@ import { cx } from "@/components/ui";
 import { askMeetings, ApiError, type AskSentence } from "@/lib/client/api";
 import { formatClock, formatDate } from "@/lib/format";
 import { rankMeetings } from "@/lib/rank";
+import { cachedAskAll, CACHED_QUESTIONS } from "@/lib/sample/cached-asks";
 import type { Meeting } from "@/lib/types";
 import { toBlocks } from "./AskBox";
 
-const EXAMPLES = ["What did I promise people?", "Where does the Acme deal stand?", "Who is blocked, and on what?"];
+/** Suggested questions; each has a cached answer for when no AI key is available. */
+const EXAMPLES = CACHED_QUESTIONS;
+/** Times shown per source meeting in a paragraph before folding behind "+n". */
+const VISIBLE_TIMES = 3;
 
 interface Props {
   open: boolean;
@@ -28,6 +32,8 @@ export function AskAllDialog({ open, onClose, meetings, initialQuestion, onOpenS
   const [refs, setRefs] = useState<Map<string, Meeting>>(new Map());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
+  const [cached, setCached] = useState(false);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const inputRef = useRef<HTMLInputElement>(null);
   const autoAsked = useRef(false);
 
@@ -46,6 +52,8 @@ export function AskAllDialog({ open, onClose, meetings, initialQuestion, onOpenS
     setLoading(true);
     setError(null);
     setAnswer(null);
+    setCached(false);
+    setExpanded(new Set());
     setAsked(text);
     try {
       const res = await askMeetings(
@@ -55,7 +63,17 @@ export function AskAllDialog({ open, onClose, meetings, initialQuestion, onOpenS
       setAnswer(res);
       setQ("");
     } catch (err) {
-      setError(err instanceof ApiError ? err : new ApiError("error", "Something went wrong.", 0));
+      const e = err instanceof ApiError ? err : new ApiError("error", "Something went wrong.", 0);
+      // No AI available right now: the suggested questions have answers computed ahead of time.
+      const fallback = (e.code === "no_key" || e.code === "limit") && cachedAskAll(text, usable);
+      if (fallback) {
+        setRefs(fallback.refs);
+        setAnswer(fallback.sentences);
+        setCached(true);
+        setQ("");
+      } else {
+        setError(e);
+      }
     } finally {
       setLoading(false);
     }
@@ -72,24 +90,60 @@ export function AskAllDialog({ open, onClose, meetings, initialQuestion, onOpenS
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const marker = (c: string) => {
-    const [ref, sid] = c.split(":");
-    const m = refs.get(ref);
-    const seg = m?.segments.find((s) => s.id === sid);
-    if (!m || !seg) return null;
+  const time = (m: Meeting, sid: string) => {
+    const seg = m.segments.find((s) => s.id === sid);
+    if (!seg) return null;
     return (
       <button
-        key={c}
+        key={sid}
         type="button"
         onClick={() => onOpenSource(m.id, sid)}
-        className="ml-1 inline-flex translate-y-[-0.35em] items-baseline gap-1 rounded-md bg-accent-softer px-1.5 py-[1px] align-baseline font-sans text-[11.5px] font-medium leading-tight text-accent hover:bg-accent-soft"
+        className="rounded px-0.5 tabular-nums hover:bg-accent-soft hover:underline"
         title={`${seg.label || seg.speaker}: “${seg.text}”`}
         aria-label={`Source: ${m.title}, ${seg.label || seg.speaker} at ${formatClock(seg.t)}. Open it.`}
       >
-        <span className="max-w-[140px] truncate">{m.title || "Untitled"}</span>
-        <span className="tabular-nums opacity-80">{formatClock(seg.t)}</span>
+        {formatClock(seg.t)}
       </button>
     );
+  };
+
+  /** One chip per source meeting at the end of each paragraph, listing the moments it cites. */
+  const sources = (b: AskSentence[], bi: number) => {
+    const groups = new Map<string, string[]>();
+    for (const c of b.flatMap((s) => s.cites)) {
+      const [ref, sid] = c.split(":");
+      if (!refs.has(ref)) continue;
+      const list = groups.get(ref) ?? [];
+      if (!list.includes(sid)) list.push(sid);
+      groups.set(ref, list);
+    }
+    return [...groups].map(([ref, sids]) => {
+      const m = refs.get(ref)!;
+      const t = (id: string) => m.segments.find((s) => s.id === id)?.t ?? 0;
+      const sorted = [...sids].sort((a, b) => t(a) - t(b));
+      const key = `${bi}:${ref}`;
+      const open = expanded.has(key) || sorted.length <= VISIBLE_TIMES;
+      const shownIds = open ? sorted : sorted.slice(0, VISIBLE_TIMES - 1);
+      return (
+        <span
+          key={ref}
+          className="ml-1.5 inline-flex translate-y-[-0.2em] flex-wrap items-baseline gap-x-1 rounded-md bg-accent-softer px-1.5 py-[1px] align-baseline font-sans text-[11.5px] font-medium leading-tight text-accent"
+        >
+          <span className="max-w-[160px] truncate text-accent/90">{m.title || "Untitled"}</span>
+          {shownIds.map((sid) => time(m, sid))}
+          {!open && (
+            <button
+              type="button"
+              onClick={() => setExpanded((x) => new Set(x).add(key))}
+              className="rounded px-0.5 hover:bg-accent-soft"
+              aria-label={`Show ${sorted.length - shownIds.length} more moments from ${m.title}`}
+            >
+              +{sorted.length - shownIds.length}
+            </button>
+          )}
+        </span>
+      );
+    });
   };
 
   return (
@@ -133,7 +187,7 @@ export function AskAllDialog({ open, onClose, meetings, initialQuestion, onOpenS
         </button>
       </form>
 
-      {!asked && !loading && usable.length > 0 && (
+      {(!asked || error?.code === "no_key") && !loading && usable.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-2">
           {EXAMPLES.map((ex) => (
             <button
@@ -150,7 +204,19 @@ export function AskAllDialog({ open, onClose, meetings, initialQuestion, onOpenS
 
       {(loading || answer || error) && (
         <div className="animate-fade-up mt-5 rounded-2xl bg-paper/60 px-5 py-4" aria-live="polite">
-          {asked && <p className="text-[13px] font-medium text-muted">{asked}</p>}
+          {asked && (
+            <p className="flex items-center gap-2 text-[13px] font-medium text-muted">
+              {asked}
+              {cached && (
+                <span
+                  className="rounded-full border border-rule px-2 py-0.5 text-[11px] font-medium uppercase tracking-[0.06em]"
+                  title="No AI key is available right now, so this answer was computed ahead of time from the example meetings."
+                >
+                  Cached demo
+                </span>
+              )}
+            </p>
+          )}
           {loading && (
             <div className="mt-3 space-y-2.5" role="status" aria-label="Reading your meetings">
               {[90, 76, 84].map((w, i) => (
@@ -166,6 +232,11 @@ export function AskAllDialog({ open, onClose, meetings, initialQuestion, onOpenS
                   Add your key
                 </button>
               )}
+              {error.code === "no_key" && (
+                <span className="mt-1 block text-[13.5px] text-muted">
+                  The suggested questions have cached answers for the example meetings and the sample call.
+                </span>
+              )}
             </p>
           )}
           {answer && (
@@ -175,12 +246,8 @@ export function AskAllDialog({ open, onClose, meetings, initialQuestion, onOpenS
               ) : (
                 toBlocks(answer).map((b, bi) => (
                   <p key={bi}>
-                    {b.map((s, i) => (
-                      <span key={i}>
-                        {s.text}
-                        {s.cites.map(marker)}{" "}
-                      </span>
-                    ))}
+                    {b.map((s) => s.text).join(" ")}
+                    {sources(b, bi)}
                   </p>
                 ))
               )}

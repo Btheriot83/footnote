@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { askContext, validateAnswer } from "@/lib/ask";
+import { askContext, fixSignOff, validateAnswer } from "@/lib/ask";
 import { rankMeetings } from "@/lib/rank";
 import type { Meeting } from "@/lib/types";
 
@@ -84,5 +84,18 @@ describe("askContext", () => {
     });
     expect(ctx).toContain('<meeting ref="m1" title="One"');
     expect(ctx).toContain("[m2:s1] 00:01 Them: Hi");
+  });
+});
+
+describe("fixSignOff", () => {
+  it("drops the transcript label from a sign-off", () => {
+    expect(fixSignOff("Thanks again, You")).toBe("Thanks again.");
+    expect(fixSignOff("Best,\nYou")).toBe("Best.");
+    expect(fixSignOff("You")).toBe("");
+  });
+  it("leaves ordinary sentences alone", () => {
+    expect(fixSignOff("Thank you")).toBe("Thank you");
+    expect(fixSignOff("Thanks again, Sam.")).toBe("Thanks again, Sam.");
+    expect(fixSignOff("I'll send both options to you")).toBe("I'll send both options to you");
   });
 });

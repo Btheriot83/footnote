@@ -1,0 +1,195 @@
+{
+  "recipes": {
+    "follow-up": [
+      {
+        "text": "Hi Dana,",
+        "cites": [],
+        "newParagraph": true
+      },
+      {
+        "text": "Thanks for the update and for talking through the renewal; congratulations on the Series B, and I understand the need to keep year one under $90K while also covering security review and Okta SSO.",
+        "cites": [
+          "s4",
+          "s6",
+          "s10",
+          "s12",
+          "s14",
+          "s16",
+          "s20"
+        ],
+        "newParagraph": true
+      },
+      {
+        "text": "I’ll send two pricing options and the SOC 2 report by Thursday, and I’ll set up the security call with Marcus for Tuesday afternoon.",
+        "cites": [
+          "s13",
+          "s15",
+          "s17",
+          "s19"
+        ],
+        "newParagraph": true
+      },
+      {
+        "text": "Best,",
+        "cites": [],
+        "newParagraph": true
+      }
+    ],
+    "actions": [
+      {
+        "text": "You: send two pricing options, annual and two-year, with viewer seats broken out by Thursday.",
+        "cites": [
+          "s13"
+        ],
+        "newParagraph": true
+      },
+      {
+        "text": "You: send the SOC 2 Type II report and a completed security questionnaire.",
+        "cites": [
+          "s15"
+        ],
+        "newParagraph": true
+      },
+      {
+        "text": "You: set up a security call with Marcus on Tuesday afternoon.",
+        "cites": [
+          "s18",
+          "s19"
+        ],
+        "newParagraph": true
+      },
+      {
+        "text": "Dana: sign before the 30th.",
+        "cites": [
+          "s20"
+        ],
+        "newParagraph": true
+      }
+    ],
+    "open-questions": [
+      {
+        "text": "Dana raised whether the renewal can stay under $90K in year one despite the $65/seat pricing, and that was not settled in the meeting.",
+        "cites": [
+          "s10",
+          "s12"
+        ],
+        "newParagraph": true
+      },
+      {
+        "text": "Marcus still needs the security review and a follow-up security call, which Dana said he is available for Tuesday afternoon.",
+        "cites": [
+          "s14",
+          "s18"
+        ],
+        "newParagraph": true
+      },
+      {
+        "text": "Acme also needs Okta SSO before rollout, and you said it is included on the growth tier, but the rollout decision was not finalized.",
+        "cites": [
+          "s16",
+          "s17"
+        ],
+        "newParagraph": true
+      },
+      {
+        "text": "Dana wants the contract signed before the 30th, but the renewal itself was still pending.",
+        "cites": [
+          "s20"
+        ],
+        "newParagraph": true
+      }
+    ]
+  },
+  "askAll": [
+    {
+      "question": "What did I promise people?",
+      "sentences": [
+        {
+          "text": "In the Acme renewal call, I promised Dana two pricing options and the SOC 2 report by Thursday, plus a security call with Marcus on Tuesday.",
+          "cites": [
+            "sample:s13",
+            "sample:s19",
+            "sample:s20"
+          ],
+          "newParagraph": true
+        },
+        {
+          "text": "In the Priya 1:1, I promised to make the Okta setup guide part of every security review, join only the pricing call for Northwind, and approved the fifteen percent year-one startup discount.",
+          "cites": [
+            "ex_one-on-one:s5",
+            "ex_one-on-one:s11",
+            "ex_one-on-one:s15"
+          ],
+          "newParagraph": true
+        },
+        {
+          "text": "In the design standup, I promised to ping legal right away and confirmed the final plan names were Starter, Growth, and Enterprise.",
+          "cites": [
+            "ex_standup:s6",
+            "ex_standup:s9"
+          ],
+          "newParagraph": true
+        }
+      ]
+    },
+    {
+      "question": "Where does the Acme deal stand?",
+      "sentences": [
+        {
+          "text": "In the Acme renewal call, Dana said Acme had closed a Series B, was growing to about 120 seats, and had pricing pushback at $65 per seat with a year-one target under $90K; she said a two-year term could work.",
+          "cites": [
+            "sample:s4",
+            "sample:s6",
+            "sample:s10",
+            "sample:s12",
+            "sample:s14",
+            "sample:s16",
+            "sample:s19",
+            "sample:s20"
+          ],
+          "newParagraph": true
+        },
+        {
+          "text": "Security review is also in progress: Marcus the new CISO will review the vendor, Okta SSO is required, the SOC 2 Type II report is ready, and a security call was set for Tuesday; the contract ends on the 30th, and Dana wants to sign before then.",
+          "cites": [
+            "sample:s14",
+            "sample:s16",
+            "sample:s18",
+            "sample:s19",
+            "sample:s20",
+            "ex_standup:s5"
+          ],
+          "newParagraph": true
+        }
+      ]
+    },
+    {
+      "question": "Who is blocked, and on what?",
+      "sentences": [
+        {
+          "text": "In the design standup, Maya was blocked on copy for onboarding step three until the final plan names were confirmed.",
+          "cites": [
+            "ex_standup:s8",
+            "ex_standup:s9"
+          ],
+          "newParagraph": true
+        },
+        {
+          "text": "Leo was also blocked by flaky staging, with about one in five builds failing, and he was asked to spend thirty minutes on it with Sam.",
+          "cites": [
+            "ex_standup:s7",
+            "ex_standup:s11",
+            "ex_standup:s12"
+          ]
+        },
+        {
+          "text": "The SOC 2 questionnaire was waiting on legal for the data-retention answer, and you said you would ping legal.",
+          "cites": [
+            "ex_standup:s5",
+            "ex_standup:s6"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -58,7 +58,7 @@ export async function POST(req: Request) {
   const task = recipe
     ? `Task: ${recipe.instructions}`
     : meetings?.length
-      ? `Question (answer across these meetings; name the meeting when it helps): ${question}`
+      ? `Question (answer across these meetings; name the meeting when it helps, and start a new paragraph for each meeting you draw on): ${question}`
       : `Question: ${question}`;
 
   try {
