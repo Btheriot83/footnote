@@ -121,7 +121,6 @@ export function MeetingPane({
   const segmentsById = useMemo(() => new Map((m?.segments ?? []).map((s) => [s.id, s])), [m?.segments]);
   const receipts = useReceipts(m?.enhanced ?? null);
 
-  const notesAreDefault = !!m && normalizeNotes(m.notes) === normalizeNotes(SAMPLE_DEFAULT_NOTES);
 
   const playCached = useCallback(
     async (id: string) => {
@@ -451,7 +450,6 @@ export function MeetingPane({
     </div>
   );
 
-  const templateName = TEMPLATES.find((t) => t.id === meeting.template)?.name ?? "General";
 
   return (
     <div className="flex h-full min-w-0 flex-col bg-sheet">

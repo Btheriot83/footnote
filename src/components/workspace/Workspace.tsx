@@ -283,19 +283,21 @@ export function Workspace() {
         liveElsewhere={session.kind === "live"}
       />
       <SettingsDialog open={dialog?.kind === "settings"} onClose={() => setDialog(null)} />
-      <AskAllDialog
-        open={dialog?.kind === "ask"}
-        initialQuestion={dialog?.kind === "ask" ? dialog.question : undefined}
-        meetings={meetings as Meeting[] | undefined}
-        onClose={() => setDialog(null)}
-        onSettings={() => setDialog({ kind: "settings" })}
-        onOpenSource={(meetingId, segmentId) => {
-          setDialog(null);
-          setPendingFocus(meetingId, segmentId);
-          if (meetingId === activeId) window.dispatchEvent(new Event("footnote:pending-focus"));
-          else void loadMeeting(meetingId).then(() => select(meetingId));
-        }}
-      />
+      {dialog?.kind === "ask" && (
+        <AskAllDialog
+          open
+          initialQuestion={dialog.question}
+          meetings={meetings as Meeting[] | undefined}
+          onClose={() => setDialog(null)}
+          onSettings={() => setDialog({ kind: "settings" })}
+          onOpenSource={(meetingId, segmentId) => {
+            setDialog(null);
+            setPendingFocus(meetingId, segmentId);
+            if (meetingId === activeId) window.dispatchEvent(new Event("footnote:pending-focus"));
+            else void loadMeeting(meetingId).then(() => select(meetingId));
+          }}
+        />
+      )}
       <Toaster />
     </div>
   );

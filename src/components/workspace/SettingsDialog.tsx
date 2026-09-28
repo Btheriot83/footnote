@@ -11,6 +11,7 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
   const [draft, setDraft] = useState("");
   const [reveal, setReveal] = useState(false);
   const [status, setStatus] = useState<Status | null | "loading">("loading");
+  const [check, setCheck] = useState<{ state: "idle" | "checking" | "ok" | "bad"; message?: string }>({ state: "idle" });
 
   useEffect(() => {
     if (!open) return;
@@ -32,7 +33,6 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
         : !valid
           ? "That key looks too short. Copy the whole thing."
           : null;
-  const [check, setCheck] = useState<{ state: "idle" | "checking" | "ok" | "bad"; message?: string }>({ state: "idle" });
 
   async function testKey(key: string) {
     setCheck({ state: "checking" });

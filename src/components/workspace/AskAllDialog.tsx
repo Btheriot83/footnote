@@ -22,7 +22,7 @@ interface Props {
 
 /** Granola-style chat across meetings, except every sentence carries a receipt. */
 export function AskAllDialog({ open, onClose, meetings, initialQuestion, onOpenSource, onSettings }: Props) {
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState(initialQuestion ?? "");
   const [asked, setAsked] = useState("");
   const [answer, setAnswer] = useState<AskSentence[] | null>(null);
   const [refs, setRefs] = useState<Map<string, Meeting>>(new Map());
@@ -61,19 +61,16 @@ export function AskAllDialog({ open, onClose, meetings, initialQuestion, onOpenS
     }
   }
 
+  // Mounted fresh each time it opens (see Workspace), so this runs once per open.
   useEffect(() => {
-    if (!open) {
-      autoAsked.current = false;
-      return;
-    }
-    setQ(initialQuestion ?? "");
     requestAnimationFrame(() => inputRef.current?.focus());
     if (initialQuestion && !autoAsked.current) {
       autoAsked.current = true;
-      void run(initialQuestion);
+      const id = setTimeout(() => void run(initialQuestion), 0);
+      return () => clearTimeout(id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, initialQuestion]);
+  }, []);
 
   const marker = (c: string) => {
     const [ref, sid] = c.split(":");
