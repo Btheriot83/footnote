@@ -1,12 +1,12 @@
 # Footnote
 
-**Meeting notes with receipts.** Type rough notes during the call. Footnote turns them into clear notes where every line links to the exact moment it was said. It runs in your browser, keeps your meetings on your device, and uses your own OpenAI key. $59 once instead of $14 a month.
+**Meeting notes with receipts.** Type rough notes during the call. Footnote turns them into clear notes where every line links to the exact moment it was said. It runs in your browser, keeps your meetings on your device, and it's free and open source with your own OpenAI key, instead of $14 a month.
 
 ![Footnote: enhanced notes on the left, the transcript on the right, a footnote highlighting the line it cites](docs/workspace.png)
 
 ![Footnote: the sample call, Enhance, then a footnote plays the exact moment it cites](docs/demo.gif)
 
-**Try it in ten seconds:** open the demo at **[footnote-receipts.vercel.app](https://footnote-receipts.vercel.app)** and press **Try a sample meeting**. A staged two-minute renewal call plays, the transcript and rough notes fill in as if you were on it, then **Enhance** writes the notes live, with a footnote on every line the AI added. Click a footnote to hear the moment it cites. No account, no key, no setup.
+**Try it in ten seconds:** open the demo at **[footnote-receipts.vercel.app](https://footnote-receipts.vercel.app)** and press **Try a sample meeting**. A staged two-minute renewal call plays, the transcript and rough notes fill in as if you were on it, then **Enhance** writes the notes live, with a footnote on every line the AI added. Click a footnote to hear the moment it cites. No account, no key, no setup. (With no AI key on the server, Enhance, the recipes and the suggested questions on the sample show clearly labeled cached results; add your own key in Settings to run everything live.)
 
 ## Why it exists
 
@@ -16,15 +16,15 @@ Footnote does the same core job with three differences:
 
 1. **Receipts.** Your own points stay in ink. Anything the AI adds is set in gray and ends in a vermilion footnote. Hover it and the transcript scrolls to the line; click a transcript line to see every note that leans on it. The model is told it may not claim anything it can't cite, and the server checks every citation against the real transcript and drops lines that can't point to a source.
 2. **Local-first.** Meetings live in IndexedDB on your device. There is no account and no database of your meetings. Sharing is a read-only link that carries the note inside the link itself (`/s#…`, lz-string compressed), so nothing is uploaded.
-3. **Bring your own key, pay once.** Paste an OpenAI key in Settings; a 30-minute meeting costs about 10 cents. Or self-host the whole thing for free.
+3. **Free with your own key.** Paste an OpenAI key in Settings and everything works with no limits; a 30-minute meeting costs about 10 cents. Or self-host the whole thing.
 
 ## Footnote vs Granola
 
 |                                        | Granola                 | Footnote                                             |
 | -------------------------------------- | ----------------------- | ---------------------------------------------------- |
-| Price                                  | $14/month               | $59 once with your own key, or free to self-host     |
+| Price                                  | $14/month               | Free with your own key; Pro is $59 once, AI included |
 | Where notes live                       | Their cloud             | Your device (IndexedDB)                              |
-| AI key                                 | Theirs, in the plan     | Yours; you pay OpenAI cents                          |
+| AI key                                 | Theirs, in the plan     | Yours (cents a meeting), or included with Pro        |
 | Every AI line cites the transcript     | No                      | Yes: hover to see the words, click to hear them      |
 | Chat across meetings                   | Yes                     | Yes, and every answer cites its sources              |
 | Follow-up email, action items          | Yes (recipes)           | Yes, one click, with receipts                        |
@@ -42,7 +42,7 @@ Footnote does the same core job with three differences:
 - **Receipts:** hover or click a footnote to jump to and highlight the cited line; click a cited transcript line to see which notes cite it. Click a footnote to **hear** the exact seconds it cites, or press **Listen** to replay the call with the transcript following along. This works in the sample call and in any meeting where you kept the audio (on by default, stored only in your browser; delete it from the meeting's menu).
 - **Ask:** ask a meeting anything, or use a one-click recipe (follow-up email, action items, what's still open). **Ask your meetings** answers across everything on this device and each source chip opens that moment.
 - **History:** every meeting is saved locally; `⌘K` searches titles, notes and transcripts.
-- **Export and share:** copy as Markdown (with `[^n]` footnotes that quote the transcript), copy for Slack, download `.md`, or share a read-only link.
+- **Export and share:** copy as Markdown (AI lines in italics, with `[^n]` footnotes that quote the transcript), copy for Slack, download `.md`, or share a read-only link. A shared sample call keeps its receipts you can hear.
 
 ## How the receipts stay honest
 
@@ -54,6 +54,18 @@ Models cite imperfectly, so the rules are enforced after the model answers, on t
 - Answers from Ask follow the same rule: an uncited sentence survives only if it's clearly not a claim (a greeting, a sign-off, "the transcript doesn't say").
 
 These are unit-tested in `tests/unit`.
+
+## Pricing
+
+- **Free and open source (MIT)** with your own OpenAI key: everything, no limits. You pay OpenAI directly.
+- **Footnote Pro, $59 once** (coming soon, not on sale yet): no key and no setup, with the AI included (1,000 enhancements and 20 hours of transcription a year) and priority updates. It pays for the hosting and the work.
+- **Just trying it:** the sample call needs nothing. If the server has a key, visitors also get a small daily allowance on it.
+
+## Keys, honestly
+
+- Your key lives in your browser's local storage and goes only to this app's API routes, per request. The server never stores or logs it.
+- If OpenAI rejects a saved key, Footnote stops sending it, tells you, and falls back to the free allowance when the server offers one.
+- If the server has no key and you haven't added one, the app says so up front instead of failing: notes, history, search, export and your mic transcript keep working, and the sample shows cached results labeled "cached demo".
 
 ## Honest browser limits
 
@@ -89,6 +101,7 @@ Optional environment variables:
 | `FOOTNOTE_MODEL`                       | `gpt-5.4-mini`           | Model for Enhance and Ask                                |
 | `FOOTNOTE_TRANSCRIBE_MODEL`            | `gpt-4o-mini-transcribe` | Model for tab and fallback mic transcription             |
 | `NEXT_PUBLIC_GITHUB_URL`               | this repo                | GitHub link on the landing page                          |
+| `NEXT_PUBLIC_SITE_URL`                 | footnote-receipts.vercel.app | Absolute base for link previews (og:image)       |
 
 **Keys:** a visitor's own key is kept in their browser's local storage and sent as `x-user-openai-key` with their requests only. The server uses it for that request and never stores or logs it. The hosted allowance is a signed, per-visitor daily cookie counter: a soft cap to keep a free demo cheap, not a security boundary.
 
@@ -114,7 +127,7 @@ PW_CHANNEL=chrome npx playwright test      # end to end (uses installed Chrome; 
 npm run build
 ```
 
-The sample call was generated with OpenAI TTS from `scripts/sample/script.json` (`npm run sample:audio`, needs ffmpeg). `npm run sample:cache` and `node scripts/sample/cache-examples.mjs` refresh the bundled enhancements against a running dev server.
+The sample call was generated with OpenAI TTS from `scripts/sample/script.json` (`npm run sample:audio`, needs ffmpeg). `npm run sample:cache`, `node scripts/sample/cache-examples.mjs` and `node scripts/sample/cache-asks.mjs` refresh the bundled enhancements and cached answers against a running dev server with a key.
 
 ## License
 
