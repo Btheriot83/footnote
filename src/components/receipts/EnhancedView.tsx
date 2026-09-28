@@ -139,8 +139,34 @@ export function EnhancedView({
                       {last}
                       {b.origin === "ai" && <span className="sr-only"> (added by AI)</span>}
                     </span>
-                    {[...b.cites]
-                      .sort((a, z) => (numbers.get(a) ?? 0) - (numbers.get(z) ?? 0))
+                    {inlineQuotes && sortedCites(b.cites, numbers).length > 1 ? (
+                      // Where fingers tap, a bullet's footnotes are one pill: one tap opens all its sources.
+                      (() => {
+                        const cs = sortedCites(b.cites, numbers);
+                        const first = cs[0];
+                        return (
+                          <button
+                            type="button"
+                            className={cx("fn-mark fn-group", streaming && "stamp")}
+                            style={streaming ? { ["--stamp-delay" as string]: "560ms" } : undefined}
+                            data-active={cs.some((c) => receipts.activeSegments.has(c)) || quoteOpen}
+                            data-playing={cs.includes(playingId ?? "") || undefined}
+                            aria-expanded={quoteOpen}
+                            aria-label={`Sources ${cs.map((c) => numbers.get(c)).join(" and ")}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              receipts.clickCite(first);
+                              onCite?.(first);
+                              setOpenQuote(quoteOpen ? null : key);
+                            }}
+                          >
+                            {cs.map((c) => (
+                              <span key={c}>{numbers.get(c)}</span>
+                            ))}
+                          </button>
+                        );
+                      })()
+                    ) : sortedCites(b.cites, numbers)
                       .map((c, ci) => {
                         const n = numbers.get(c);
                         const seg = segmentsById.get(c);
@@ -153,6 +179,7 @@ export function EnhancedView({
                             style={streaming ? { ["--stamp-delay" as string]: `${560 + ci * 110}ms` } : undefined}
                             data-active={receipts.activeSegments.has(c) || pop?.id === c}
                             data-playing={playingId === c || undefined}
+                            aria-expanded={inlineQuotes ? quoteOpen : undefined}
                             aria-label={`Source ${n}${seg ? `: ${seg.label || seg.speaker} at ${formatClock(seg.t)}` : ""}`}
                             onMouseEnter={(e) => {
                               receipts.hoverCites([c]);
@@ -231,6 +258,10 @@ export function EnhancedView({
       )}
     </div>
   );
+}
+
+function sortedCites(cites: string[], numbers: Map<string, number>): string[] {
+  return [...cites].filter((c) => numbers.has(c)).sort((a, z) => (numbers.get(a) ?? 0) - (numbers.get(z) ?? 0));
 }
 
 /** "a b c" -> ["a b ", "c"], so the last word can sit with its footnote markers. */

@@ -158,9 +158,32 @@ p, li, blockquote {
   color: var(--color-ink);
 }
 
+/* Keyboard focus: a vermilion pencil ring that follows the control's own shape. */
 :focus-visible {
-  outline: 2px solid var(--color-ink);
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  transition: outline-offset 180ms var(--spring-bouncy, ease);
+}
+.pill:focus-visible,
+.fn-mark:focus-visible {
   outline-offset: 2px;
+}
+.paper :focus-visible,
+dialog :focus-visible {
+  outline-color: color-mix(in srgb, var(--color-accent) 85%, var(--color-ink));
+}
+
+/* Copy that only makes sense with a mouse or a keyboard, and its touch-screen twin. */
+.touch-only {
+  display: none !important;
+}
+@media (hover: none), (pointer: coarse) {
+  .hover-only {
+    display: none !important;
+  }
+  .touch-only {
+    display: revert !important;
+  }
 }
 /* Text fields show focus with their own border and the caret, not a second ring. */
 input:not([type="checkbox"]):not([type="radio"]):focus-visible,
@@ -506,6 +529,45 @@ dialog .wordmark {
 }
 .fn-mark + .fn-mark {
   margin-left: 0.14em;
+}
+/* A bigger invisible hit area than the pill itself; 44px where fingers tap. */
+button.fn-mark {
+  position: relative;
+}
+button.fn-mark::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100%, 26px);
+  height: 26px;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+}
+@media (pointer: coarse) {
+  button.fn-mark::before {
+    width: max(100% + 12px, 44px);
+    height: 44px;
+  }
+  /* Grouped footnotes on touch screens: one pill, one tap, all of its sources. */
+  .fn-group {
+    gap: 0.32em;
+    padding: 0 0.55em;
+  }
+}
+.fn-group {
+  display: inline-flex;
+  gap: 0.28em;
+}
+.fn-group > span + span::before {
+  content: "";
+  display: inline-block;
+  width: 1px;
+  height: 0.9em;
+  margin-right: 0.28em;
+  vertical-align: -0.1em;
+  background: currentColor;
+  opacity: 0.3;
 }
 .fn-mark:hover,
 .fn-mark[data-active="true"] {

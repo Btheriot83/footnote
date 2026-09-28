@@ -52,8 +52,15 @@ export function ReceiptPopover({
       role="tooltip"
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
-      className="fixed z-[55] w-[300px] [clip-path:inset(-4px_-40px_-60px_-40px)]"
-      style={{ left: pos?.left ?? -9999, top: pos?.top ?? -9999, visibility: pos ? "visible" : "hidden" }}
+      className="fixed z-[55] w-[300px]"
+      style={{
+        left: pos?.left ?? -9999,
+        top: pos?.top ?? -9999,
+        visibility: pos ? "visible" : "hidden",
+        // Feeding down out of the footnote, the slot hides the paper above it, but not the
+        // torn edge or the shadow; above the footnote nothing is clipped.
+        clipPath: pos?.below === false ? "none" : "inset(-12px -48px -72px -48px)",
+      }}
     >
       <div
         key={seg.id}
