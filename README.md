@@ -2,9 +2,9 @@
 
 **Meeting notes with receipts.** Type rough notes during the call. Footnote turns them into clear notes where every line links to the exact moment it was said. It runs in your browser, keeps your meetings on your device, and it's free and open source with your own OpenAI key, instead of $14 a month.
 
-![Footnote: enhanced notes on the left, the transcript on the right, a footnote highlighting the line it cites](docs/workspace.png)
+![Footnote: enhanced notes on a paper sheet, a footnote's receipt slip showing the words it cites, and the transcript receipt with that line highlighted](docs/workspace.png)
 
-![Footnote: the sample call, Enhance, then a footnote plays the exact moment it cites](docs/demo.gif)
+![Footnote: the landing page prints a receipt, a page turns into the app, the sample call ends, Enhance inks the notes in with footnotes, and hovering a footnote feeds out its receipt](docs/demo.gif)
 
 **Try it in ten seconds:** open the demo at **[footnote-receipts.vercel.app](https://footnote-receipts.vercel.app)** and press **Try a sample meeting**. A staged two-minute renewal call plays, the transcript and rough notes fill in as if you were on it, then **Enhance** writes the notes live, with a footnote on every line the AI added. Click a footnote to hear the moment it cites. No account, no key, no setup. (With no AI key on the server, Enhance, the recipes and the suggested questions on the sample show clearly labeled cached results; add your own key in Settings to run everything live.)
 
