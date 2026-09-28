@@ -73,15 +73,24 @@ export function DeskHeading({
   );
 }
 
-/** The paper strip that holds the call to action, like a slip with a button on it. */
-export function CtaStrip({ note, className }: { note: string; className?: string }) {
+/** The paper strip that holds the call to action: a label for what you'll hear, and the button. */
+export function CtaStrip({ className, label = "A two-minute sales call" }: { className?: string; label?: string }) {
   return (
-    <div className={cx("mx-auto w-full max-w-[560px]", className)}>
-      <div className="paper paper-cream flex flex-col gap-3 rounded-[3px] p-3 sm:flex-row sm:items-center sm:gap-4 sm:py-3 sm:pl-6 sm:pr-3">
-        <p className="flex-1 border-b border-rule-strong/70 px-2 pb-2 pt-1 text-left font-serif text-[18px] italic text-muted sm:px-0">
-          {note}
-        </p>
-        <Link href="/app?sample=1" className="pill h-[52px] px-7 text-[12.5px] sm:h-12">
+    <div className={cx("mx-auto w-full max-w-[540px]", className)}>
+      <div className="paper paper-cream flex flex-col items-stretch gap-3 rounded-[3px] p-3 sm:flex-row sm:items-center sm:gap-4 sm:py-3 sm:pl-5 sm:pr-3">
+        <div className="flex flex-1 items-center gap-3 px-1 text-left">
+          <span
+            aria-hidden
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-rule-strong text-[11px] text-ink-2"
+          >
+            ▶
+          </span>
+          <span className="leading-tight">
+            <span className="block font-serif text-[17.5px] text-ink">{label}</span>
+            <span className="smallcaps block text-[9.5px] tracking-[0.18em] text-muted">Sound on · AI voices · 2:20</span>
+          </span>
+        </div>
+        <Link href="/app?sample=1" data-page-turn className="pill h-[52px] px-7 text-[12.5px] sm:h-12">
           Try a sample meeting
         </Link>
       </div>

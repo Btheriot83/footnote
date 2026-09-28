@@ -41,7 +41,7 @@
   --animate-fade-up: fade-up 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
   --animate-fade-in: fade-in 300ms ease-out both;
   --animate-pulse-dot: pulse-dot 1.6s ease-in-out infinite;
-  --animate-settle: settle 720ms cubic-bezier(0.16, 0.84, 0.3, 1) backwards;
+  --animate-settle: settle 760ms var(--spring) backwards;
   --animate-print: print 420ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
 
   @keyframes fade-up {
@@ -58,13 +58,75 @@
   }
   /* A sheet dropped onto the desk: falls a little, shadow tightens as it lands. */
   @keyframes settle {
-    from { opacity: 0; transform: translateY(14px) scale(1.025); }
+    from { opacity: 0; transform: translateY(16px) rotate(0.8deg) scale(1.03); }
+    18% { opacity: 1; }
     to { opacity: 1; transform: none; }
   }
   /* A line fed out of a receipt printer. */
   @keyframes print {
     from { opacity: 0; clip-path: inset(0 0 100% 0); transform: translateY(-4px); }
     to { opacity: 1; clip-path: inset(0 0 -8px 0); transform: none; }
+  }
+}
+
+
+/* ------------------------------------------------------------------ */
+/* Motion: springs, not curves. Physical objects overshoot about 4%.    */
+/* ------------------------------------------------------------------ */
+:root {
+  /* Damped springs sampled into linear(): bouncy (16% overshoot), standard (4%), soft (0.5%). */
+  --spring-bouncy: linear(0, 0.0451, 0.1597, 0.3151, 0.4869, 0.6559, 0.8084, 0.9358, 1.0341, 1.1027, 1.1438, 1.1615, 1.1605, 1.146, 1.123, 1.0957, 1.0676, 1.0414, 1.0187, 1.0007, 0.9874, 0.9789, 0.9745, 0.9734, 0.975, 0.9782, 0.9825, 0.987, 0.9915, 0.9955, 0.9987, 1.0012, 1.0029, 1.0039, 1.0043, 1.0042, 1.0038, 1.0032, 1.0024, 1.0017, 1);
+  --spring: linear(0, 0.0281, 0.0993, 0.1966, 0.3069, 0.4204, 0.53, 0.6313, 0.7212, 0.7986, 0.8631, 0.9152, 0.9559, 0.9866, 1.0086, 1.0235, 1.0326, 1.0372, 1.0384, 1.0372, 1.0344, 1.0306, 1.0264, 1.022, 1.0178, 1.014, 1.0105, 1.0076, 1.0051, 1.0032, 1.0016, 1.0005, 0.9996, 0.9991, 0.9987, 0.9986, 0.9985, 0.9986, 0.9987, 0.9988, 1);
+  --spring-soft: linear(0, 0.0212, 0.0746, 0.1481, 0.2325, 0.3209, 0.4086, 0.4923, 0.57, 0.6404, 0.703, 0.7578, 0.805, 0.8452, 0.8789, 0.9069, 0.9297, 0.9483, 0.963, 0.9746, 0.9836, 0.9904, 0.9954, 0.9991, 1.0016, 1.0033, 1.0043, 1.0048, 1.005, 1.0049, 1.0047, 1.0043, 1.0039, 1.0035, 1.003, 1.0026, 1.0022, 1.0018, 1.0015, 1.0012, 1);
+  --ease-out: cubic-bezier(0.22, 0.8, 0.25, 1);
+  --on-wood: var(--color-ink);
+  --on-wood-2: var(--color-ink-2);
+  --on-wood-shadow: 0 1px 0 rgba(255, 250, 238, 0.35);
+  --wood-multiply: #ffffff;
+  --desk-glow: rgba(255, 248, 232, 0.36);
+  --desk-edge: rgba(96, 70, 38, 0.13);
+  --backdrop: rgba(70, 50, 26, 0.2);
+  --receipt-ink: #2b2925;
+  --receipt-dim: #6f6a60;
+  color-scheme: light;
+}
+
+/* Night desk: walnut under a warm lamp. Papers stay paper (slightly dimmer, warmer),
+   so ink on paper keeps its contrast; only words set on the wood turn light. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-wood: #4a3826;
+    --color-paper: #e7dfcd;
+    --color-paper-2: #ddd4c1;
+    --color-paper-3: #d3c9b4;
+    --color-sheet: #ece4d2;
+    --color-card: #f1eadb;
+    --color-receipt: #efebe2;
+    --color-index: #dde3e8;
+    --color-index-line: #b7c4d1;
+    --color-margin: #d99791;
+    --color-lavender: #ddd7e6;
+    --color-sage: #d8dfcf;
+    --color-butter: #e9e0bb;
+    --color-blush: #e9d8d0;
+    --color-sky: #d5dfe9;
+    --color-stone: #e0dbcf;
+    --color-muted: #5d564a;
+    --color-faint: #8d8576;
+    --color-rule: #d6ccb8;
+    --color-rule-strong: #bfb39b;
+    --color-accent-soft: #f1ccb9;
+    --color-accent-softer: #f5e0d3;
+    --on-wood: #f4ead7;
+    --on-wood-2: #e2d6bf;
+    --on-wood-shadow: 0 1px 2px rgba(20, 12, 4, 0.45);
+    --wood-multiply: #6e5337;
+    --desk-glow: rgba(255, 196, 120, 0.2);
+    --desk-edge: rgba(12, 7, 2, 0.42);
+    --backdrop: rgba(14, 8, 2, 0.46);
+    --shadow-card: 0 0.5px 0 rgba(255, 255, 255, 0.4) inset, 0 1px 1px rgba(10, 6, 2, 0.3), 0 3px 6px -2px rgba(10, 6, 2, 0.3), 0 16px 30px -12px rgba(10, 6, 2, 0.6);
+    --shadow-lift: 0 1px 1px rgba(10, 6, 2, 0.3), 0 6px 12px -4px rgba(10, 6, 2, 0.36), 0 32px 60px -20px rgba(10, 6, 2, 0.7);
+    color-scheme: dark;
   }
 }
 
@@ -80,6 +142,13 @@ body {
   font-optical-sizing: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, .balance {
+  text-wrap: balance;
+}
+p, li, blockquote {
+  text-wrap: pretty;
 }
 
 ::selection {
@@ -114,32 +183,74 @@ select:focus-visible {
 
 /* Light oak under soft window light: a pool of light upper left, darker toward the edges. */
 .desk {
-  background-color: var(--color-wood);
+  background-color: var(--wood-multiply);
   background-image:
-    radial-gradient(ellipse 70% 55% at 38% 22%, rgba(255, 248, 232, 0.34), transparent 70%),
-    radial-gradient(ellipse 120% 90% at 50% 40%, transparent 55%, rgba(96, 70, 38, 0.18) 100%),
+    radial-gradient(ellipse 70% 55% at 38% 22%, var(--desk-glow), transparent 70%),
+    radial-gradient(ellipse 120% 90% at 50% 40%, transparent 50%, var(--desk-edge) 100%),
     url("/desk/wood.webp");
-  background-size: 100% 100%, 100% 100%, cover;
-  background-position: center, center, center;
+  background-size: 100% 100%, 100% 100%, max(100%, 1200px) auto;
+  background-position: center, center, center top;
+  background-blend-mode: normal, normal, multiply;
 }
 /* Long pages: the desk scrolls with the papers (a seamless tile), lit from the top. */
 .desk-page {
   position: relative;
   isolation: isolate;
-  background-color: var(--color-wood);
+  background-color: var(--wood-multiply);
   background-image:
-    radial-gradient(ellipse 75% 1100px at 40% 0, rgba(255, 248, 232, 0.36), transparent 72%),
-    linear-gradient(90deg, rgba(96, 70, 38, 0.13), transparent 16%, transparent 84%, rgba(96, 70, 38, 0.13)),
+    radial-gradient(ellipse 75% 1100px at 40% 0, var(--desk-glow), transparent 72%),
+    linear-gradient(90deg, var(--desk-edge), transparent 16%, transparent 84%, var(--desk-edge)),
     url("/desk/wood.webp");
   background-size: 100% 1500px, 100% 100%, max(100%, 1200px) auto;
   background-repeat: no-repeat, no-repeat, repeat-y;
   background-position: top center, center, top center;
+  background-blend-mode: normal, normal, multiply;
 }
 
-/* Text set straight on the wood: headings and one-line ledes only, in full ink. */
+/* Text set straight on the wood: headings and one-line ledes only, in full ink (cream at night). */
 .on-wood {
+  color: var(--on-wood);
+  text-shadow: var(--on-wood-shadow);
+}
+.on-wood-2 {
+  color: var(--on-wood-2);
+  text-shadow: var(--on-wood-shadow);
+}
+.wordmark {
+  color: var(--on-wood);
+}
+.paper .wordmark,
+.receipt .wordmark,
+dialog .wordmark {
   color: var(--color-ink);
-  text-shadow: 0 1px 0 rgba(255, 250, 238, 0.35);
+}
+
+/* The desk lamp: a warm pool of light that drifts toward the cursor (see DeskLamp). */
+.desk-lamp {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 1500px;
+  height: 1500px;
+  margin: -750px 0 0 -750px;
+  pointer-events: none;
+  z-index: 70;
+  background: radial-gradient(closest-side, rgba(255, 232, 196, 0.55), rgba(255, 232, 196, 0.18) 45%, transparent 100%);
+  mix-blend-mode: soft-light;
+  opacity: 0;
+  transition: opacity 1200ms ease;
+  will-change: transform;
+}
+.desk-lamp.is-on {
+  opacity: 0.85;
+}
+@media (prefers-color-scheme: dark) {
+  .desk-lamp {
+    background: radial-gradient(closest-side, rgba(255, 196, 120, 0.5), rgba(255, 190, 110, 0.16) 50%, transparent 100%);
+  }
+  .desk-lamp.is-on {
+    opacity: 1;
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -247,10 +358,10 @@ select:focus-visible {
 /* Paper that lifts off the desk when you reach for it. */
 .lift {
   transition:
-    translate 550ms cubic-bezier(0.2, 0.9, 0.25, 1),
-    rotate 550ms cubic-bezier(0.2, 0.9, 0.25, 1),
-    scale 550ms cubic-bezier(0.2, 0.9, 0.25, 1),
-    box-shadow 550ms cubic-bezier(0.2, 0.9, 0.25, 1);
+    translate 720ms var(--spring),
+    rotate 720ms var(--spring),
+    scale 720ms var(--spring),
+    box-shadow 500ms var(--ease-out);
 }
 @media (hover: hover) {
   .lift:hover {
@@ -293,9 +404,11 @@ select:focus-visible {
     0 4px 8px -2px rgba(70, 48, 20, 0.16),
     0 10px 18px -10px rgba(70, 48, 20, 0.35);
   transition:
-    translate 450ms cubic-bezier(0.2, 0.9, 0.25, 1),
-    box-shadow 450ms cubic-bezier(0.2, 0.9, 0.25, 1),
-    background 200ms ease;
+    translate 520ms var(--spring-bouncy),
+    scale 520ms var(--spring-bouncy),
+    box-shadow 400ms var(--ease-out),
+    background 200ms ease,
+    color 200ms ease;
   user-select: none;
 }
 @media (hover: hover) {
@@ -311,6 +424,8 @@ select:focus-visible {
 }
 .pill:not(:disabled):active {
   translate: 0 1px;
+  scale: 0.97;
+  transition-duration: 90ms;
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 1px 2px rgba(70, 48, 20, 0.2);
 }
 .pill:disabled {
@@ -339,36 +454,139 @@ select:focus-visible {
   border-radius: 0.3em 0.15em 0.35em 0.2em;
 }
 .hl-swipe {
-  animation: hl-swipe 520ms cubic-bezier(0.3, 0.7, 0.2, 1) both;
+  animation: hl-swipe 620ms cubic-bezier(0.55, 0.05, 0.25, 1) both;
+  animation-delay: var(--hl-delay, 0ms);
 }
 @keyframes hl-swipe {
   from { background-size: 0% 88%; }
   to { background-size: 100% 88%; }
 }
 
-/* Footnote markers */
+/* Footnote markers: small vermilion pills that sit with the last word. */
 .fn-mark {
-  color: var(--color-accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5em;
+  height: 1.5em;
+  padding: 0 0.38em;
+  margin-left: 0.18em;
+  vertical-align: 0.42em;
+  border-radius: 999px;
+  background: var(--color-accent-softer);
+  box-shadow: inset 0 0 0 1px rgba(214, 69, 43, 0.22);
+  color: #c23a21;
   font-family: var(--font-sans);
   font-size: 0.6em;
   font-weight: 650;
-  display: inline-block;
+  font-variant-numeric: tabular-nums;
   line-height: 1;
-  vertical-align: super;
-  margin-top: -0.6em;
-  padding: 0.12em 0.18em;
+  letter-spacing: 0;
   cursor: pointer;
-  border-radius: 4px;
-  transition: background-color 120ms ease, color 120ms ease;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease,
+    scale 420ms var(--spring-bouncy);
+}
+.fn-mark + .fn-mark {
+  margin-left: 0.14em;
 }
 .fn-mark:hover,
 .fn-mark[data-active="true"] {
   background: var(--color-accent-soft);
+  box-shadow: inset 0 0 0 1px rgba(214, 69, 43, 0.4);
+  scale: 1.12;
 }
 .fn-mark[data-playing="true"] {
   background: var(--color-accent);
   color: #fff;
+  box-shadow: none;
   animation: pulse-dot 1.6s ease-in-out infinite;
+}
+
+/* A numeral stamped onto the page: lands big and rotated, springs into place. */
+.stamp {
+  animation:
+    stamp-in 700ms var(--spring-bouncy) both,
+    stamp-fade 140ms ease-out both;
+  animation-delay: var(--stamp-delay, 0ms);
+}
+@keyframes stamp-in {
+  from { transform: scale(2.2) rotate(-14deg); }
+  to { transform: none; }
+}
+@keyframes stamp-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Ink bleeding into paper: a ragged wet edge sweeps across the line, the words
+   start soft and sharpen as they dry. */
+.ink-in {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='900' height='60' preserveAspectRatio='none'><defs><linearGradient id='g'><stop offset='.4' stop-color='%23fff'/><stop offset='.6' stop-color='%23fff' stop-opacity='0'/></linearGradient><filter id='f' x='-10%' y='-50%' width='120%' height='200%'><feTurbulence type='fractalNoise' baseFrequency='.035 .22' numOctaves='3' seed='7'/><feDisplacementMap in='SourceGraphic' scale='70' xChannelSelector='R' yChannelSelector='G'/></filter></defs><rect x='-60' y='-20' width='1020' height='100' fill='url(%23g)' filter='url(%23f)'/></svg>");
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='900' height='60' preserveAspectRatio='none'><defs><linearGradient id='g'><stop offset='.4' stop-color='%23fff'/><stop offset='.6' stop-color='%23fff' stop-opacity='0'/></linearGradient><filter id='f' x='-10%' y='-50%' width='120%' height='200%'><feTurbulence type='fractalNoise' baseFrequency='.035 .22' numOctaves='3' seed='7'/><feDisplacementMap in='SourceGraphic' scale='70' xChannelSelector='R' yChannelSelector='G'/></filter></defs><rect x='-60' y='-20' width='1020' height='100' fill='url(%23g)' filter='url(%23f)'/></svg>");
+  -webkit-mask-size: 320% 100%;
+  mask-size: 320% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  animation:
+    ink-sweep var(--ink-dur, 900ms) cubic-bezier(0.3, 0.1, 0.3, 1) both,
+    ink-dry calc(var(--ink-dur, 900ms) + 500ms) ease-out both;
+  animation-delay: var(--ink-delay, 0ms);
+}
+@keyframes ink-sweep {
+  from { -webkit-mask-position: 100% 0; mask-position: 100% 0; }
+  to { -webkit-mask-position: 0% 0; mask-position: 0% 0; }
+}
+@keyframes ink-dry {
+  from { filter: blur(1.4px) saturate(1.6); opacity: 0.55; }
+  60% { filter: blur(0.3px); opacity: 0.95; }
+  to { filter: none; opacity: 1; }
+}
+
+/* Thermal printer: paper feeds out of the slot a few millimetres at a time. */
+.feed {
+  animation: feed var(--feed-dur, 1100ms) steps(var(--feed-steps, 14), end) both;
+  animation-delay: var(--feed-delay, 0ms);
+}
+@keyframes feed {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
+}
+/* A slip torn off and tossed aside. */
+.tear-off {
+  animation: tear-off 560ms cubic-bezier(0.4, 0, 0.7, 0.2) both;
+}
+@keyframes tear-off {
+  0% { transform: none; opacity: 1; }
+  20% { transform: translate(2px, 3px) rotate(1.5deg); opacity: 1; }
+  to { transform: translate(60px, 90px) rotate(14deg); opacity: 0; }
+}
+
+/* The scroller under a receipt's header fades into the paper instead of slicing text. */
+.fade-top {
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 22px);
+  mask-image: linear-gradient(180deg, transparent 0, #000 22px);
+}
+
+/* A line of the transcript lights up as a footnote lands on it. */
+@keyframes line-flash {
+  0% { background-color: rgba(240, 96, 58, 0.26); }
+  100% { background-color: rgba(240, 96, 58, 0); }
+}
+
+/* A pen writing while the model reads: an endless loop of ink. */
+.pen-line path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: pen 2.4s cubic-bezier(0.5, 0.1, 0.3, 1) infinite;
+}
+@keyframes pen {
+  0% { stroke-dashoffset: 1; }
+  55% { stroke-dashoffset: 0; opacity: 1; }
+  80% { stroke-dashoffset: 0; opacity: 0; }
+  100% { stroke-dashoffset: 0; opacity: 0; }
 }
 
 .scroll-thin {
@@ -393,10 +611,10 @@ select:focus-visible {
 /* Scroll reveal: papers set down as they come into view. */
 .reveal {
   opacity: 0;
-  transform: translateY(18px);
+  transform: translateY(26px) rotate(var(--r-from, 0.6deg)) scale(1.015);
   transition:
-    opacity 650ms ease,
-    transform 800ms cubic-bezier(0.16, 0.84, 0.3, 1);
+    opacity 500ms ease,
+    transform 1000ms var(--spring);
   transition-delay: var(--d, 0ms);
 }
 .reveal.is-in {
@@ -408,13 +626,14 @@ select:focus-visible {
    keyframes, so the resting state is plain style. */
 .arrive {
   opacity: 0;
-  transform: translateY(14px) scale(1.025);
+  transform: translateY(-22px) rotate(var(--r-from, -1.5deg)) scale(1.06);
   transition:
-    opacity 600ms ease var(--d, 0ms),
-    transform 800ms cubic-bezier(0.16, 0.84, 0.3, 1) var(--d, 0ms),
-    translate 550ms cubic-bezier(0.2, 0.9, 0.25, 1),
-    scale 550ms cubic-bezier(0.2, 0.9, 0.25, 1),
-    box-shadow 550ms cubic-bezier(0.2, 0.9, 0.25, 1);
+    opacity 420ms ease var(--d, 0ms),
+    transform 1100ms var(--spring) var(--d, 0ms),
+    translate 720ms var(--spring),
+    rotate 720ms var(--spring),
+    scale 720ms var(--spring),
+    box-shadow 500ms var(--ease-out);
 }
 .arrive.is-in {
   opacity: 1;
@@ -434,6 +653,8 @@ select:focus-visible {
 
   @media (prefers-reduced-motion: reduce) {
     .reveal, .arrive { opacity: 1; transform: none; }
+    .ink-in { -webkit-mask-image: none; mask-image: none; }
+    .desk-lamp { display: none; }
   }
 }
 

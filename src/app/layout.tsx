@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Caveat, IBM_Plex_Mono, Inter, Newsreader } from "next/font/google";
+import { DeskLamp } from "@/components/desk/DeskLamp";
 import "./globals.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"], display: "swap" });
@@ -37,7 +38,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#d9c9ac",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#d9c9ac" },
+    { media: "(prefers-color-scheme: dark)", color: "#3a2b1d" },
+  ],
   width: "device-width",
   initialScale: 1,
 };
@@ -45,7 +49,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${serif.variable} ${mono.variable} ${hand.variable} h-full antialiased`}>
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        {children}
+        <DeskLamp />
+      </body>
     </html>
   );
 }

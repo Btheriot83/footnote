@@ -4,7 +4,7 @@ import { cx } from "./ui";
 export function Wordmark({ size = 28, className }: { size?: number; className?: string }) {
   return (
     <span
-      className={cx("inline-flex items-start font-serif font-medium leading-none tracking-[-0.02em] text-ink", className)}
+      className={cx("wordmark inline-flex items-start font-serif font-medium leading-none tracking-[-0.02em]", className)}
       style={{ fontSize: size }}
     >
       Footnote
