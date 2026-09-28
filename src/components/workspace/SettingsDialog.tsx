@@ -1,10 +1,11 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Dialog } from "@/components/Dialog";
 import { btn, cx } from "@/components/ui";
 import type { Status } from "@/lib/client/api";
 import { refreshServerStatus } from "@/lib/client/server-status";
 import { getUserKey, maskKey, setKeyStatus, setUserKey, useKeyStatus, useUserKey } from "@/lib/client/settings";
+import { downloadBlob, makeBackup, restoreBackup } from "@/lib/client/backup";
 import { toast } from "@/lib/client/toast";
 
 export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -164,6 +165,8 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
         </p>
       </section>
 
+      <BackupSection />
+
       <section className="mt-6 border-t border-dashed border-rule-strong pt-5">
         <h3 className="smallcaps text-[10.5px] text-muted">How AI is paid for</h3>
         {status === "loading" ? (
@@ -198,5 +201,81 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
         </p>
       </section>
     </Dialog>
+  );
+}
+
+/** Meetings live only in this browser: a way to carry them to another one, or keep a copy. */
+// The dialog unmounts its contents when it closes, so each opening starts fresh.
+function BackupSection() {
+  const [audio, setAudio] = useState(false);
+  const [busy, setBusy] = useState<null | "backup" | "restore">(null);
+  const [note, setNote] = useState<{ ok: boolean; text: string } | null>(null);
+  const input = useRef<HTMLInputElement>(null);
+
+  async function backup() {
+    setBusy("backup");
+    try {
+      const { blob, count, name } = await makeBackup(audio);
+      downloadBlob(blob, name);
+      setNote({ ok: true, text: `Saved ${count} meeting${count === 1 ? "" : "s"} to ${name}.` });
+    } catch {
+      setNote({ ok: false, text: "Couldn't make the backup. Try again without audio." });
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function restore(file: File) {
+    setBusy("restore");
+    try {
+      const r = await restoreBackup(file);
+      const parts = [r.added && `${r.added} added`, r.updated && `${r.updated} updated`, r.skipped && `${r.skipped} already here`].filter(Boolean);
+      const text = parts.length ? `Restored: ${parts.join(", ")}.` : "Nothing to restore in that file.";
+      setNote({ ok: true, text });
+      toast(text, { tone: "success" });
+    } catch (e) {
+      setNote({ ok: false, text: (e as Error).message || "Couldn't read that backup." });
+    } finally {
+      setBusy(null);
+      if (input.current) input.current.value = "";
+    }
+  }
+
+  return (
+    <section className="mt-6 border-t border-dashed border-rule-strong pt-5">
+      <h3 className="smallcaps text-[10.5px] text-muted">Your meetings</h3>
+      <p className="mt-2 text-[15.5px] leading-relaxed text-ink-2">
+        They live in this browser only. Back them up to a file to keep a copy, or to move them to another browser.
+      </p>
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <button type="button" onClick={() => void backup()} disabled={!!busy} className={cx(btn.base, btn.secondary, btn.sm)}>
+          {busy === "backup" ? "Backing up…" : "Back up (.json)"}
+        </button>
+        <button type="button" onClick={() => input.current?.click()} disabled={!!busy} className={cx(btn.base, btn.secondary, btn.sm)}>
+          {busy === "restore" ? "Restoring…" : "Restore from a backup"}
+        </button>
+        <input
+          ref={input}
+          type="file"
+          accept="application/json,.json"
+          className="sr-only"
+          aria-label="Choose a Footnote backup file"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) void restore(f);
+          }}
+        />
+      </div>
+      <label className="mt-3 flex cursor-pointer items-center gap-2.5 text-[14.5px] text-ink-2">
+        <input type="checkbox" checked={audio} onChange={(e) => setAudio(e.target.checked)} className="h-4 w-4 accent-[var(--color-ink)]" />
+        Include the audio kept on this device (a much bigger file)
+      </label>
+      {note && (
+        <p className="mt-2 flex items-center gap-2 text-[14.5px] text-ink-2" role="status">
+          <span className={cx("h-1.5 w-1.5 rounded-full", note.ok ? "bg-ink" : "bg-accent")} aria-hidden />
+          {note.text}
+        </p>
+      )}
+    </section>
   );
 }
