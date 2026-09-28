@@ -60,7 +60,7 @@ export function Workspace() {
   const [dialog, setDialog] = useState<
     null | { kind: "new" } | { kind: "start"; meetingId: string } | { kind: "settings" } | { kind: "ask"; question?: string }
   >(null);
-  const lastCapture = useRef<{ meetingId: string; mic: boolean; tab: boolean } | null>(null);
+  const lastCapture = useRef<{ meetingId: string; mic: boolean; tab: boolean; keepAudio: boolean } | null>(null);
   const enhanceRef = useRef<(() => void) | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const booted = useRef(false);
@@ -185,15 +185,15 @@ export function Workspace() {
     // Typing should land in the notes straight away, not on the button that opened the dialog.
     focusNotes();
     if (opts.record) {
-      lastCapture.current = { meetingId: id, mic: opts.mic, tab: opts.tab };
-      await startLive(id, { mic: opts.mic, tab: opts.tab });
+      lastCapture.current = { meetingId: id, mic: opts.mic, tab: opts.tab, keepAudio: opts.keepAudio };
+      await startLive(id, { mic: opts.mic, tab: opts.tab, keepAudio: opts.keepAudio });
       focusNotes();
     }
   }
 
   function retryCapture() {
     const last = lastCapture.current;
-    if (last && getMeeting(last.meetingId)) void startLive(last.meetingId, { mic: last.mic, tab: last.tab });
+    if (last && getMeeting(last.meetingId)) void startLive(last.meetingId, { mic: last.mic, tab: last.tab, keepAudio: last.keepAudio });
     else if (activeId) setDialog({ kind: "start", meetingId: activeId });
   }
 

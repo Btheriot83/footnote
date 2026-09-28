@@ -5,7 +5,7 @@ const ITEMS: { q: string; a: React.ReactNode }[] = [
   },
   {
     q: "What gets sent where?",
-    a: "Your side of the call is transcribed by the browser's built-in speech recognition (in Chrome that runs through Google's speech service). Tab audio is sent in ~10-second chunks to OpenAI for transcription, and your notes plus the transcript go to OpenAI when you press Enhance. Audio is never stored, and your key is never saved on the server.",
+    a: "Your side of the call is transcribed by the browser's built-in speech recognition (in Chrome that runs through Google's speech service). Tab audio is sent in ~10-second chunks to OpenAI for transcription, and your notes plus the transcript go to OpenAI when you press Enhance. No audio is ever stored on a server, and your key is never saved there either. If you choose to keep a meeting's audio (so footnotes can play), it stays in your browser.",
   },
   {
     q: "What's free, and what are the limits?",

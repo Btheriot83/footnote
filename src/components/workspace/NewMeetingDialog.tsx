@@ -14,6 +14,8 @@ export interface StartOptions {
   mic: boolean;
   tab: boolean;
   record: boolean;
+  /** Keep the audio in this browser so footnotes can play the moment. */
+  keepAudio: boolean;
 }
 
 interface Props {
@@ -33,11 +35,13 @@ export function NewMeetingDialog({ open, onClose, mode, initialTemplate, onStart
   const [tab, setTab] = useState(false);
   const [support, setSupport] = useState({ speech: true, mic: true, tab: true, recorder: true });
   const [showExplainer, setShowExplainer] = useState(false);
+  const [keepAudio, setKeepAudio] = useState(true);
 
   useEffect(() => {
     if (!open) return;
     setSupport(captureSupport());
     setShowExplainer(!getFlag("seenCaptureExplainer"));
+    setKeepAudio(!getFlag("discardAudio"));
     setTitle("");
     setTemplate(initialTemplate ?? "general");
   }, [open, initialTemplate]);
@@ -46,7 +50,8 @@ export function NewMeetingDialog({ open, onClose, mode, initialTemplate, onStart
 
   function start(record: boolean) {
     setFlag("seenCaptureExplainer", true);
-    onStart({ title, template, mic: record && mic, tab: record && tab && tabAvailable, record });
+    setFlag("discardAudio", !keepAudio);
+    onStart({ title, template, mic: record && mic, tab: record && tab && tabAvailable, record, keepAudio: record && keepAudio && support.recorder });
   }
 
   return (
@@ -154,6 +159,23 @@ export function NewMeetingDialog({ open, onClose, mode, initialTemplate, onStart
         </div>
       </fieldset>
 
+      {support.recorder && (
+        <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-xl px-1 text-[14px] leading-snug">
+          <input
+            type="checkbox"
+            checked={keepAudio}
+            onChange={(e) => setKeepAudio(e.target.checked)}
+            className="mt-[3px] h-4 w-4 shrink-0 accent-[#1b1915]"
+          />
+          <span>
+            <span className="font-medium text-ink">Keep the audio on this device</span>
+            <span className="block text-[12.5px] text-muted">
+              So clicking a footnote plays the exact moment. Stored in this browser only, never uploaded. Delete it any time.
+            </span>
+          </span>
+        </label>
+      )}
+
       {showExplainer ? (
         <div className="mt-5 rounded-2xl border border-rule bg-paper px-4 py-3.5 text-[14px] leading-relaxed text-ink-2">
           <p className="flex items-center gap-2 font-medium text-ink">
@@ -168,7 +190,7 @@ export function NewMeetingDialog({ open, onClose, mode, initialTemplate, onStart
               When Chrome asks what to share, pick that tab and switch on <strong>&ldquo;Share tab audio&rdquo;</strong>.
             </li>
             <li>Wear headphones so your mic only hears you, not the other side twice.</li>
-            <li>Footnote never stores audio. Only the text is kept, on this device.</li>
+            <li>Footnote never stores audio on a server. If you keep it, it stays in this browser, next to the notes.</li>
           </ul>
           <button
             type="button"

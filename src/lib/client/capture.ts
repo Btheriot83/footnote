@@ -1,6 +1,7 @@
 "use client";
 import type { Speaker } from "../types";
 import { ApiError, transcribeChunk } from "./api";
+import type { LocalRecorder } from "./local-audio";
 
 export type SourceState = "off" | "starting" | "on" | "denied" | "error" | "unsupported";
 
@@ -79,7 +80,9 @@ class ChunkRecorder {
   private running = false;
   private rec: MediaRecorder | null = null;
   private timer: ReturnType<typeof setTimeout> | null = null;
-  private peak = 0;
+  /** Loudness of the chunk being recorded. Each chunk keeps its own, because the
+   *  recorder's stop event fires after the next chunk has already started. */
+  private current = { peak: 0 };
   private disabled = false;
   private inflight = 0;
 
@@ -100,7 +103,7 @@ class ChunkRecorder {
   /** Called by the level loop so we can skip silent chunks. */
   sample() {
     const l = this.level();
-    if (l > this.peak) this.peak = l;
+    if (l > this.current.peak) this.current.peak = l;
   }
 
   private next() {
@@ -115,10 +118,11 @@ class ChunkRecorder {
     }
     const parts: Blob[] = [];
     const chunkStart = Date.now();
-    this.peak = 0;
+    const chunk = { peak: 0 };
+    this.current = chunk;
     rec.ondataavailable = (e) => e.data.size && parts.push(e.data);
     rec.onstop = () => {
-      const peak = this.peak;
+      const peak = chunk.peak;
       const duration = Date.now() - chunkStart;
       if (!parts.length || peak < SILENCE_RMS || duration < 800) return;
       void this.upload(new Blob(parts, { type: rec.mimeType || mime || "audio/webm" }), chunkStart, duration);
@@ -178,6 +182,7 @@ export class LiveCapture {
   private utteranceStart: number | null = null;
   private raf = 0;
   private lastLevelEmit = 0;
+  private recorder: LocalRecorder | null = null;
   private sources: { mic: SourceState; tab: SourceState; micMode: "speech" | "chunks" | null } = {
     mic: "off",
     tab: "off",
@@ -218,13 +223,18 @@ export class LiveCapture {
    * Start capturing. Call directly from a click handler: screen/tab capture
    * requires a user gesture, so tab audio is requested first.
    */
-  async start(opts: { mic: boolean; tab: boolean; startedAt: number }) {
+  async start(opts: { mic: boolean; tab: boolean; startedAt: number; recorder?: LocalRecorder }) {
     this.running = true;
     this.startedAt = opts.startedAt;
     const support = captureSupport();
 
     if (opts.tab) await this.startTab(support.tab && support.recorder);
     if (opts.mic) await this.startMic(support);
+
+    // Keep the audio on this device (mixed mic + tab) so receipts can play.
+    if (opts.recorder && this.running && this.ctx && this.streams.length) {
+      if (opts.recorder.start(this.ctx, this.streams)) this.recorder = opts.recorder;
+    }
 
     this.loop();
   }
@@ -418,6 +428,8 @@ export class LiveCapture {
   stop() {
     this.running = false;
     cancelAnimationFrame(this.raf);
+    void this.recorder?.stop();
+    this.recorder = null;
     this.chunkers.forEach((c) => c.stop());
     this.chunkers = [];
     if (this.recognition) {

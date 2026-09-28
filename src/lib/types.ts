@@ -54,5 +54,7 @@ export interface Meeting {
   isSample?: boolean;
   /** A pre-made example meeting seeded into a first visit's history. */
   isExample?: boolean;
+  /** Audio was kept on this device while recording, so receipts can play. */
+  hasAudio?: boolean;
   updatedAt: number;
 }

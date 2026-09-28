@@ -138,3 +138,45 @@ test("recipes and asking across meetings answer with receipts", async ({ page })
   await expect(page.locator("#meeting-title")).toHaveValue("Weekly 1:1 with Priya");
   await expect(page.locator("[data-segment='s2'] > div").first()).toHaveClass(/bg-accent-soft/);
 });
+
+test("a live meeting keeps its audio locally, so its receipts play", async ({ page }) => {
+  test.setTimeout(90_000);
+  // A synthetic mic (a warbling tone) stands in for a real microphone; tab audio stays off.
+  await page.addInitScript(() => {
+    const w = window as unknown as Record<string, unknown>;
+    delete w.SpeechRecognition;
+    delete w.webkitSpeechRecognition;
+    navigator.mediaDevices.getUserMedia = async () => {
+      const ctx = new AudioContext();
+      await ctx.resume();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      gain.gain.value = 0.3;
+      osc.frequency.value = 300;
+      const lfo = ctx.createOscillator();
+      const depth = ctx.createGain();
+      lfo.frequency.value = 2;
+      depth.gain.value = 0.25;
+      lfo.connect(depth).connect(gain.gain);
+      lfo.start();
+      const dest = ctx.createMediaStreamDestination();
+      osc.connect(gain).connect(dest);
+      osc.start();
+      return dest.stream;
+    };
+  });
+  await page.route("**/api/transcribe", (route) => route.fulfill({ json: { text: "Let's lock the launch date for Friday." } }));
+  await page.goto("/app");
+  await page.getByRole("button", { name: /New meeting/ }).first().click();
+  await expect(page.getByLabel(/Keep the audio on this device/)).toBeChecked();
+  await page.getByRole("button", { name: "Start recording" }).last().click();
+
+  const transcript = page.getByRole("complementary", { name: "Transcript" });
+  await expect(transcript.getByText("Let's lock the launch date for Friday.").first()).toBeVisible({ timeout: 45_000 });
+  await page.getByRole("button", { name: "Stop recording" }).click();
+
+  const hear = transcript.getByRole("button", { name: /Hear this line/ }).first();
+  await hear.click({ force: true });
+  await expect(transcript.getByRole("button", { name: "Stop playback" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Listen to the call" })).toBeVisible();
+});

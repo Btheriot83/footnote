@@ -108,7 +108,11 @@ export async function deleteMeeting(id: string) {
   if (t) clearTimeout(t);
   timers.delete(id);
   cache.delete(id);
-  await db.meetings.delete(id);
+  await db.transaction("rw", db.meetings, db.recordings, db.recordingChunks, async () => {
+    await db.meetings.delete(id);
+    await db.recordings.where("meetingId").equals(id).delete();
+    await db.recordingChunks.where("meetingId").equals(id).delete();
+  });
   emit(id);
 }
 

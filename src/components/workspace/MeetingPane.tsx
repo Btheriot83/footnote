@@ -24,7 +24,17 @@ import {
 import { btn, cx } from "@/components/ui";
 import { numberFootnotes } from "@/lib/citations";
 import { ApiError, streamEnhance } from "@/lib/client/api";
-import { hasRecording, playCall, playSegment, segmentAt, stopClip, useClip } from "@/lib/client/clip-player";
+import {
+  hasRecording,
+  playCall,
+  playSegment,
+  releaseRecordings,
+  segmentAt,
+  spansFor,
+  stopClip,
+  useClip,
+} from "@/lib/client/clip-player";
+import { deleteRecordings } from "@/lib/client/local-audio";
 import { stopLive } from "@/lib/client/live-controller";
 import { takePendingFocus } from "@/lib/client/pending-focus";
 import { markSampleTyping, pauseSample, playSample, skipSampleToEnd } from "@/lib/client/sample-controller";
@@ -239,7 +249,14 @@ export function MeetingPane({
   }, [registerEnhance, runEnhance]);
 
   useEffect(() => () => abortRef.current?.abort(), []);
-  useEffect(() => () => stopClip(), [meetingId]);
+  useEffect(
+    () => () => {
+      stopClip();
+      releaseRecordings();
+    },
+    [meetingId],
+  );
+  const spans = useMemo(() => (m ? spansFor(m) : []), [m]);
 
   // Arriving from "Ask your meetings": reveal the cited line.
   const clickCite = receipts.clickCite;
@@ -280,15 +297,15 @@ export function MeetingPane({
   const listening = clipHere && !clip.segmentId;
   const playingNow = clipHere
     ? (() => {
-        const id = clip.segmentId ?? segmentAt(clip.positionMs);
-        const seg = id ? SAMPLE_SEGMENTS.find((x) => x.id === id) : null;
+        const id = clip.segmentId ?? segmentAt(spans, clip.positionMs);
+        const seg = id ? spans.find((x) => x.id === id) : null;
         if (!id || !seg) return null;
         const progress = Math.min(1, Math.max(0, (clip.positionMs - seg.t) / Math.max(1, seg.end - seg.t)));
         return { id, progress, single: !!clip.segmentId };
       })()
     : null;
   const playCite = (id: string) => {
-    if (audible) playSegment(meeting.id, id);
+    if (audible) playSegment(meeting, id);
   };
 
   const menuItems = [
@@ -319,11 +336,24 @@ export function MeetingPane({
     { label: "Copy for Slack", icon: <SlackIcon size={17} />, onSelect: () => copyText(toSlack(meeting), "Copied for Slack.") },
     { label: "Download .md", icon: <DownloadIcon size={17} />, onSelect: () => downloadMarkdown(meeting) },
     {
+      label: "Delete this meeting's audio",
+      icon: <SpeakerIcon size={16} />,
+      onSelect: async () => {
+        stopClip();
+        releaseRecordings();
+        await deleteRecordings(meeting.id);
+        patchMeetingState(meeting.id, { hasAudio: false }, { immediate: true });
+        toast("Audio deleted. The transcript and notes stay.");
+      },
+      hidden: !meeting.hasAudio || live,
+      separatorBefore: true,
+    },
+    {
       label: "Delete meeting",
       icon: <TrashIcon size={17} />,
       onSelect: () => setConfirmDelete(true),
       danger: true,
-      separatorBefore: true,
+      separatorBefore: !meeting.hasAudio || live,
     },
   ];
 
@@ -389,7 +419,7 @@ export function MeetingPane({
         {audible && (
           <button
             type="button"
-            onClick={() => (listening ? stopClip() : playCall(meeting.id))}
+            onClick={() => (listening ? stopClip() : playCall(meeting))}
             className={cx(btn.base, btn.secondary, "h-11 shrink-0 px-3.5 text-[14.5px]")}
             aria-label={listening ? "Stop listening" : "Listen to the call"}
           >
@@ -792,7 +822,7 @@ export function MeetingPane({
             empty={transcriptEmpty}
             playable={audible}
             playing={playingNow}
-            onPlay={(id) => (playingNow?.id === id ? stopClip() : playSegment(meeting.id, id))}
+            onPlay={(id) => (playingNow?.id === id ? stopClip() : playSegment(meeting, id))}
             header={
               <div className="flex items-baseline justify-between px-7 pb-3 pt-7">
                 <h2 className="font-serif text-[26px] leading-none tracking-[-0.01em]">Transcript</h2>

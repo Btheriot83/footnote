@@ -39,7 +39,7 @@ Footnote does the same core job with three differences:
 - **Live transcript**, labeled by speaker. Your mic is transcribed in the browser with the Web Speech API (free), with interim words in gray. A shared Meet / Zoom web / Teams web tab is captured with `getDisplayMedia`, recorded in ~9-second chunks and transcribed with `gpt-4o-mini-transcribe`. When Web Speech isn't available, mic chunks go through the same route.
 - **Notepad:** a plain, fast editor with bullets that continue on Enter.
 - **Enhance** (`⌘/Ctrl+Enter`): notes stream in section by section as structured output (`streamObject` + zod). Each bullet is `{ text, origin: "you" | "ai", cites: segmentId[] }`. **Show my original notes** flips back to what you typed; re-enhancing can be undone.
-- **Receipts:** hover or click a footnote to jump to and highlight the cited line; click a cited transcript line to see which notes cite it. In the sample call, click a footnote to play the exact seconds it cites, or press **Listen** to replay the call with the transcript following along.
+- **Receipts:** hover or click a footnote to jump to and highlight the cited line; click a cited transcript line to see which notes cite it. Click a footnote to **hear** the exact seconds it cites, or press **Listen** to replay the call with the transcript following along. This works in the sample call and in any meeting where you kept the audio (on by default, stored only in your browser; delete it from the meeting's menu).
 - **Ask:** ask a meeting anything, or use a one-click recipe (follow-up email, action items, what's still open). **Ask your meetings** answers across everything on this device and each source chip opens that moment.
 - **History:** every meeting is saved locally; `⌘K` searches titles, notes and transcripts.
 - **Export and share:** copy as Markdown (with `[^n]` footnotes that quote the transcript), copy for Slack, download `.md`, or share a read-only link.
@@ -61,7 +61,7 @@ These are unit-tested in `tests/unit`.
 - Tab audio capture needs **Chrome or Edge on a desktop**. Safari handles the mic and notes, not tab audio. On a phone, Footnote works for notes and your mic.
 - Chrome's Web Speech API sends your mic audio to Google's speech service. If you'd rather it didn't, use a browser without Web Speech and the mic goes through OpenAI instead.
 - Wear headphones, or your mic will pick up the other side a second time.
-- Footnote never stores audio, only text. (The sample call's audio is a bundled file.)
+- No audio is stored on a server. Kept audio (mic and tab mixed, Opus at 24 kbps, about 11 MB an hour) lives in your browser's IndexedDB next to the notes.
 
 ## Self-host
 

@@ -55,7 +55,7 @@ const EXTRAS = [
   },
   {
     title: "Receipts you can hear",
-    body: "In the sample call, click any footnote to play the exact seconds it cites. The transcript follows along when you replay the call.",
+    body: "Click a footnote to play the exact seconds it cites. The audio stays in your browser, and the transcript follows along when you replay the call.",
     example: "“Right, we closed our Series B two weeks ago.”",
     n: 1,
   },
@@ -67,6 +67,7 @@ const COMPARE: { label: string; granola: string; footnote: string }[] = [
   { label: "AI key", granola: "Theirs, bundled into the plan", footnote: "Bring your own; pay OpenAI cents" },
   { label: "Source code", granola: "Closed", footnote: "Open source" },
   { label: "Every AI line cites the transcript", granola: "No", footnote: "Yes: hover to see the words, click to hear them" },
+  { label: "Play the moment behind a note", granola: "No; audio isn't kept", footnote: "Yes; the audio stays on your device" },
   { label: "Chat across meetings", granola: "Yes", footnote: "Yes, and every answer cites its sources" },
   { label: "Follow-up email, action items", granola: "Yes, with recipes", footnote: "Yes, one click, with receipts" },
   { label: "Share", granola: "Link to their cloud", footnote: "Read-only link; the note lives inside the link" },
@@ -180,8 +181,8 @@ export default function Landing() {
                 and every added line ends in a footnote<Sup>1</Sup>.
               </p>
               <p>
-                Hover a footnote and the transcript jumps to the exact line. Click it in the sample call and you hear the
-                moment itself. Click a line in the transcript to see which notes lean on it.
+                Hover a footnote and the transcript jumps to the exact line. Click it and you hear the moment itself,
+                from audio that never leaves your device. Click a line in the transcript to see which notes lean on it.
               </p>
               <p>
                 The model is told never to claim anything it can&rsquo;t cite, and the server checks every citation against

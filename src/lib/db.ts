@@ -2,12 +2,38 @@
 import Dexie, { type EntityTable } from "dexie";
 import type { Meeting } from "./types";
 
+/** One continuous stretch of recorded audio (a meeting that was resumed has several). */
+export interface Recording {
+  id: string;
+  meetingId: string;
+  /** Where this recording starts on the meeting's clock (ms). */
+  offsetMs: number;
+  mime: string;
+  createdAt: number;
+}
+
+/** Audio arrives in small pieces so a closed tab loses seconds, not the meeting. */
+export interface RecordingChunk {
+  id?: number;
+  recordingId: string;
+  meetingId: string;
+  seq: number;
+  blob: Blob;
+}
+
 class FootnoteDB extends Dexie {
   meetings!: EntityTable<Meeting, "id">;
+  recordings!: EntityTable<Recording, "id">;
+  recordingChunks!: EntityTable<RecordingChunk, "id">;
   constructor() {
     super("footnote");
     this.version(1).stores({
       meetings: "id, createdAt, updatedAt, isSample",
+    });
+    this.version(2).stores({
+      meetings: "id, createdAt, updatedAt, isSample",
+      recordings: "id, meetingId",
+      recordingChunks: "++id, recordingId, meetingId, [recordingId+seq]",
     });
   }
 }

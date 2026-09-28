@@ -1,6 +1,7 @@
 "use client";
 import type { Segment } from "../types";
 import { LiveCapture } from "./capture";
+import { LocalRecorder } from "./local-audio";
 import { getSession, resetSession, setLevel, setSession } from "./session";
 import { finishSample, stopSampleAudio } from "./sample-controller";
 import { getMeeting, nextSegmentId, patchMeetingState, updateMeeting } from "./store";
@@ -21,7 +22,7 @@ function insertSorted(list: Segment[], seg: Segment): Segment[] {
  * Starts (or resumes) live capture for a meeting. Call from a click handler:
  * tab capture needs the user gesture.
  */
-export async function startLive(meetingId: string, opts: { mic: boolean; tab: boolean }) {
+export async function startLive(meetingId: string, opts: { mic: boolean; tab: boolean; keepAudio?: boolean }) {
   const s = getSession();
   if (s.kind === "sample") {
     stopSampleAudio();
@@ -71,7 +72,10 @@ export async function startLive(meetingId: string, opts: { mic: boolean; tab: bo
   clock = setInterval(() => {
     patchMeetingState(meetingId, { durationMs: Date.now() - startedAt });
   }, 5000);
-  await cap.start({ ...opts, startedAt });
+  const recorder = opts.keepAudio
+    ? new LocalRecorder(meetingId, startedAt, () => patchMeetingState(meetingId, { hasAudio: true }))
+    : undefined;
+  await cap.start({ mic: opts.mic, tab: opts.tab, startedAt, recorder });
 }
 
 export function stopLive() {
