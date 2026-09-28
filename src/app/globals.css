@@ -273,6 +273,12 @@ dialog .wordmark {
   box-shadow: var(--shadow-card);
   color: var(--color-ink);
 }
+/* Paper is always light stock, even on the night desk: native controls on it stay light. */
+.paper,
+.receipt,
+.print {
+  color-scheme: light;
+}
 .paper-cream { --paper: var(--color-sheet); }
 .paper-white { --paper: var(--color-card); }
 .paper-stone { --paper: var(--color-stone); }
