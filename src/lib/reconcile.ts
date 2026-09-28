@@ -213,3 +213,47 @@ export function dedupeBullets<T extends EnhancedNotes>(notes: T, report?: Reconc
   });
   return { ...notes, sections: built.filter((s) => s.bullets.length > 0) };
 }
+
+export interface EchoContext {
+  /** The meeting's title, as the user sees it above the notes. */
+  title?: string;
+  /** Speaker labels from the transcript ("Dana (Acme)"). */
+  speakers?: string[];
+}
+
+/**
+ * Removes lines that only repeat what's already on the page:
+ * - a bullet that just restates the title and who was there ("Acme renewal with Dana from ops"),
+ * - an added (gray) bullet right after one of the user's that adds at most one new word.
+ * The dropped bullet's receipts move to the bullet it repeated.
+ */
+export function dropEchoes<T extends EnhancedNotes>(notes: T, ctx: EchoContext, report?: ReconcileReport): T {
+  const known = contentTokens([ctx.title ?? "", ...(ctx.speakers ?? [])].join(" "));
+  const sections = notes.sections.map((s) => {
+    const out: EnhancedBullet[] = [];
+    for (const b of s.bullets) {
+      const tokens = contentTokens(b.text);
+      const hasFigure = [...tokens].some((t) => /\d/.test(t));
+      if (known.size && !hasFigure && tokens.size >= 2 && tokens.size <= 6) {
+        const inside = [...tokens].filter((t) => known.has(t)).length;
+        if (inside / tokens.size >= 0.75) {
+          if (report) report.merged++;
+          continue;
+        }
+      }
+      const prev = out[out.length - 1];
+      if (prev && prev.origin === "you" && b.origin === "ai" && tokens.size >= 2) {
+        const mine = contentTokens(prev.text);
+        const fresh = [...tokens].filter((t) => !mine.has(t)).length;
+        if (fresh <= 1) {
+          out[out.length - 1] = { ...prev, cites: [...prev.cites, ...b.cites.filter((c) => !prev.cites.includes(c))] };
+          if (report) report.merged++;
+          continue;
+        }
+      }
+      out.push(b);
+    }
+    return { ...s, bullets: out };
+  });
+  return { ...notes, sections: sections.filter((s) => s.bullets.length > 0) };
+}

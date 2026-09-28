@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { validateEnhanced } from "@/lib/citations";
-import { contentTokens, dedupeBullets, reconcileOrigins, restatesNote, noteLines } from "@/lib/reconcile";
+import { dropEchoes, contentTokens, dedupeBullets, reconcileOrigins, restatesNote, noteLines } from "@/lib/reconcile";
 import cached from "@/lib/sample/cached-enhancement.json";
 import { SAMPLE_DEFAULT_NOTES, SAMPLE_SEGMENTS } from "@/lib/sample";
 import type { EnhancedNotes } from "@/lib/types";
@@ -91,5 +91,56 @@ describe("validateEnhanced with notes", () => {
         const inter = [...texts[i]].filter((t) => texts[j].has(t)).length;
         expect(inter / Math.min(texts[i].size, texts[j].size)).toBeLessThan(0.8);
       }
+  });
+});
+
+describe("dropEchoes", () => {
+  const ctx = { title: "Acme renewal — sales call", speakers: ["You", "Dana (Acme)"] };
+  it("drops a line that only restates the title and who was there", () => {
+    const out = dropEchoes(
+      {
+        sections: [
+          {
+            heading: "Where they are",
+            bullets: [
+              { text: "Acme renewal with Dana from ops.", origin: "you", cites: [] },
+              { text: "Series B closed at $32M.", origin: "you", cites: ["s4"] },
+            ],
+          },
+        ],
+      },
+      ctx,
+    );
+    expect(out.sections[0].bullets.map((b) => b.text)).toEqual(["Series B closed at $32M."]);
+  });
+
+  it("folds an added line that adds nothing new into the user's line, keeping its receipts", () => {
+    const out = dropEchoes(
+      {
+        sections: [
+          {
+            heading: "Pricing",
+            bullets: [
+              { text: "Year one needs to stay under $90K.", origin: "you", cites: ["s12"] },
+              { text: "Year one must stay under $90K.", origin: "ai", cites: ["s11"] },
+              { text: "Open to a two-year term if year one fits.", origin: "ai", cites: ["s12"] },
+            ],
+          },
+        ],
+      },
+      ctx,
+    );
+    expect(out.sections[0].bullets).toEqual([
+      { text: "Year one needs to stay under $90K.", origin: "you", cites: ["s12", "s11"] },
+      { text: "Open to a two-year term if year one fits.", origin: "ai", cites: ["s12"] },
+    ]);
+  });
+
+  it("keeps lines with figures even when they mention the title", () => {
+    const out = dropEchoes(
+      { sections: [{ heading: "x", bullets: [{ text: "Acme renewal is due on the 30th.", origin: "you", cites: [] }] }] },
+      ctx,
+    );
+    expect(out.sections[0].bullets).toHaveLength(1);
   });
 });

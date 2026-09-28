@@ -51,6 +51,7 @@ export async function POST(req: Request) {
   }
 
   const validIds = new Set(transcriptSegments.map((s) => s.id));
+  const echo = { title, speakers: [...new Set(transcriptSegments.map((s) => s.label || "").filter(Boolean))] };
   const openai = createOpenAI({ apiKey: key.apiKey });
 
   let upstreamStatus: number | undefined;
@@ -86,14 +87,14 @@ export async function POST(req: Request) {
           pending = partial;
           const now = Date.now();
           if (now - last > 60) {
-            send({ type: "partial", notes: sanitizePartial(partial, validIds, userNotes) });
+            send({ type: "partial", notes: sanitizePartial(partial, validIds, userNotes, echo) });
             last = now;
             pending = null;
           }
         }
-        if (pending) send({ type: "partial", notes: sanitizePartial(pending, validIds, userNotes) });
+        if (pending) send({ type: "partial", notes: sanitizePartial(pending, validIds, userNotes, echo) });
         const object = await result.object;
-        const { notes, report } = validateEnhanced(object, validIds, { userNotes });
+        const { notes, report } = validateEnhanced(object, validIds, { userNotes, ...echo });
         send({ type: "final", notes, report });
       } catch (err) {
         logUpstreamError("enhance", err);

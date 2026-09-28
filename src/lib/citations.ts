@@ -1,4 +1,4 @@
-import { dedupeBullets, reconcileOrigins } from "./reconcile";
+import { dedupeBullets, dropEchoes, reconcileOrigins, type EchoContext } from "./reconcile";
 import type { EnhancedBullet, EnhancedNotes, EnhancedSection, Origin } from "./types";
 
 type Loose<T> = { [K in keyof T]?: unknown };
@@ -49,7 +49,7 @@ function normalizeOrigin(o: unknown): Origin {
 export function validateEnhanced(
   raw: unknown,
   validIds: Iterable<string>,
-  opts?: { userNotes?: string },
+  opts?: { userNotes?: string } & EchoContext,
 ): { notes: EnhancedNotes; report: ValidationReport } {
   const valid = new Set(validIds);
   const report: ValidationReport = { droppedCites: 0, droppedBullets: 0 };
@@ -81,6 +81,7 @@ export function validateEnhanced(
   if (opts?.userNotes !== undefined) {
     const r = { toYou: 0, toAi: 0, merged: 0 };
     notes = dedupeBullets(reconcileOrigins(notes, opts.userNotes, r), r);
+    notes = dropEchoes(notes, { title: opts.title, speakers: opts.speakers }, r);
     report.reOriginated = r.toYou + r.toAi;
     report.merged = r.merged;
   }
@@ -92,7 +93,7 @@ export function validateEnhanced(
  * shown once their `text` has started streaming; because `cites` precede `text`
  * in the schema, the cite list is complete by then and can be validated.
  */
-export function sanitizePartial(partial: unknown, validIds: Set<string>, userNotes?: string): EnhancedNotes {
+export function sanitizePartial(partial: unknown, validIds: Set<string>, userNotes?: string, echo?: EchoContext): EnhancedNotes {
   const input = (partial ?? {}) as Loose<EnhancedNotes>;
   const sections: EnhancedSection[] = [];
   const rawSections = Array.isArray(input.sections) ? input.sections : [];
@@ -112,7 +113,9 @@ export function sanitizePartial(partial: unknown, validIds: Set<string>, userNot
   const title = typeof input.title === "string" ? input.title : undefined;
   const notes = { ...(title ? { title } : {}), sections };
   // Correct ink/gray while streaming too, so colors don't flip when the final arrives.
-  return userNotes !== undefined ? reconcileOrigins(notes, userNotes) : notes;
+  const inked = userNotes !== undefined ? reconcileOrigins(notes, userNotes) : notes;
+  // Drop title echoes while streaming too, so a line doesn't appear and then vanish.
+  return echo ? dropEchoes(inked, echo) : inked;
 }
 
 /** Assigns footnote numbers to cited segments in order of first appearance. */
