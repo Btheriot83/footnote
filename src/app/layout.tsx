@@ -24,8 +24,14 @@ export const metadata: Metadata = {
     title: "Footnote: meeting notes with receipts",
     description: "AI meeting notes where every line links to the moment it was said, and you can hear it. Local-first, free with your own key.",
     type: "website",
+    siteName: "Footnote",
   },
-  twitter: { card: "summary_large_image", images: ["/og.png"] },
+  twitter: {
+    card: "summary_large_image",
+    title: "Footnote: meeting notes with receipts",
+    description: "AI meeting notes where every line links to the moment it was said, and you can hear it.",
+    images: ["/og.png"],
+  },
 };
 
 export const viewport: Viewport = {
