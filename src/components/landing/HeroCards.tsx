@@ -124,12 +124,18 @@ function NoteCard({ active, onPick, className }: { active: number; onPick: (i: n
           </li>
         ))}
       </ul>
-      <p className="mt-4 flex items-center gap-4 font-sans text-[11.5px] text-muted">
+      <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 font-sans text-[11.5px] text-muted">
         <span className="inline-flex items-center gap-1.5">
-          <span className="h-[5px] w-[5px] rounded-full bg-ink/80" /> yours
+          <span className="h-[5px] w-[5px] rounded-full bg-ink/80" /> from your notes
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="h-[5px] w-[5px] rounded-full bg-faint" /> added, with a source
+          <span className="h-[5px] w-[5px] rounded-full bg-faint" /> added by Footnote
+        </span>
+        <span className="inline-flex items-center gap-1">
+          <span className="fn-mark !ml-0 !cursor-default !text-[9px]" aria-hidden>
+            1
+          </span>
+          where it was said
         </span>
       </p>
     </div>

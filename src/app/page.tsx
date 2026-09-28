@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Faq } from "@/components/landing/Faq";
 import { HeroCards } from "@/components/landing/HeroCards";
@@ -39,8 +40,17 @@ const EXTRAS = [
   },
 ];
 
-const COMPARE: { label: string; granola: string; footnote: string }[] = [
-  { label: "Every AI line cites the transcript", granola: "No", footnote: "Yes: hover to read it, click to hear it" },
+const COMPARE: { label: string; granola: string; footnote: React.ReactNode }[] = [
+  {
+    label: "Every AI line cites the transcript",
+    granola: "No",
+    footnote: (
+      <>
+        <span className="hover-only">Yes: hover to read it, click to hear it</span>
+        <span className="touch-only">Yes: tap a number to read it and hear it</span>
+      </>
+    ),
+  },
   { label: "Where notes live", granola: "Their cloud", footnote: "On your device" },
   { label: "Price", granola: "$14 a month", footnote: "Free with your key, or $59 once" },
   { label: "Source code", granola: "Closed", footnote: "Open source (MIT)" },
@@ -49,6 +59,10 @@ const COMPARE: { label: string; granola: string; footnote: string }[] = [
   { label: "Install", granola: "Desktop app", footnote: "Nothing; it's a web page" },
   { label: "Hears the Zoom desktop app", granola: "Yes", footnote: "No; use the web client" },
 ];
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export default function Landing() {
   // Only promise a free allowance on our key when this deployment actually has one.
@@ -88,6 +102,7 @@ export default function Landing() {
           <img
             src="/desk/icon.webp"
             alt=""
+            loading="lazy"
             width={240}
             height={240}
             className="arrive relative z-10 mx-auto h-[76px] w-[76px] sm:h-[92px] sm:w-[92px]"

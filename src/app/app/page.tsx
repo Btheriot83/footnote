@@ -4,6 +4,7 @@ import { WorkspaceLoader } from "@/components/workspace/WorkspaceLoader";
 
 export const metadata: Metadata = {
   title: "Workspace",
+  alternates: { canonical: "/app" },
 };
 
 export default function AppPage() {

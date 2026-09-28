@@ -30,6 +30,7 @@ export const metadata: Metadata = {
     description: "AI meeting notes where every line links to the moment it was said, and you can hear it. Local-first, free with your own key.",
     type: "website",
     siteName: "Footnote",
+    url: "/",
   },
   twitter: {
     card: "summary_large_image",
