@@ -1,0 +1,182 @@
+{
+  "title": "Acme renewal — sales call",
+  "durationMs": 140266,
+  "segments": [
+    {
+      "id": "s1",
+      "speaker": "you",
+      "label": "You",
+      "t": 600,
+      "end": 3552,
+      "text": "Hi Dana, thanks for making time today."
+    },
+    {
+      "id": "s2",
+      "speaker": "them",
+      "label": "Dana (Acme)",
+      "t": 3932,
+      "end": 8149,
+      "text": "Of course. Good timing, actually. We have a lot going on."
+    },
+    {
+      "id": "s3",
+      "speaker": "you",
+      "label": "You",
+      "t": 8529,
+      "end": 15530,
+      "text": "Before we get into the renewal, how are things at Acme? Last time we talked, you were in the middle of fundraising."
+    },
+    {
+      "id": "s4",
+      "speaker": "them",
+      "label": "Dana (Acme)",
+      "t": 15910,
+      "end": 22324,
+      "text": "Right, we closed our Series B two weeks ago. $32 million, led by Northstar. So we’re hiring fast."
+    },
+    {
+      "id": "s5",
+      "speaker": "you",
+      "label": "You",
+      "t": 22704,
+      "end": 26278,
+      "text": "Congratulations! How does that change your team size?"
+    },
+    {
+      "id": "s6",
+      "speaker": "them",
+      "label": "Dana (Acme)",
+      "t": 26658,
+      "end": 34522,
+      "text": "Support goes from 40 people to about 110 by March. With ops and success, call it 120 seats."
+    },
+    {
+      "id": "s7",
+      "speaker": "you",
+      "label": "You",
+      "t": 34902,
+      "end": 39164,
+      "text": "So roughly triple. Would everyone be in the platform every day?"
+    },
+    {
+      "id": "s8",
+      "speaker": "them",
+      "label": "Dana (Acme)",
+      "t": 39544,
+      "end": 45053,
+      "text": "Most of them. About 20 are managers who only need the dashboards."
+    },
+    {
+      "id": "s9",
+      "speaker": "you",
+      "label": "You",
+      "t": 45433,
+      "end": 50342,
+      "text": "We have a viewer seat for exactly that, and it’s priced much lower."
+    },
+    {
+      "id": "s10",
+      "speaker": "them",
+      "label": "Dana (Acme)",
+      "t": 50722,
+      "end": 61065,
+      "text": "Good, because pricing is my main concern. At $65 a seat, 120 seats is a big jump, and my CFO will push back."
+    },
+    {
+      "id": "s11",
+      "speaker": "you",
+      "label": "You",
+      "t": 61445,
+      "end": 70730,
+      "text": "That’s fair. At that volume you’d move to our growth tier, and a multi-year term usually brings the per-seat price down quite a bit."
+    },
+    {
+      "id": "s12",
+      "speaker": "them",
+      "label": "Dana (Acme)",
+      "t": 71110,
+      "end": 76264,
+      "text": "A two-year term could work. But I need year one under $90K."
+    },
+    {
+      "id": "s13",
+      "speaker": "you",
+      "label": "You",
+      "t": 76644,
+      "end": 82996,
+      "text": "Understood. I’ll send two options, annual and two-year, with the viewer seats broken out."
+    },
+    {
+      "id": "s14",
+      "speaker": "them",
+      "label": "Dana (Acme)",
+      "t": 83376,
+      "end": 91496,
+      "text": "Perfect. The other thing is security. Every vendor now goes through a formal review with our new CISO, Marcus."
+    },
+    {
+      "id": "s15",
+      "speaker": "you",
+      "label": "You",
+      "t": 91876,
+      "end": 98605,
+      "text": "No problem. I can send our SOC 2 Type II report and a completed security questionnaire."
+    },
+    {
+      "id": "s16",
+      "speaker": "them",
+      "label": "Dana (Acme)",
+      "t": 98985,
+      "end": 105393,
+      "text": "He’ll also ask about single sign-on. We need SSO through Okta before we roll out to everyone."
+    },
+    {
+      "id": "s17",
+      "speaker": "you",
+      "label": "You",
+      "t": 105773,
+      "end": 114470,
+      "text": "Okta SSO is included on the growth tier. I can also set up a call with our security lead if Marcus wants to go deeper."
+    },
+    {
+      "id": "s18",
+      "speaker": "them",
+      "label": "Dana (Acme)",
+      "t": 114850,
+      "end": 117838,
+      "text": "Let’s do that. He’s free Tuesday afternoon."
+    },
+    {
+      "id": "s19",
+      "speaker": "you",
+      "label": "You",
+      "t": 118218,
+      "end": 128265,
+      "text": "Great. So, to recap: both pricing options and the SOC 2 report from me by Thursday, and a security call with Marcus on Tuesday."
+    },
+    {
+      "id": "s20",
+      "speaker": "them",
+      "label": "Dana (Acme)",
+      "t": 128645,
+      "end": 133611,
+      "text": "Sounds right. Our contract ends on the 30th, so I’d like to sign before then."
+    },
+    {
+      "id": "s21",
+      "speaker": "you",
+      "label": "You",
+      "t": 133991,
+      "end": 137725,
+      "text": "That works. Thanks, Dana, this was really helpful."
+    },
+    {
+      "id": "s22",
+      "speaker": "them",
+      "label": "Dana (Acme)",
+      "t": 138105,
+      "end": 139666,
+      "text": "Thanks. Talk soon."
+    }
+  ]
+}

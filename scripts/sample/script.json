@@ -1,0 +1,114 @@
+{
+  "title": "Acme renewal — sales call",
+  "speakers": {
+    "you": {
+      "label": "You",
+      "voice": "ash"
+    },
+    "them": {
+      "label": "Dana (Acme)",
+      "voice": "coral"
+    }
+  },
+  "instructions": {
+    "you": "You are an account executive on a friendly video call with a customer. Warm, relaxed, confident, natural conversational pace. Not salesy.",
+    "them": "You are Dana, head of operations at a fast-growing startup, on a video call with a vendor. Friendly but direct and businesslike, natural conversational pace."
+  },
+  "lines": [
+    {
+      "speaker": "you",
+      "text": "Hi Dana, thanks for making time today."
+    },
+    {
+      "speaker": "them",
+      "text": "Of course. Good timing, actually. We have a lot going on."
+    },
+    {
+      "speaker": "you",
+      "text": "Before we get into the renewal, how are things at Acme? Last time we talked, you were in the middle of fundraising."
+    },
+    {
+      "speaker": "them",
+      "text": "Right, we closed our Series B two weeks ago. Thirty-two million, led by Northstar. So we’re hiring fast.",
+      "display": "Right, we closed our Series B two weeks ago. $32 million, led by Northstar. So we’re hiring fast."
+    },
+    {
+      "speaker": "you",
+      "text": "Congratulations! How does that change your team size?"
+    },
+    {
+      "speaker": "them",
+      "text": "Support goes from forty people to about a hundred and ten by March. With ops and success, call it a hundred and twenty seats.",
+      "display": "Support goes from 40 people to about 110 by March. With ops and success, call it 120 seats."
+    },
+    {
+      "speaker": "you",
+      "text": "So roughly triple. Would everyone be in the platform every day?"
+    },
+    {
+      "speaker": "them",
+      "text": "Most of them. About twenty are managers who only need the dashboards.",
+      "display": "Most of them. About 20 are managers who only need the dashboards."
+    },
+    {
+      "speaker": "you",
+      "text": "We have a viewer seat for exactly that, and it’s priced much lower."
+    },
+    {
+      "speaker": "them",
+      "text": "Good, because pricing is my main concern. At sixty-five dollars a seat, a hundred and twenty seats is a big jump, and my CFO will push back.",
+      "display": "Good, because pricing is my main concern. At $65 a seat, 120 seats is a big jump, and my CFO will push back."
+    },
+    {
+      "speaker": "you",
+      "text": "That’s fair. At that volume you’d move to our growth tier, and a multi-year term usually brings the per-seat price down quite a bit."
+    },
+    {
+      "speaker": "them",
+      "text": "A two-year term could work. But I need year one under ninety thousand.",
+      "display": "A two-year term could work. But I need year one under $90K."
+    },
+    {
+      "speaker": "you",
+      "text": "Understood. I’ll send two options, annual and two-year, with the viewer seats broken out."
+    },
+    {
+      "speaker": "them",
+      "text": "Perfect. The other thing is security. Every vendor now goes through a formal review with our new CISO, Marcus."
+    },
+    {
+      "speaker": "you",
+      "text": "No problem. I can send our SOC 2 Type Two report and a completed security questionnaire.",
+      "display": "No problem. I can send our SOC 2 Type II report and a completed security questionnaire."
+    },
+    {
+      "speaker": "them",
+      "text": "He’ll also ask about single sign-on. We need SSO through Okta before we roll out to everyone."
+    },
+    {
+      "speaker": "you",
+      "text": "Okta SSO is included on the growth tier. I can also set up a call with our security lead if Marcus wants to go deeper."
+    },
+    {
+      "speaker": "them",
+      "text": "Let’s do that. He’s free Tuesday afternoon."
+    },
+    {
+      "speaker": "you",
+      "text": "Great. So, to recap: both pricing options and the SOC 2 report from me by Thursday, and a security call with Marcus on Tuesday."
+    },
+    {
+      "speaker": "them",
+      "text": "Sounds right. Our contract ends on the thirtieth, so I’d like to sign before then.",
+      "display": "Sounds right. Our contract ends on the 30th, so I’d like to sign before then."
+    },
+    {
+      "speaker": "you",
+      "text": "That works. Thanks, Dana, this was really helpful."
+    },
+    {
+      "speaker": "them",
+      "text": "Thanks. Talk soon."
+    }
+  ]
+}
