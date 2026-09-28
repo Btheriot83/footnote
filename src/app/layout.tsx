@@ -12,8 +12,8 @@ const serif = Newsreader({
   axes: ["opsz"],
   style: ["normal", "italic"],
 });
-const mono = IBM_Plex_Mono({ variable: "--font-plex-mono", subsets: ["latin"], weight: ["400", "500"], display: "swap" });
-const hand = Caveat({ variable: "--font-caveat", subsets: ["latin"], display: "swap" });
+const mono = IBM_Plex_Mono({ variable: "--font-plex-mono", subsets: ["latin"], weight: ["400", "500"], display: "swap", preload: false });
+const hand = Caveat({ variable: "--font-caveat", subsets: ["latin"], display: "swap", preload: false });
 
 export const metadata: Metadata = {
   title: {

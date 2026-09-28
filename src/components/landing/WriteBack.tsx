@@ -193,7 +193,7 @@ export function WriteBack() {
             <button
               type="button"
               onClick={play}
-              className="on-wood-2 animate-fade-in absolute -bottom-9 right-2 rounded-full px-2 py-1 font-hand text-[19px] hover:underline"
+              className="on-wood-2 animate-fade-in absolute -bottom-9 right-2 motion-reduce:hidden rounded-full px-2 py-1 font-hand text-[19px] hover:underline"
             >
               ↺ watch it again
             </button>
