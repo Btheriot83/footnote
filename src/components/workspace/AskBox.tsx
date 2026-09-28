@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AskIcon, CheckIcon, CopyIcon, ListIcon, MailIcon } from "@/components/icons";
 import { btn, cx } from "@/components/ui";
 import type { Receipts } from "@/components/receipts/useReceipts";
@@ -61,6 +61,13 @@ export function AskBox({
   const [copied, setCopied] = useState(false);
   const [cached, setCached] = useState(false);
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
+  const resultRef = useRef<HTMLDivElement>(null);
+  // Bring a fresh answer into view; it lands below the notes.
+  useEffect(() => {
+    if (!answer && !error) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    resultRef.current?.scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+  }, [answer, error]);
   const byId = new Map(meeting.segments.map((s) => [s.id, s]));
   const order = (id: string) => byId.get(id)?.t ?? 0;
   const isSample = isFullSampleTranscript(meeting);
@@ -201,8 +208,9 @@ export function AskBox({
 
       {(loading || answer || error) && asked && (
         <div
+          ref={resultRef}
           className={cx(
-            "animate-fade-up mt-4 rounded-2xl px-5 py-4",
+            "animate-fade-up mt-4 scroll-mb-6 rounded-2xl px-5 py-4",
             asked.layout === "email" ? "border border-rule bg-white shadow-card" : "bg-paper/60",
           )}
           aria-live="polite"

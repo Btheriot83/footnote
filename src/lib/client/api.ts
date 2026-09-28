@@ -1,5 +1,6 @@
 "use client";
 import type { EnhancedNotes, Segment } from "../types";
+import { getServerStatus } from "./server-status";
 import { getActiveKey, setKeyStatus } from "./settings";
 import { toast } from "./toast";
 
@@ -20,11 +21,24 @@ function headers(extra?: Record<string, string>): Record<string, string> {
   return h;
 }
 
+/** Known up front: no key of your own and none on the server. Skip the doomed request. */
+function assertAiAvailable() {
+  const s = getServerStatus();
+  if (s && !s.hosted && !getActiveKey()) {
+    throw new ApiError(
+      "no_key",
+      "This demo server doesn't include an AI key, so AI features need your own OpenAI key. Add it in Settings; it stays in your browser.",
+      503,
+    );
+  }
+}
+
 /**
  * Runs a request with the saved key. If OpenAI rejects that key, it's parked (kept, but
  * no longer sent) and the request runs once more on the free allowance, if there is one.
  */
 async function withKeyFallback<T>(run: () => Promise<T>): Promise<T> {
+  assertAiAvailable();
   try {
     return await run();
   } catch (e) {
@@ -34,6 +48,7 @@ async function withKeyFallback<T>(run: () => Promise<T>): Promise<T> {
       tone: "error",
       duration: 8000,
     });
+    assertAiAvailable();
     return run();
   }
 }
