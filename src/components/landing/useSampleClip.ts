@@ -14,8 +14,8 @@ export function useSampleClip() {
   const [playing, setPlaying] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const raf = useRef(0);
-  const me = useRef(0);
-  if (!me.current) me.current = ++owner;
+  const [id] = useState(() => ++owner);
+  const me = useRef(id);
 
   const stop = useCallback(() => {
     cancelAnimationFrame(raf.current);

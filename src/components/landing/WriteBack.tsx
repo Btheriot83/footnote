@@ -59,8 +59,8 @@ export function WriteBack() {
     const el = root.current;
     if (!el) return;
     if (!("IntersectionObserver" in window)) {
-      play();
-      return;
+      const r = requestAnimationFrame(play);
+      return () => cancelAnimationFrame(r);
     }
     const io = new IntersectionObserver(
       ([e]) => {
