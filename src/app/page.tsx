@@ -85,35 +85,6 @@ export default function Landing() {
 
       {/* Hero: the desk */}
       <section className="relative mx-auto max-w-[1800px] xl:min-h-[920px]">
-        {/* Papers around the edges (desktop) */}
-        <div className="pointer-events-none absolute inset-0 hidden xl:block [&>*]:pointer-events-auto">
-          <div className="absolute left-[-10px] top-[40px] w-[220px] -rotate-[7deg] 2xl:left-[1%] 2xl:w-[228px]">
-            <PrintPhoto src="/desk/photo-call.webp" caption="acme call, tues 10am" className="arrive [--d:120ms]" eager />
-          </div>
-          <div className="absolute -left-10 top-[380px] w-[320px] rotate-[3deg] 2xl:left-[-1%] 2xl:w-[330px]">
-            <div className="paper paper-index lift arrive rounded-[2px] pb-8 pl-[54px] pr-6 pt-[14px] [--d:200ms] [--rule-gap:32px] [--rule-top:44px]">
-              <p className="smallcaps h-[30px] pt-[9px] text-pen/80">Your notes · 00:42</p>
-              <ul className="font-hand text-[23px] leading-[32px] text-pen">
-                <li>acme renewal w/ Dana (ops)</li>
-                <li>series B closed?? 32M</li>
-                <li>40 → 120 seats by march</li>
-                <li>CFO will push on price</li>
-              </ul>
-            </div>
-          </div>
-          <div className="absolute bottom-[40px] left-[12%] w-[190px] rotate-[5deg] 2xl:left-[15%]">
-            <PrintPhoto src="/desk/photo-coffee.webp" caption="notes before the call" className="arrive [--d:520ms]" />
-          </div>
-          <HeroCards layout="desk" />
-          <div className="absolute bottom-[26px] right-[21%] w-[180px] rotate-[4deg] 2xl:right-[26%]">
-            <div className="paper paper-butter lift arrive rounded-[1px] px-5 pb-6 pt-5 [--d:620ms]">
-              <p className="font-hand text-[24px] leading-[1.05] text-ink-2">
-                thurs: send 2 pricing options + SOC 2
-              </p>
-            </div>
-          </div>
-        </div>
-
         {/* Photos peeking in (phone and tablet) */}
         <div className="pointer-events-none relative h-[150px] sm:h-[190px] xl:hidden" aria-hidden>
           <div className="absolute -left-8 top-4 w-[170px] -rotate-[8deg] sm:w-[210px]">
@@ -162,6 +133,35 @@ export default function Landing() {
               Open the app
             </Link>
           </p>
+        </div>
+
+        {/* Papers around the edges (desktop) */}
+        <div className="pointer-events-none absolute inset-0 hidden xl:block [&>*]:pointer-events-auto">
+          <div className="absolute left-[-10px] top-[40px] w-[220px] -rotate-[7deg] 2xl:left-[1%] 2xl:w-[228px]">
+            <PrintPhoto src="/desk/photo-call.webp" caption="acme call, tues 10am" className="arrive [--d:120ms]" eager />
+          </div>
+          <div className="absolute -left-10 top-[380px] w-[320px] rotate-[3deg] 2xl:left-[-1%] 2xl:w-[330px]">
+            <div className="paper paper-index lift arrive rounded-[2px] pb-8 pl-[54px] pr-6 pt-[14px] [--d:200ms] [--rule-gap:32px] [--rule-top:44px]">
+              <p className="smallcaps h-[30px] pt-[9px] text-pen/80">Your notes · 00:42</p>
+              <ul className="font-hand text-[23px] leading-[32px] text-pen">
+                <li>acme renewal w/ Dana (ops)</li>
+                <li>series B closed?? 32M</li>
+                <li>40 → 120 seats by march</li>
+                <li>CFO will push on price</li>
+              </ul>
+            </div>
+          </div>
+          <div className="absolute bottom-[40px] left-[12%] w-[190px] rotate-[5deg] 2xl:left-[15%]">
+            <PrintPhoto src="/desk/photo-coffee.webp" caption="notes before the call" className="arrive [--d:520ms]" />
+          </div>
+          <HeroCards layout="desk" />
+          <div className="absolute bottom-[26px] right-[21%] w-[180px] rotate-[4deg] 2xl:right-[26%]">
+            <div className="paper paper-butter lift arrive rounded-[1px] px-5 pb-6 pt-5 [--d:620ms]">
+              <p className="font-hand text-[24px] leading-[1.05] text-ink-2">
+                thurs: send 2 pricing options + SOC 2
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* The demo pair, in the flow on smaller screens */}
