@@ -1,9 +1,11 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CloseIcon } from "./icons";
 import { cx } from "./ui";
 
 interface Props {
+  /** Paper stock: a cream sheet, a ruled index card, or a white slip. */
+  stock?: "sheet" | "index" | "slip";
   open: boolean;
   onClose: () => void;
   title: string;
@@ -14,14 +16,57 @@ interface Props {
 }
 
 /** Native <dialog>: focus trapping, Escape and inert background for free. */
-export function Dialog({ open, onClose, title, description, children, footer, className }: Props) {
+const STOCK = {
+  sheet: "paper paper-cream",
+  index: "paper paper-index [--rule-gap:34px] [--rule-top:0px] [--color-index-line:rgba(150,178,206,0.26)]",
+  slip: "paper paper-white",
+};
+
+/**
+ * Where the dialog should fly out of: the control that opened it (still focused when
+ * `open` flips), as an offset from the viewport centre.
+ */
+function originOf(el: Element | null): { x: number; y: number } | null {
+  if (!el || el === document.body || !(el instanceof HTMLElement)) return null;
+  const r = el.getBoundingClientRect();
+  if (!r.width && !r.height) return null;
+  return { x: r.left + r.width / 2 - window.innerWidth / 2, y: r.top + r.height / 2 - window.innerHeight / 2 };
+}
+
+export function Dialog({ open, onClose, title, description, children, footer, className, stock = "sheet" }: Props) {
   const ref = useRef<HTMLDialogElement>(null);
+  // Keep the contents on the paper while it tucks away.
+  const [prevOpen, setPrevOpen] = useState(open);
+  const [linger, setLinger] = useState(false);
+  if (prevOpen !== open) {
+    setPrevOpen(open);
+    setLinger(!open);
+  }
 
   useEffect(() => {
     const d = ref.current;
     if (!d) return;
-    if (open && !d.open) d.showModal();
-    if (!open && d.open) d.close();
+    if (open && !d.open) {
+      const o = originOf(document.activeElement);
+      d.style.setProperty("--from-x", `${o ? Math.round(o.x * 0.85) : 0}px`);
+      d.style.setProperty("--from-y", `${o ? Math.round(o.y * 0.85) : 40}px`);
+      d.classList.remove("is-closing");
+      d.showModal();
+    }
+    if (!open && d.open) {
+      // Tuck the paper away before the dialog leaves the top layer.
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (!reduce) d.classList.add("is-closing");
+      const t = setTimeout(
+        () => {
+          d.classList.remove("is-closing");
+          d.close();
+          setLinger(false);
+        },
+        reduce ? 0 : 170,
+      );
+      return () => clearTimeout(t);
+    }
   }, [open]);
 
   return (
@@ -37,13 +82,14 @@ export function Dialog({ open, onClose, title, description, children, footer, cl
       }}
       aria-labelledby="dialog-title"
       className={cx(
-        "paper paper-cream fixed m-auto w-[calc(100%-24px)] max-w-[560px] rounded-[4px] p-0 text-ink shadow-lift",
-        "backdrop:bg-[rgba(52,38,20,0.34)] backdrop:backdrop-blur-[1.5px] open:animate-settle",
+        STOCK[stock],
+        "desk-dialog fixed m-auto w-[calc(100%-24px)] max-w-[560px] rounded-[4px] p-0 text-ink shadow-lift",
+        stock === "index" && "[&_.dialog-inner]:pl-[54px] sm:[&_.dialog-inner]:pl-[62px]",
         className,
       )}
     >
-      {open && (
-        <div className="flex max-h-[min(88vh,820px)] flex-col">
+      {(open || linger) && (
+        <div className="dialog-inner flex max-h-[min(88vh,820px)] flex-col">
           <header className="flex items-start justify-between gap-4 px-6 pb-2 pt-6 sm:px-8 sm:pt-7">
             <div>
               <h2 id="dialog-title" className="font-serif text-[29px] font-medium leading-tight tracking-[-0.02em]">

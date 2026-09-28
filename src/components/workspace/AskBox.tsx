@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AskIcon, CheckIcon, CopyIcon, ListIcon, MailIcon } from "@/components/icons";
 import { btn, cx } from "@/components/ui";
+import { Pen } from "@/components/receipts/Pen";
 import type { Receipts } from "@/components/receipts/useReceipts";
 import { RECIPES, type Recipe } from "@/lib/ask";
 import { askMeeting, ApiError, type AskSentence } from "@/lib/client/api";
@@ -47,11 +48,14 @@ export function AskBox({
   receipts,
   onSettings,
   onCite,
+  numbers,
 }: {
   meeting: Meeting;
   receipts: Receipts;
   onSettings: () => void;
   onCite?: (id: string) => void;
+  /** The notes' footnote numbers, so an answer cites the same line with the same number. */
+  numbers?: Map<string, number>;
 }) {
   const [q, setQ] = useState("");
   const [asked, setAsked] = useState<{ label: string; layout: "prose" | "email" | "list" } | null>(null);
@@ -66,11 +70,15 @@ export function AskBox({
   useEffect(() => {
     if (!answer && !error) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    resultRef.current?.scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+    resultRef.current?.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" });
   }, [answer, error]);
   const byId = new Map(meeting.segments.map((s) => [s.id, s]));
   const order = (id: string) => byId.get(id)?.t ?? 0;
   const isSample = isFullSampleTranscript(meeting);
+  // Lines the notes already cite keep their number; new ones continue after the last.
+  const answerNumbers = new Map(numbers ?? []);
+  let next = Math.max(0, ...answerNumbers.values());
+  answer?.forEach((s) => s.cites.forEach((c) => !answerNumbers.has(c) && answerNumbers.set(c, ++next)));
 
   async function run(question: string, recipe?: Recipe) {
     if (loading) return;
@@ -123,7 +131,7 @@ export function AskBox({
       <button
         key={c}
         type="button"
-        className="fn-mark ml-0.5 tabular-nums"
+        className="fn-mark"
         data-active={receipts.activeSegments.has(c)}
         onMouseEnter={() => receipts.hoverCites([c])}
         onMouseLeave={() => receipts.hoverCites(null)}
@@ -133,8 +141,9 @@ export function AskBox({
           onCite?.(c);
         }}
         aria-label={`Source: ${seg.label || seg.speaker} at ${formatClock(seg.t)}`}
+        title={`${seg.label || seg.speaker}, ${formatClock(seg.t)}`}
       >
-        {formatClock(seg.t)}
+        {answerNumbers.get(c) ?? "·"}
       </button>
     );
   };
@@ -150,7 +159,7 @@ export function AskBox({
         {!open && (
           <button
             type="button"
-            className="fn-mark ml-0.5"
+            className="fn-mark"
             onClick={() => setExpanded((x) => new Set(x).add(bi))}
             aria-label={`Show ${cites.length - shownCites.length} more sources`}
           >
@@ -238,13 +247,7 @@ export function AskBox({
               </button>
             )}
           </div>
-          {loading && (
-            <div className="mt-3 space-y-2.5" role="status" aria-label="Reading the transcript">
-              {[88, 72, 80].map((w, i) => (
-                <div key={i} className="h-[13px] animate-pulse rounded-full bg-paper-2" style={{ width: `${w}%` }} />
-              ))}
-            </div>
-          )}
+          {loading && <Pen label="Reading the transcript…" className="mt-2" />}
           {error && (
             <p className="mt-1.5 text-[14.5px] text-ink-2">
               {error.message}{" "}

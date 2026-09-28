@@ -49,8 +49,9 @@ export function ShareDialog({ open, onClose, meeting }: { open: boolean; onClose
     <Dialog
       open={open}
       onClose={onClose}
+      stock="slip"
       title="Share"
-      description="The note lives inside the link itself, compressed. Nothing is uploaded, and anyone with the link can read it."
+      description="The note travels inside the link. Nothing is uploaded; anyone with the link can read it."
     >
       <div className="flex gap-2">
         <label htmlFor="share-url" className="sr-only">
@@ -61,7 +62,7 @@ export function ShareDialog({ open, onClose, meeting }: { open: boolean; onClose
           readOnly
           value={url}
           onFocus={(e) => e.currentTarget.select()}
-          className="receipt h-11 min-w-0 flex-1 truncate px-3.5 text-[13px] text-ink-2 focus:outline-none"
+          className="receipt type-in h-11 min-w-0 flex-1 truncate px-3.5 text-[13px] text-ink-2 focus:outline-none"
         />
         <button
           type="button"

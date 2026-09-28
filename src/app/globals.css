@@ -564,6 +564,45 @@ dialog .wordmark {
   to { transform: translate(60px, 90px) rotate(14deg); opacity: 0; }
 }
 
+/* Dialogs are paper picked up off the desk: they fly out of the control that opened
+   them on a spring, over a warm, softly blurred desk, and tuck back when closed. */
+.desk-dialog[open] {
+  animation: dialog-in 640ms var(--spring) both;
+}
+.desk-dialog.is-closing {
+  animation: dialog-out 170ms cubic-bezier(0.5, 0, 0.75, 0) both;
+}
+.desk-dialog::backdrop {
+  background: var(--backdrop);
+  -webkit-backdrop-filter: blur(5px) saturate(1.1);
+  backdrop-filter: blur(5px) saturate(1.1);
+  animation: backdrop-in 320ms ease-out both;
+}
+.desk-dialog.is-closing::backdrop {
+  animation: backdrop-in 170ms ease-in reverse both;
+}
+@keyframes dialog-in {
+  from { opacity: 0; transform: translate(var(--from-x, 0), var(--from-y, 40px)) scale(0.35) rotate(-5deg); }
+  22% { opacity: 1; }
+  to { opacity: 1; transform: none; }
+}
+@keyframes dialog-out {
+  to { opacity: 0; transform: translate(calc(var(--from-x, 0) * 0.25), calc(var(--from-y, 40px) * 0.25 + 12px)) scale(0.92) rotate(-1.5deg); }
+}
+@keyframes backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* A link typed onto a slip, a few characters at a time. */
+.type-in {
+  animation: type-in 760ms steps(24, end) 260ms both;
+}
+@keyframes type-in {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
 /* The scroller under a receipt's header fades into the paper instead of slicing text. */
 .fade-top {
   -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 22px);

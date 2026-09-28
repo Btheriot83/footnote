@@ -52,6 +52,7 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
 
   return (
     <Dialog
+      stock="index"
       open={open}
       onClose={onClose}
       title="Settings"

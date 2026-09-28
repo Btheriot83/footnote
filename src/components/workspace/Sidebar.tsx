@@ -71,12 +71,12 @@ export const Sidebar = forwardRef<HTMLInputElement, Props>(function Sidebar(
         </button>
       </div>
 
-      <div className="paper relative flex min-h-0 flex-1 flex-col rounded-[3px] [--paper:var(--color-index)]">
+      <div className="paper relative flex min-h-0 flex-initial flex-col rounded-[3px] [--paper:var(--color-index)]">
         {/* The index card's red margin line. */}
         <span aria-hidden className="pointer-events-none absolute inset-y-0 left-[30px] w-px bg-margin/80" />
         <p className="smallcaps border-b border-index-line py-3 pl-[44px] pr-4 text-pen/75">Meetings</p>
         {/* Below the last meeting the card stays ruled, like a real index card. */}
-        <div className="scroll-thin min-h-0 flex-1 overflow-y-auto bg-[repeating-linear-gradient(180deg,transparent_0_35px,var(--color-index-line)_35px_36px)] bg-local pb-2">
+        <div className="scroll-thin min-h-[144px] flex-1 overflow-y-auto pb-[72px] bg-[repeating-linear-gradient(180deg,transparent_0_35px,var(--color-index-line)_35px_36px)] bg-local">
           {query.trim().length > 2 && meetings?.some((m) => m.segments.length > 0) && (
             <button
               type="button"
@@ -112,14 +112,21 @@ export const Sidebar = forwardRef<HTMLInputElement, Props>(function Sidebar(
                         active ? "bg-[#fafbfc]" : "hover:bg-[#f4f7fa]",
                       )}
                     >
-                      {active && (
-                        <span aria-hidden className="absolute left-[25px] top-[19px] h-[11px] w-[11px] rounded-full bg-accent shadow-[0_0_0_3px_rgba(255,255,255,0.8)]" />
+                      {(active || live) && (
+                        <span
+                          aria-hidden
+                          className={cx(
+                            "absolute left-[25px] top-[19px] h-[11px] w-[11px] rounded-full shadow-[0_0_0_3px_rgba(255,255,255,0.8)]",
+                            active ? "bg-accent" : "bg-accent/70",
+                            live && "animate-pulse-dot",
+                          )}
+                        />
                       )}
                       <span className="flex items-center gap-2">
                         <span className="line-clamp-2 font-serif text-[18px] font-medium leading-snug text-ink">
                           {m.title || "Untitled meeting"}
                         </span>
-                        {live && <span className="h-2 w-2 shrink-0 animate-pulse-dot rounded-full bg-accent" aria-label="recording" />}
+                        {live && <span className="sr-only">(recording)</span>}
                       </span>
                       <span className="mt-0.5 block text-[14.5px] italic text-muted">
                         {formatDate(m.createdAt)}
@@ -142,7 +149,16 @@ export const Sidebar = forwardRef<HTMLInputElement, Props>(function Sidebar(
         </div>
       </div>
 
-      <div className="paper paper-stone rounded-[3px] px-2 py-2">
+      {/* A sticky note of shortcuts in the space the list doesn't use (tall screens). */}
+      <div aria-hidden className="mx-auto mt-2 hidden w-[78%] rotate-[-2.5deg] [@media(min-height:820px)]:block">
+        <div className="paper paper-butter lift rounded-[1px] px-4 pb-3 pt-3 font-hand text-[19px] leading-[1.15] text-ink-2">
+          <p>{isMac ? "⌘K" : "Ctrl K"} find anything</p>
+          <p>{isMac ? "⌘↵" : "Ctrl ↵"} enhance</p>
+          <p>click a number, hear it</p>
+        </div>
+      </div>
+
+      <div className="paper paper-stone mt-auto rounded-[3px] px-2 py-2">
         <button
           type="button"
           onClick={() => onAskAll()}

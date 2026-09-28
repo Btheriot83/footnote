@@ -24,6 +24,8 @@ interface Props {
   /** Line currently sounding, with progress through it (0..1). */
   playing?: { id: string; progress: number; single: boolean } | null;
   onPlay?: (id: string) => void;
+  /** A footnote just landed on this line while the notes were being written. */
+  flash?: { id: string; nonce: number } | null;
 }
 
 function speakerLabel(s: { speaker?: "you" | "them"; label?: string }) {
@@ -43,6 +45,7 @@ export function TranscriptPanel({
   playable,
   playing,
   onPlay,
+  flash,
 }: Props) {
   const scroller = useRef<HTMLDivElement>(null);
   const stickToBottom = useRef(true);
@@ -68,6 +71,28 @@ export function TranscriptPanel({
     stickToBottom.current = false;
   }, [receipts.focusSegment]);
 
+  // A footnote landing in the notes lights up its line (and brings it into view, gently).
+  const lastFlashScroll = useRef(0);
+  useEffect(() => {
+    if (!flash || !scroller.current || scroller.current.offsetParent === null) return;
+    const el = scroller.current.querySelector<HTMLElement>(`[data-segment="${flash.id}"] > div`);
+    if (!el) return;
+    el.animate([{ backgroundColor: "rgba(240,96,58,0.28)" }, { backgroundColor: "rgba(240,96,58,0)" }], {
+      duration: 1100,
+      easing: "ease-out",
+    });
+    const now = performance.now();
+    if (now - lastFlashScroll.current < 420) return;
+    lastFlashScroll.current = now;
+    const box = scroller.current.getBoundingClientRect();
+    const r = el.getBoundingClientRect();
+    if (r.top < box.top + 30 || r.bottom > box.bottom - 30) {
+      const target = scroller.current.scrollTop + (r.top - box.top) - box.height / 2 + r.height / 2;
+      scroller.current.scrollTo({ top: Math.max(0, target), behavior: "smooth" });
+      stickToBottom.current = false;
+    }
+  }, [flash]);
+
   // Follow along while the recording plays.
   const playingId = playing?.id;
   useEffect(() => {
@@ -87,7 +112,7 @@ export function TranscriptPanel({
       {header}
       <div
         ref={scroller}
-        className="scroll-thin min-h-0 flex-1 overflow-y-auto px-2.5 pb-8 pt-1 sm:px-3"
+        className="scroll-thin fade-top min-h-0 flex-1 overflow-y-auto px-2.5 pb-8 pt-3 sm:px-3"
         onScroll={(e) => {
           const el = e.currentTarget;
           stickToBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 90;
@@ -141,7 +166,7 @@ export function TranscriptPanel({
                       <span className="truncate">
                         {speakerLabel(s)}
                         {n && (
-                          <span className="ml-1.5 align-super font-sans text-[10.5px] font-bold text-accent">{n}</span>
+                          <span className="fn-mark !text-[10px]">{n}</span>
                         )}
                       </span>
                       <time className="shrink-0 tabular-nums">{formatClock(s.t)}</time>

@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { EnhancedView } from "@/components/receipts/EnhancedView";
+import { Pen } from "@/components/receipts/Pen";
 import { TranscriptPanel } from "@/components/receipts/TranscriptPanel";
 import { useReceipts } from "@/components/receipts/useReceipts";
 import {
@@ -103,6 +104,8 @@ export function MeetingPane({
   const [shareOpen, setShareOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [dismissedIssues, setDismissedIssues] = useState<string[]>([]);
+  const [flash, setFlash] = useState<{ id: string; nonce: number } | null>(null);
+  const onLand = useCallback((id: string) => setFlash((f) => ({ id, nonce: (f?.nonce ?? 0) + 1 })), []);
   const abortRef = useRef<AbortController | null>(null);
 
   // Reset per-meeting UI state.
@@ -148,7 +151,7 @@ export function MeetingPane({
       });
       for (const step of steps) {
         setPartial(step);
-        await new Promise((r) => setTimeout(r, 70));
+        await new Promise((r) => setTimeout(r, step.sections.at(-1)?.bullets.length ? 230 : 160));
       }
       patchMeetingState(
         id,
@@ -295,6 +298,8 @@ export function MeetingPane({
   const notesOnly = live && !hearing(session.sources.mic) && !hearing(session.sources.tab);
   const samplePlaying = !!sample && sample.phase !== "done";
   const mod = isMacLike() ? "⌘" : "Ctrl";
+  // Nothing to write up yet: no notes typed and nothing heard.
+  const nothingYet = !meeting.notes.replace(/^[\s\-*•]+$/gm, "").trim() && meeting.segments.length === 0 && !sample;
   // Receipts you can hear: the sample call has a recording behind every line.
   const audible = hasRecording(meeting) && !samplePlaying && !live;
   const clipHere = clip.meetingId === meeting.id && clip.playing;
@@ -313,12 +318,6 @@ export function MeetingPane({
   };
 
   const menuItems = [
-    {
-      label: "Skip to end of sample",
-      icon: <SkipIcon size={16} />,
-      onSelect: () => skipSampleToEnd(),
-      hidden: !samplePlaying || !isMobile,
-    },
     {
       label: "Share…",
       icon: <ShareIcon size={16} />,
@@ -383,24 +382,29 @@ export function MeetingPane({
     );
   } else if (sample && sample.phase !== "done") {
     const playing = sample.phase === "playing";
+    // While the banner asks to press play, it holds the only play button.
+    const waiting = sample.blocked || sample.phase === "ready";
     status = (
       <div className="flex items-center gap-2">
         <RecordingPill label={playing ? "Sample call" : "Paused"} elapsedMs={elapsed} live={playing} dot={playing ? "accent" : "muted"} />
-        <button
-          type="button"
-          onClick={() => (playing ? pauseSample() : void playSample())}
-          className={cx(btn.base, btn.secondary, btn.icon, "h-10 w-10 shrink-0")}
-          aria-label={playing ? "Pause sample" : "Play sample"}
-        >
-          {playing ? <PauseIcon size={16} /> : <PlayIcon size={16} />}
-        </button>
+        {!waiting && (
+          <button
+            type="button"
+            onClick={() => (playing ? pauseSample() : void playSample())}
+            className={cx(btn.base, btn.secondary, btn.icon, "h-10 w-10 shrink-0")}
+            aria-label={playing ? "Pause sample" : "Play sample"}
+          >
+            {playing ? <PauseIcon size={16} /> : <PlayIcon size={16} />}
+          </button>
+        )}
         <button
           type="button"
           onClick={() => skipSampleToEnd()}
           aria-label="Skip to end"
-          className={cx(btn.base, btn.secondary, "h-10 shrink-0 px-4 text-[10.5px] max-sm:hidden")}
+          title="Skip to the end of the call"
+          className={cx(btn.base, btn.secondary, "h-10 shrink-0 px-3 text-[10.5px] sm:px-4")}
         >
-          <SkipIcon size={15} /> Skip to end
+          <SkipIcon size={15} /> <span className="hidden sm:inline">Skip to end</span>
         </button>
       </div>
     );
@@ -435,7 +439,7 @@ export function MeetingPane({
           <button
             type="button"
             onClick={onRequestStart}
-            className={cx(btn.base, btn.ghost, "h-10 px-3 text-[10.5px] max-sm:hidden")}
+            className={cx(btn.base, btn.ghost, "on-wood-2 h-10 px-3 text-[10.5px] max-sm:hidden")}
           >
             Resume
           </button>
@@ -502,8 +506,8 @@ export function MeetingPane({
           <button
             type="button"
             onClick={() => void runEnhance()}
-            disabled={streaming}
-            title={`${meeting.enhanced ? "Re-enhance" : "Enhance"} notes (${mod}+Enter)`}
+            disabled={streaming || nothingYet}
+            title={nothingYet ? "Type a few notes or record first" : `${meeting.enhanced ? "Re-enhance" : "Enhance"} notes (${mod}+Enter)`}
             className={cx(
               btn.base,
               nudge ? btn.primary : btn.secondary,
@@ -585,7 +589,7 @@ export function MeetingPane({
                 }
               }}
               onBlur={(e) => e.target.value !== e.target.value.trim() && patchMeetingState(meeting.id, { title: e.target.value.trim() })}
-              className="block w-full resize-none overflow-hidden bg-transparent [field-sizing:content] font-serif text-[34px] font-medium leading-[1.1] tracking-[-0.022em] text-ink placeholder:text-faint focus:outline-none sm:text-[46px]"
+              className="block w-full resize-none overflow-hidden bg-transparent [field-sizing:content] [text-wrap:balance] font-serif text-[34px] font-medium leading-[1.1] tracking-[-0.022em] text-ink placeholder:text-faint focus:outline-none sm:text-[46px]"
             />
             <div className="mt-2.5 flex flex-wrap items-center gap-x-2 text-[16.5px] italic text-muted sm:text-[18px]">
               <span>{formatDate(meeting.createdAt)}</span>
@@ -764,7 +768,7 @@ export function MeetingPane({
                 )}
                 <div className="mt-7">
                   {streaming && shown.sections.length === 0 ? (
-                    <WritingSkeleton />
+                    <Pen label="Reading the transcript…" className="py-2" />
                   ) : (
                     <EnhancedView
                       notes={shown}
@@ -775,6 +779,8 @@ export function MeetingPane({
                       inlineQuotes={isMobile}
                       onCite={playCite}
                       playingId={playingNow?.single ? playingNow.id : null}
+                      audible={audible}
+                      onLand={onLand}
                     />
                   )}
                 </div>
@@ -812,7 +818,7 @@ export function MeetingPane({
             )}
 
             {meeting.segments.length > 0 && !streaming && (meeting.status === "ended" || live) && (
-              <AskBox meeting={meeting} receipts={receipts} onSettings={onSettings} onCite={playCite} />
+              <AskBox meeting={meeting} receipts={receipts} onSettings={onSettings} onCite={playCite} numbers={numbers} />
             )}
           </article>
         </main>
@@ -837,6 +843,7 @@ export function MeetingPane({
             playable={audible}
             playing={playingNow}
             onPlay={(id) => (playingNow?.id === id ? stopClip() : playSegment(meeting, id))}
+            flash={flash}
             header={
               <div className="shrink-0 px-5 pb-1 pt-5 text-center">
                 <h2 className="font-mono text-[13px] font-medium uppercase tracking-[0.3em]">Transcript</h2>
@@ -927,24 +934,6 @@ function SampleBanner({ blocked, tookOver, onPlay }: { blocked: boolean; tookOve
   );
 }
 
-function WritingSkeleton() {
-  return (
-    <div className="space-y-4" aria-label="Writing enhanced notes" role="status">
-      {[60, 92, 78, 0, 45, 85, 70].map((w, i) =>
-        w === 0 ? (
-          <div key={i} className="h-4" />
-        ) : (
-          <div
-            key={i}
-            className={cx("h-[14px] animate-pulse rounded-full bg-paper-2", i === 0 || i === 4 ? "h-[22px]" : "")}
-            style={{ width: `${w}%`, animationDelay: `${i * 90}ms` }}
-          />
-        ),
-      )}
-    </div>
-  );
-}
-
 function ConfirmDelete({
   open,
   title,
@@ -967,7 +956,7 @@ function ConfirmDelete({
     <dialog
       ref={ref}
       onClose={onCancel}
-      className="paper paper-cream m-auto w-[calc(100%-24px)] max-w-[420px] rounded-[3px] p-7 text-ink shadow-lift backdrop:bg-[rgba(52,38,20,0.35)] open:animate-settle"
+      className="desk-dialog paper paper-cream m-auto w-[calc(100%-24px)] max-w-[420px] rounded-[3px] p-7 text-ink shadow-lift"
     >
       <h2 className="font-serif text-[25px] font-medium">Delete this meeting?</h2>
       <p className="mt-2 text-[16px] text-ink-2">
