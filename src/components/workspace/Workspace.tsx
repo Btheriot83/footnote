@@ -19,6 +19,7 @@ import { SAMPLE_TEMPLATE, SAMPLE_TITLE } from "@/lib/sample";
 import { exampleMeetings } from "@/lib/sample/examples";
 import type { Meeting } from "@/lib/types";
 import { setPendingFocus } from "@/lib/client/pending-focus";
+import { turnPage, waitFor } from "@/lib/client/page-turn";
 import { AskAllDialog } from "./AskAllDialog";
 import { MeetingPane } from "./MeetingPane";
 import { focusNotes } from "./Notepad";
@@ -218,7 +219,29 @@ export function Workspace() {
       activeId={activeId}
       query={query}
       onQuery={setQuery}
-      onSelect={(id) => void loadMeeting(id).then(() => select(id))}
+      onSelect={(id) => {
+        if (id === activeId) {
+          setDrawer(false);
+          return;
+        }
+        // Desktop: the sheet on the desk turns like a page to the next meeting.
+        const sheet = isDesktop ? document.querySelector<HTMLElement>("[data-sheet]") : null;
+        const frame = sheet?.closest("main");
+        if (!sheet || !frame) {
+          void loadMeeting(id).then(() => select(id));
+          return;
+        }
+        const a = sheet.getBoundingClientRect();
+        const f = frame.getBoundingClientRect();
+        const top = Math.max(a.top, f.top);
+        const bottom = Math.min(a.bottom, f.bottom);
+        void turnPage({
+          rect: new DOMRect(a.left, top, a.width, Math.max(0, bottom - top)),
+          duration: 780,
+          onCovered: () => loadMeeting(id).then(() => select(id)),
+          ready: () => waitFor(`[data-sheet="${id}"]`, 1200),
+        });
+      }}
       onNew={() => {
         setDrawer(false);
         setDialog({ kind: "new" });
@@ -240,7 +263,7 @@ export function Workspace() {
   );
 
   return (
-    <div className="desk flex h-dvh overflow-hidden text-ink">
+    <div className="desk flex h-dvh overflow-hidden text-ink" data-page="app" data-ready={ready || undefined}>
       {/* Desktop sidebar */}
       <aside className="hidden w-[292px] shrink-0 lg:block xl:w-[330px]">{isDesktop && sidebar}</aside>
 

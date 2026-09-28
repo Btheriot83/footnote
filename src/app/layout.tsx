@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Caveat, IBM_Plex_Mono, Inter, Newsreader } from "next/font/google";
 import { DeskLamp } from "@/components/desk/DeskLamp";
+import { PageTurnLinks } from "@/components/desk/PageTurnLinks";
 import "./globals.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"], display: "swap" });
@@ -52,6 +53,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-full">
         {children}
         <DeskLamp />
+        <PageTurnLinks />
       </body>
     </html>
   );

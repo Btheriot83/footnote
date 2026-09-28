@@ -34,7 +34,7 @@ export const Sidebar = forwardRef<HTMLInputElement, Props>(function Sidebar(
   return (
     <nav className="flex h-full flex-col gap-4 px-4 pb-4 pt-5 sm:px-5" aria-label="Meetings">
       <div className="flex items-center px-1.5 pt-1">
-        <Link href="/" className="rounded-sm">
+        <Link href="/" data-page-turn className="rounded-sm" aria-label="Footnote home">
           <Wordmark size={29} />
         </Link>
       </div>

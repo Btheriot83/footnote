@@ -567,7 +567,7 @@ export function MeetingPane({
             if (!(e.target as HTMLElement).closest("button, [data-bullet], a, input, textarea")) receipts.clear();
           }}
         >
-          <article className="paper paper-cream sheet-shadow mx-auto min-h-[calc(100%-4px)] w-full max-w-[800px] rounded-[3px] px-5 pb-24 pt-9 sm:px-12 sm:pt-12 xl:px-[72px] xl:pt-14">
+          <article data-sheet={meeting.id} className="paper paper-cream sheet-shadow mx-auto min-h-[calc(100%-4px)] w-full max-w-[800px] rounded-[3px] px-5 pb-24 pt-9 sm:px-12 sm:pt-12 xl:px-[72px] xl:pt-14">
             <label htmlFor="meeting-title" className="sr-only">
               Meeting title
             </label>

@@ -54,7 +54,7 @@ export default function Landing() {
   // Only promise a free allowance on our key when this deployment actually has one.
   const hosted = hasServerKey();
   return (
-    <div className="desk-page min-h-dvh overflow-x-clip text-ink">
+    <div className="desk-page min-h-dvh overflow-x-clip text-ink" data-page="landing" data-ready>
       <Reveal />
 
       <header className="relative z-20 mx-auto flex max-w-[1440px] items-center justify-between gap-6 px-5 pt-5 sm:px-8 sm:pt-7">
