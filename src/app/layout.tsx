@@ -1,15 +1,17 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Source_Serif_4 } from "next/font/google";
+import { Caveat, IBM_Plex_Mono, Inter, Newsreader } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"], display: "swap" });
-const serif = Source_Serif_4({
-  variable: "--font-source-serif",
+const serif = Newsreader({
+  variable: "--font-newsreader",
   subsets: ["latin"],
   display: "swap",
   axes: ["opsz"],
   style: ["normal", "italic"],
 });
+const mono = IBM_Plex_Mono({ variable: "--font-plex-mono", subsets: ["latin"], weight: ["400", "500"], display: "swap" });
+const hand = Caveat({ variable: "--font-caveat", subsets: ["latin"], display: "swap" });
 
 export const metadata: Metadata = {
   title: {
@@ -35,14 +37,14 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f7f5f0",
+  themeColor: "#d9c9ac",
   width: "device-width",
   initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${serif.variable} h-full antialiased`}>
+    <html lang="en" className={`${inter.variable} ${serif.variable} ${mono.variable} ${hand.variable} h-full antialiased`}>
       <body className="min-h-full">{children}</body>
     </html>
   );

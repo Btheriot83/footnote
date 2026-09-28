@@ -33,24 +33,25 @@ const items = (hosted: boolean): { q: string; a: React.ReactNode }[] => [
   },
 ];
 
+const STOCK = ["paper-sky", "paper-butter", "paper-blush", "paper-sage", "paper-lavender", "paper-stone", "paper-sky"];
+const TILT = ["-rotate-[0.8deg]", "rotate-[0.6deg]", "-rotate-[0.3deg]", "rotate-[1deg]", "-rotate-[0.9deg]", "rotate-[0.4deg]", "-rotate-[0.5deg]"];
+
+/** A scatter of pastel sticky notes, every answer in view. */
 export function Faq({ hosted }: { hosted: boolean }) {
   return (
-    <div className="divide-y divide-rule border-y border-rule">
-      {items(hosted).map((item) => (
-        <details key={item.q} className="group py-5">
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-6 font-serif text-[21px] leading-snug text-ink marker:hidden sm:text-[23px] [&::-webkit-details-marker]:hidden">
-            {item.q}
-            <span
-              className="relative h-4 w-4 shrink-0 text-muted transition-transform duration-200 group-open:rotate-45"
-              aria-hidden
-            >
-              <span className="absolute left-0 top-1/2 h-px w-4 bg-current" />
-              <span className="absolute left-1/2 top-0 h-4 w-px bg-current" />
-            </span>
-          </summary>
-          <p className="mt-3 max-w-[720px] text-[16.5px] leading-relaxed text-ink-2">{item.a}</p>
-        </details>
+    <ul className="gap-7 [column-fill:balance] sm:columns-2 lg:columns-3">
+      {items(hosted).map((item, i) => (
+        <li
+          key={item.q}
+          className="reveal mb-7 break-inside-avoid"
+          style={{ ["--d" as string]: `${(i % 3) * 90}ms` }}
+        >
+          <div className={`paper lift rounded-[1px] px-6 pb-6 pt-5 ${STOCK[i % STOCK.length]} ${TILT[i % TILT.length]}`}>
+            <h3 className="font-serif text-[21px] font-medium leading-snug tracking-[-0.005em] text-ink">{item.q}</h3>
+            <p className="mt-2.5 text-[16.5px] leading-[1.55] text-ink-2">{item.a}</p>
+          </div>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }

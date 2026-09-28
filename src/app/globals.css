@@ -1,29 +1,48 @@
 @import "tailwindcss";
 
 @theme {
-  --color-paper: #f7f5f0;
-  --color-paper-2: #efebe2;
-  --color-paper-3: #e8e3d8;
-  --color-sheet: #fffefb;
-  --color-ink: #1b1915;
-  --color-ink-2: #3a3731;
-  --color-muted: #7a756b;
-  --color-faint: #a39e93;
-  --color-rule: #e4dfd4;
-  --color-rule-strong: #d4cec1;
-  --color-accent: #e0482b;
-  --color-accent-soft: #fbeae3;
-  --color-accent-softer: #fdf4f0;
+  /* The desk and its papers. */
+  --color-wood: #d9c9ac;
+  --color-paper: #f4efe4;
+  --color-paper-2: #ece5d6;
+  --color-paper-3: #e3dac8;
+  --color-sheet: #fbf8f1;
+  --color-card: #fffdf8;
+  --color-receipt: #fdfcf9;
+  --color-index: #edf2f6;
+  --color-index-line: #c9d6e3;
+  --color-margin: #e6a5a0;
+  --color-lavender: #e9e4f1;
+  --color-sage: #e4eadc;
+  --color-butter: #f4ecca;
+  --color-blush: #f4e4dd;
+  --color-sky: #e1eaf3;
+  --color-stone: #ece8de;
 
-  --font-serif: var(--font-source-serif), "Iowan Old Style", Georgia, serif;
+  --color-ink: #24211c;
+  --color-ink-2: #3d3830;
+  --color-muted: #6c6558;
+  --color-faint: #a0988a;
+  --color-rule: #e4dccb;
+  --color-rule-strong: #cfc4ae;
+  --color-accent: #d6452b;
+  --color-accent-soft: #f8dccd;
+  --color-accent-softer: #fcefe7;
+  --color-pen: #2f4a8a;
+
+  --font-serif: var(--font-newsreader), "Iowan Old Style", Georgia, serif;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  --font-hand: var(--font-caveat), "Bradley Hand", "Segoe Print", cursive;
 
-  --shadow-card: 0 1px 2px rgba(40, 32, 20, 0.04), 0 8px 24px -8px rgba(40, 32, 20, 0.12);
-  --shadow-lift: 0 2px 4px rgba(40, 32, 20, 0.05), 0 24px 48px -16px rgba(40, 32, 20, 0.22);
+  --shadow-card: 0 0.5px 0 rgba(255, 255, 255, 0.7) inset, 0 1px 1px rgba(70, 48, 20, 0.1), 0 3px 6px -2px rgba(70, 48, 20, 0.1), 0 14px 28px -12px rgba(70, 48, 20, 0.28);
+  --shadow-lift: 0 1px 1px rgba(70, 48, 20, 0.1), 0 6px 12px -4px rgba(70, 48, 20, 0.14), 0 30px 60px -20px rgba(70, 48, 20, 0.38);
 
   --animate-fade-up: fade-up 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
   --animate-fade-in: fade-in 300ms ease-out both;
   --animate-pulse-dot: pulse-dot 1.6s ease-in-out infinite;
+  --animate-settle: settle 720ms cubic-bezier(0.16, 0.84, 0.3, 1) both;
+  --animate-print: print 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
 
   @keyframes fade-up {
     from { opacity: 0; transform: translateY(6px); }
@@ -37,6 +56,16 @@
     0%, 100% { opacity: 1; transform: scale(1); }
     50% { opacity: 0.45; transform: scale(0.82); }
   }
+  /* A sheet dropped onto the desk: falls a little, shadow tightens as it lands. */
+  @keyframes settle {
+    from { opacity: 0; transform: translateY(14px) scale(1.025); }
+    to { opacity: 1; transform: none; }
+  }
+  /* A line fed out of a receipt printer. */
+  @keyframes print {
+    from { opacity: 0; clip-path: inset(0 0 100% 0); transform: translateY(-4px); }
+    to { opacity: 1; clip-path: inset(0 0 -8px 0); transform: none; }
+  }
 }
 
 html {
@@ -45,15 +74,16 @@ html {
 }
 
 body {
-  background: var(--color-paper);
+  background: var(--color-wood);
   color: var(--color-ink);
-  font-family: var(--font-sans);
+  font-family: var(--font-serif);
+  font-optical-sizing: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 ::selection {
-  background: #f6d9cf;
+  background: #f6d2c2;
   color: var(--color-ink);
 }
 
@@ -77,20 +107,250 @@ select:focus-visible {
   font-optical-sizing: auto;
 }
 
+@layer components {
+/* ------------------------------------------------------------------ */
+/* The desk                                                             */
+/* ------------------------------------------------------------------ */
+
+/* Light oak under soft window light: a pool of light upper left, darker toward the edges. */
+.desk {
+  background-color: var(--color-wood);
+  background-image:
+    radial-gradient(ellipse 70% 55% at 38% 22%, rgba(255, 248, 232, 0.34), transparent 70%),
+    radial-gradient(ellipse 120% 90% at 50% 40%, transparent 55%, rgba(96, 70, 38, 0.18) 100%),
+    url("/desk/wood.webp");
+  background-size: 100% 100%, 100% 100%, cover;
+  background-position: center, center, center;
+}
+/* Long pages: the desk scrolls with the papers (a seamless tile), lit from the top. */
+.desk-page {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--color-wood);
+  background-image:
+    radial-gradient(ellipse 75% 1100px at 40% 0, rgba(255, 248, 232, 0.36), transparent 72%),
+    linear-gradient(90deg, rgba(96, 70, 38, 0.13), transparent 16%, transparent 84%, rgba(96, 70, 38, 0.13)),
+    url("/desk/wood.webp");
+  background-size: 100% 1500px, 100% 100%, max(100%, 1200px) auto;
+  background-repeat: no-repeat, no-repeat, repeat-y;
+  background-position: top center, center, top center;
+}
+
+/* Text set straight on the wood: headings and one-line ledes only, in full ink. */
+.on-wood {
+  color: var(--color-ink);
+  text-shadow: 0 1px 0 rgba(255, 250, 238, 0.35);
+}
+
+/* ------------------------------------------------------------------ */
+/* Paper stock                                                          */
+/* ------------------------------------------------------------------ */
+
+.paper {
+  --paper: var(--color-sheet);
+  position: relative;
+  background-color: var(--paper);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .36  0 0 0 0 .29  0 0 0 0 .2  0 0 0 .07 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+    linear-gradient(172deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 38%, rgba(120, 95, 60, 0.035));
+  box-shadow: var(--shadow-card);
+  color: var(--color-ink);
+}
+.paper-cream { --paper: var(--color-sheet); }
+.paper-white { --paper: var(--color-card); }
+.paper-stone { --paper: var(--color-stone); }
+.paper-lavender { --paper: var(--color-lavender); }
+.paper-sage { --paper: var(--color-sage); }
+.paper-butter { --paper: var(--color-butter); }
+.paper-blush { --paper: var(--color-blush); }
+.paper-sky { --paper: var(--color-sky); }
+
+/* Pale blue index card: ruled lines and a thin red margin. */
+.paper-index {
+  --paper: var(--color-index);
+  --rule-gap: 32px;
+  --rule-top: 44px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .3  0 0 0 0 .3  0 0 0 0 .3  0 0 0 .05 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+    linear-gradient(90deg, transparent 38px, var(--color-margin) 38px, var(--color-margin) 39px, transparent 39px),
+    repeating-linear-gradient(180deg, transparent 0 calc(var(--rule-gap) - 1px), var(--color-index-line) calc(var(--rule-gap) - 1px) var(--rule-gap));
+  background-position: 0 0, 0 0, 0 var(--rule-top);
+  background-repeat: repeat, no-repeat, repeat-x;
+}
+.paper-index.no-margin {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .3  0 0 0 0 .3  0 0 0 0 .3  0 0 0 .05 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+    repeating-linear-gradient(180deg, transparent 0 calc(var(--rule-gap) - 1px), var(--color-index-line) calc(var(--rule-gap) - 1px) var(--rule-gap));
+  background-position: 0 0, 0 var(--rule-top);
+}
+
+/* Thermal receipt paper: bright, cool, torn zigzag ends, a hint of curl. */
+.receipt {
+  --paper: var(--color-receipt);
+  position: relative;
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(180deg, rgba(90, 80, 60, 0.07), rgba(255, 255, 255, 0) 22px, rgba(255, 255, 255, 0) calc(100% - 26px), rgba(90, 80, 60, 0.08)),
+    linear-gradient(90deg, rgba(90, 80, 60, 0.035), rgba(255, 255, 255, 0) 14%, rgba(255, 255, 255, 0) 86%, rgba(90, 80, 60, 0.035));
+  box-shadow: 0 1px 1px rgba(70, 48, 20, 0.1), 0 4px 8px -3px rgba(70, 48, 20, 0.12), 0 18px 30px -16px rgba(70, 48, 20, 0.3);
+  font-family: var(--font-mono);
+  color: #2b2925;
+}
+.receipt::before,
+.receipt::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 7px;
+  background: var(--paper);
+  pointer-events: none;
+}
+.receipt::before {
+  bottom: 100%;
+  -webkit-mask: conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) 50% / 12px 100%;
+  mask: conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) 50% / 12px 100%;
+}
+.receipt::after {
+  top: 100%;
+  -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 12px 100%;
+  mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 12px 100%;
+}
+.receipt-rule {
+  border: 0;
+  height: 1px;
+  background-image: linear-gradient(90deg, #8b857a 50%, transparent 50%);
+  background-size: 6px 1px;
+  opacity: 0.55;
+}
+
+/* A small printed photo with a white border. */
+.print {
+  background: #fbfaf6;
+  padding: 10px 10px 34px;
+  box-shadow: 0 1px 1px rgba(70, 48, 20, 0.14), 0 5px 10px -4px rgba(70, 48, 20, 0.16), 0 22px 36px -18px rgba(70, 48, 20, 0.4);
+}
+.print img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  filter: saturate(0.9) contrast(0.97);
+}
+
+/* Paper that lifts off the desk when you reach for it. */
+.lift {
+  transition:
+    translate 550ms cubic-bezier(0.2, 0.9, 0.25, 1),
+    rotate 550ms cubic-bezier(0.2, 0.9, 0.25, 1),
+    scale 550ms cubic-bezier(0.2, 0.9, 0.25, 1),
+    box-shadow 550ms cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+@media (hover: hover) {
+  .lift:hover {
+    translate: 0 -3px;
+    scale: 1.012;
+    box-shadow: var(--shadow-lift);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Type details                                                         */
+/* ------------------------------------------------------------------ */
+
+.smallcaps {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* White ceramic pill: small letter-spaced caps, a soft cast shadow. */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffffff, #f4f1ea);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 -1px 0 rgba(120, 100, 70, 0.08) inset,
+    0 1px 1px rgba(70, 48, 20, 0.14),
+    0 4px 8px -2px rgba(70, 48, 20, 0.16),
+    0 10px 18px -10px rgba(70, 48, 20, 0.35);
+  transition:
+    translate 450ms cubic-bezier(0.2, 0.9, 0.25, 1),
+    box-shadow 450ms cubic-bezier(0.2, 0.9, 0.25, 1),
+    background 200ms ease;
+  user-select: none;
+}
+@media (hover: hover) {
+  .pill:not(:disabled):hover {
+    translate: 0 -1px;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.95) inset,
+      0 -1px 0 rgba(120, 100, 70, 0.08) inset,
+      0 1px 1px rgba(70, 48, 20, 0.12),
+      0 8px 14px -4px rgba(70, 48, 20, 0.2),
+      0 18px 28px -14px rgba(70, 48, 20, 0.4);
+  }
+}
+.pill:not(:disabled):active {
+  translate: 0 1px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 1px 2px rgba(70, 48, 20, 0.2);
+}
+.pill:disabled {
+  opacity: 0.55;
+  pointer-events: none;
+}
+/* The one inked pill on a screen: the next thing to press. */
+.pill-ink {
+  background: linear-gradient(180deg, #34302a, #1f1c18);
+  color: #fbf8f1;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.14) inset,
+    0 1px 1px rgba(40, 28, 10, 0.3),
+    0 5px 10px -3px rgba(40, 28, 10, 0.3),
+    0 12px 22px -12px rgba(40, 28, 10, 0.5);
+}
+
+/* Vermilion highlighter pulled across a line of print. */
+.hl {
+  background-image: linear-gradient(100deg, rgba(240, 96, 58, 0) 0.2em, rgba(240, 96, 58, 0.3) 0.5em, rgba(236, 92, 52, 0.26) 96%, rgba(240, 96, 58, 0));
+  background-repeat: no-repeat;
+  background-size: 100% 88%;
+  background-position: 0 60%;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  border-radius: 0.3em 0.15em 0.35em 0.2em;
+}
+.hl-swipe {
+  animation: hl-swipe 520ms cubic-bezier(0.3, 0.7, 0.2, 1) both;
+}
+@keyframes hl-swipe {
+  from { background-size: 0% 88%; }
+  to { background-size: 100% 88%; }
+}
+
 /* Footnote markers */
 .fn-mark {
   color: var(--color-accent);
   font-family: var(--font-sans);
-  font-size: 0.62em;
-  font-weight: 600;
+  font-size: 0.6em;
+  font-weight: 650;
   display: inline-block;
   line-height: 1;
   vertical-align: super;
   margin-top: -0.6em;
-  padding: 0.1em 0.14em;
+  padding: 0.12em 0.18em;
   cursor: pointer;
-  border-radius: 3px;
-  transition: background-color 120ms ease;
+  border-radius: 4px;
+  transition: background-color 120ms ease, color 120ms ease;
 }
 .fn-mark:hover,
 .fn-mark[data-active="true"] {
@@ -121,9 +381,51 @@ select:focus-visible {
   50% { opacity: 0; }
 }
 
-.paper-grain {
-  background-image: radial-gradient(rgba(60, 45, 20, 0.035) 1px, transparent 1px);
-  background-size: 3px 3px;
+/* Scroll reveal: papers set down as they come into view. */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 650ms ease,
+    transform 800ms cubic-bezier(0.16, 0.84, 0.3, 1);
+  transition-delay: var(--d, 0ms);
+}
+.reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* Set down on the desk once the page is ready (Reveal adds .is-in). Transitions, not
+   keyframes, so the resting state is plain style. */
+.arrive {
+  opacity: 0;
+  transform: translateY(14px) scale(1.025);
+  transition:
+    opacity 600ms ease var(--d, 0ms),
+    transform 800ms cubic-bezier(0.16, 0.84, 0.3, 1) var(--d, 0ms),
+    translate 550ms cubic-bezier(0.2, 0.9, 0.25, 1),
+    scale 550ms cubic-bezier(0.2, 0.9, 0.25, 1),
+    box-shadow 550ms cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+.arrive.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* Hand-drawn underline that writes itself. */
+.ink-line path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: ink 900ms 700ms cubic-bezier(0.4, 0.1, 0.2, 1) forwards;
+}
+@keyframes ink {
+  to { stroke-dashoffset: 0; }
+}
+
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal, .arrive { opacity: 1; transform: none; }
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -131,8 +433,10 @@ select:focus-visible {
   *::before,
   *::after {
     animation-duration: 0.001ms !important;
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
+    transition-delay: 0ms !important;
     scroll-behavior: auto !important;
   }
 }
