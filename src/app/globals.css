@@ -60,6 +60,16 @@ body {
 :focus-visible {
   outline: 2px solid var(--color-ink);
   outline-offset: 2px;
+}
+/* Text fields show focus with their own border and the caret, not a second ring. */
+input:not([type="checkbox"]):not([type="radio"]):focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+}
+/* The inline template picker gets a quiet ring instead. */
+select:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-rule-strong);
   border-radius: 6px;
 }
 

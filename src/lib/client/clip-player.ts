@@ -2,6 +2,7 @@
 import { useSyncExternalStore } from "react";
 import { SAMPLE_AUDIO_URL, SAMPLE_DURATION_MS, SAMPLE_SEGMENTS } from "../sample";
 import type { Meeting } from "../types";
+import { setLevel } from "./session";
 
 /**
  * Receipts you can hear. For meetings with a recording (today: the sample call),
@@ -59,6 +60,8 @@ function tick() {
     return;
   }
   set({ positionMs: pos });
+  // Drive the header waveform while the call is replaying.
+  if (!state.segmentId) setLevel(segmentAt(pos) ? 0.25 + Math.random() * 0.6 : 0.05);
   raf = requestAnimationFrame(tick);
 }
 
@@ -95,7 +98,10 @@ export function playCall(meetingId: string, fromMs = 0) {
 export function stopClip() {
   cancelAnimationFrame(raf);
   audio?.pause();
-  if (state.playing || state.segmentId) set({ ...idle });
+  if (state.playing || state.segmentId) {
+    setLevel(0);
+    set({ ...idle });
+  }
 }
 
 export function useClip(): ClipState {

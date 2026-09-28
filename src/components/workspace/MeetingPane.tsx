@@ -792,7 +792,7 @@ export function MeetingPane({
             empty={transcriptEmpty}
             playable={audible}
             playing={playingNow}
-            onPlay={(id) => playSegment(meeting.id, id)}
+            onPlay={(id) => (playingNow?.id === id ? stopClip() : playSegment(meeting.id, id))}
             header={
               <div className="flex items-baseline justify-between px-7 pb-3 pt-7">
                 <h2 className="font-serif text-[26px] leading-none tracking-[-0.01em]">Transcript</h2>
