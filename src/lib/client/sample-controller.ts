@@ -7,6 +7,7 @@ import {
   SAMPLE_TITLE,
   sampleNotesAt,
 } from "../sample";
+import { stopClip } from "./clip-player";
 import { getSession, setLevel, setSession } from "./session";
 import { getMeeting, patchMeetingState } from "./store";
 
@@ -71,6 +72,7 @@ export async function startSample(id: string) {
 }
 
 export async function playSample() {
+  stopClip();
   const el = ensureAudio();
   const s = getSession();
   if (s.kind !== "sample") return;

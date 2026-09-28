@@ -17,12 +17,14 @@ import {
   SkipIcon,
   SlackIcon,
   SparkIcon,
+  SpeakerIcon,
   StopIcon,
   TrashIcon,
 } from "@/components/icons";
 import { btn, cx } from "@/components/ui";
 import { numberFootnotes } from "@/lib/citations";
 import { ApiError, streamEnhance } from "@/lib/client/api";
+import { hasRecording, playCall, playSegment, segmentAt, stopClip, useClip } from "@/lib/client/clip-player";
 import { stopLive } from "@/lib/client/live-controller";
 import { markSampleTyping, pauseSample, playSample, skipSampleToEnd } from "@/lib/client/sample-controller";
 import { useSession } from "@/lib/client/session";
@@ -80,6 +82,7 @@ export function MeetingPane({
   const live = here && session.kind === "live";
   const sample = here && session.kind === "sample" ? session.sample : null;
   const liveElapsed = useTicker(live, session.startedAt);
+  const clip = useClip();
 
   const [partial, setPartial] = useState<EnhancedNotes | null>(null);
   const [streaming, setStreaming] = useState(false);
@@ -236,6 +239,7 @@ export function MeetingPane({
   }, [registerEnhance, runEnhance]);
 
   useEffect(() => () => abortRef.current?.abort(), []);
+  useEffect(() => () => stopClip(), [meetingId]);
 
   if (!m) {
     return (
@@ -255,6 +259,22 @@ export function MeetingPane({
   const notesOnly = live && !hearing(session.sources.mic) && !hearing(session.sources.tab);
   const samplePlaying = !!sample && sample.phase !== "done";
   const mod = isMacLike() ? "⌘" : "Ctrl";
+  // Receipts you can hear: the sample call has a recording behind every line.
+  const audible = hasRecording(meeting) && !samplePlaying && !live;
+  const clipHere = clip.meetingId === meeting.id && clip.playing;
+  const listening = clipHere && !clip.segmentId;
+  const playingNow = clipHere
+    ? (() => {
+        const id = clip.segmentId ?? segmentAt(clip.positionMs);
+        const seg = id ? SAMPLE_SEGMENTS.find((x) => x.id === id) : null;
+        if (!id || !seg) return null;
+        const progress = Math.min(1, Math.max(0, (clip.positionMs - seg.t) / Math.max(1, seg.end - seg.t)));
+        return { id, progress, single: !!clip.segmentId };
+      })()
+    : null;
+  const playCite = (id: string) => {
+    if (audible) playSegment(meeting.id, id);
+  };
 
   const menuItems = [
     {
@@ -329,7 +349,7 @@ export function MeetingPane({
           type="button"
           onClick={() => skipSampleToEnd()}
           aria-label="Skip to end"
-          className={cx(btn.base, btn.secondary, "hidden h-11 shrink-0 px-3.5 text-[14.5px] sm:inline-flex")}
+          className={cx(btn.base, btn.secondary, "h-11 shrink-0 px-3.5 text-[14.5px] max-sm:hidden")}
         >
           <SkipIcon size={15} /> Skip to end
         </button>
@@ -345,12 +365,28 @@ export function MeetingPane({
   } else {
     status = (
       <div className="flex items-center gap-2">
-        <RecordingPill label="Ended" elapsedMs={meeting.durationMs} live={false} dot="muted" />
+        <RecordingPill
+          label={listening ? "Playing" : "Ended"}
+          elapsedMs={listening ? clip.positionMs : meeting.durationMs}
+          live={listening}
+          dot={listening ? "accent" : "muted"}
+        />
+        {audible && (
+          <button
+            type="button"
+            onClick={() => (listening ? stopClip() : playCall(meeting.id))}
+            className={cx(btn.base, btn.secondary, "h-11 shrink-0 px-3.5 text-[14.5px]")}
+            aria-label={listening ? "Stop listening" : "Listen to the call"}
+          >
+            {listening ? <PauseIcon size={15} /> : <SpeakerIcon size={16} />}
+            <span className="hidden sm:inline">{listening ? "Stop" : "Listen"}</span>
+          </button>
+        )}
         {!meeting.isSample && (
           <button
             type="button"
             onClick={onRequestStart}
-            className={cx(btn.base, btn.ghost, "hidden h-11 px-3 text-[14.5px] sm:inline-flex")}
+            className={cx(btn.base, btn.ghost, "h-11 px-3 text-[14.5px] max-sm:hidden")}
           >
             Resume
           </button>
@@ -408,7 +444,7 @@ export function MeetingPane({
         <button
           type="button"
           onClick={onOpenSidebar}
-          className="flex h-10 w-10 items-center justify-center rounded-xl text-ink-2 hover:bg-paper-2 lg:hidden"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-ink-2 hover:bg-paper-2 lg:hidden"
           aria-label="Open meetings"
         >
           <MenuIcon />
@@ -423,7 +459,7 @@ export function MeetingPane({
             className={cx(
               btn.base,
               nudge ? btn.primary : btn.secondary,
-              "h-11 px-3.5 text-[15px] sm:px-4",
+              "h-11 shrink-0 px-3.5 text-[15px] sm:px-4",
               nudge && "ring-4 ring-ink/10",
             )}
           >
@@ -440,7 +476,7 @@ export function MeetingPane({
           <button
             type="button"
             onClick={() => setShareOpen(true)}
-            className={cx(btn.base, btn.secondary, "hidden h-11 px-3.5 text-[15px] sm:inline-flex sm:px-4")}
+            className={cx(btn.base, btn.secondary, "h-11 shrink-0 px-3.5 text-[15px] max-sm:hidden sm:px-4")}
             aria-label="Share"
           >
             <ShareIcon size={18} />
@@ -659,7 +695,9 @@ export function MeetingPane({
                     <span className="h-[6px] w-[6px] rounded-full bg-faint" /> Added from the transcript
                     <sup className="font-semibold text-accent">1</sup>
                   </span>
-                  <span className="hidden sm:inline">Hover a number to see who said it.</span>
+                  <span className="hidden sm:inline">
+                    {audible ? "Hover a number to see who said it. Click to hear it." : "Hover a number to see who said it."}
+                  </span>
                 </p>
                 <div className="mt-7">
                   {streaming && shown.sections.length === 0 ? (
@@ -672,6 +710,8 @@ export function MeetingPane({
                       receipts={receipts}
                       streaming={streaming}
                       inlineQuotes={isMobile}
+                      onCite={playCite}
+                      playingId={playingNow?.single ? playingNow.id : null}
                     />
                   )}
                 </div>
@@ -709,7 +749,7 @@ export function MeetingPane({
             )}
 
             {meeting.segments.length > 0 && !streaming && (meeting.status === "ended" || live) && (
-              <AskBox meeting={meeting} receipts={receipts} onSettings={onSettings} />
+              <AskBox meeting={meeting} receipts={receipts} onSettings={onSettings} onCite={playCite} />
             )}
           </article>
         </main>
@@ -731,6 +771,9 @@ export function MeetingPane({
             receipts={receipts}
             live={live || (!!sample && sample.phase === "playing")}
             empty={transcriptEmpty}
+            playable={audible}
+            playing={playingNow}
+            onPlay={(id) => playSegment(meeting.id, id)}
             header={
               <div className="flex items-baseline justify-between px-7 pb-3 pt-7">
                 <h2 className="font-serif text-[26px] leading-none tracking-[-0.01em]">Transcript</h2>

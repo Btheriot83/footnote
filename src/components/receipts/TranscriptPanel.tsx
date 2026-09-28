@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef } from "react";
+import { PauseIcon, SpeakerIcon } from "@/components/icons";
 import { cx } from "@/components/ui";
 import { citingBullets } from "@/lib/citations";
 import { formatClock } from "@/lib/format";
@@ -18,6 +19,11 @@ interface Props {
   className?: string;
   /** Only show footnote-numbered lines (share page with cited-only transcript). */
   compactGaps?: boolean;
+  /** The meeting has a recording: each line can be played back. */
+  playable?: boolean;
+  /** Line currently sounding, with progress through it (0..1). */
+  playing?: { id: string; progress: number; single: boolean } | null;
+  onPlay?: (id: string) => void;
 }
 
 function speakerLabel(s: { speaker?: "you" | "them"; label?: string }) {
@@ -34,6 +40,9 @@ export function TranscriptPanel({
   empty,
   header,
   className,
+  playable,
+  playing,
+  onPlay,
 }: Props) {
   const scroller = useRef<HTMLDivElement>(null);
   const stickToBottom = useRef(true);
@@ -59,6 +68,20 @@ export function TranscriptPanel({
     stickToBottom.current = false;
   }, [receipts.focusSegment]);
 
+  // Follow along while the recording plays.
+  const playingId = playing?.id;
+  useEffect(() => {
+    if (!playingId || !scroller.current || scroller.current.offsetParent === null) return;
+    const el = scroller.current.querySelector<HTMLElement>(`[data-segment="${playingId}"]`);
+    if (!el) return;
+    const box = scroller.current.getBoundingClientRect();
+    const r = el.getBoundingClientRect();
+    if (r.top < box.top + 40 || r.bottom > box.bottom - 40) {
+      const target = scroller.current.scrollTop + (r.top - box.top) - box.height / 3;
+      scroller.current.scrollTo({ top: Math.max(0, target), behavior: "smooth" });
+    }
+  }, [playingId]);
+
   return (
     <div className={cx("flex min-h-0 flex-col", className)}>
       {header}
@@ -81,8 +104,9 @@ export function TranscriptPanel({
               const active = receipts.activeSegments.has(s.id);
               const open = receipts.openLine === s.id;
               const citing = open ? citingBullets(notes, s.id) : [];
+              const sounding = playing?.id === s.id;
               return (
-                <li key={s.id} data-segment={s.id} className="animate-fade-up">
+                <li key={s.id} data-segment={s.id} className="group/line relative animate-fade-up">
                   <div
                     role={n ? "button" : undefined}
                     tabIndex={n ? 0 : undefined}
@@ -100,12 +124,19 @@ export function TranscriptPanel({
                         : undefined
                     }
                     className={cx(
-                      "rounded-2xl px-3 py-3 transition-colors duration-200",
-                      active ? "bg-accent-soft" : n ? "hover:bg-paper-2/70" : "",
+                      "relative overflow-hidden rounded-2xl px-3 py-3 transition-colors duration-200",
+                      active || (sounding && playing?.single) ? "bg-accent-soft" : sounding ? "bg-paper-2" : n ? "hover:bg-paper-2/70" : "",
                       n && "cursor-pointer",
                     )}
                   >
-                    <div className="flex items-baseline justify-between gap-3 text-[14px] text-muted">
+                    {sounding && (
+                      <span
+                        aria-hidden
+                        className="absolute bottom-0 left-0 h-[2px] bg-accent/70 transition-[width] duration-100 ease-linear"
+                        style={{ width: `${Math.round((playing?.progress ?? 0) * 100)}%` }}
+                      />
+                    )}
+                    <div className={cx("flex items-baseline justify-between gap-3 text-[14px] text-muted", playable && "pr-8")}>
                       <span className="truncate">
                         {speakerLabel(s)}
                         {n && (
@@ -116,6 +147,20 @@ export function TranscriptPanel({
                     </div>
                     <p className="mt-1 font-serif text-[17.5px] leading-[1.45] text-ink">{s.text}</p>
                   </div>
+                  {playable && onPlay && (
+                    <button
+                      type="button"
+                      onClick={() => onPlay(s.id)}
+                      aria-label={sounding ? "Stop playback" : `Hear this line (${formatClock(s.t)})`}
+                      title={sounding ? "Stop" : "Hear this moment"}
+                      className={cx(
+                        "absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-opacity hover:bg-paper-2 hover:text-ink focus-visible:opacity-100",
+                        sounding ? "text-accent opacity-100" : "opacity-0 group-hover/line:opacity-100 [@media(hover:none)]:opacity-60",
+                      )}
+                    >
+                      {sounding ? <PauseIcon size={14} /> : <SpeakerIcon size={16} />}
+                    </button>
+                  )}
                   {open && (
                     <div className="animate-fade-in mx-3 mb-2 mt-1 rounded-xl border border-rule bg-sheet p-3 shadow-card">
                       <p className="mb-1.5 text-[12px] font-medium uppercase tracking-[0.08em] text-muted">

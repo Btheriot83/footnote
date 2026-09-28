@@ -7,7 +7,17 @@ import { askMeeting, ApiError, type AskSentence } from "@/lib/client/api";
 import { formatClock } from "@/lib/format";
 import type { Meeting } from "@/lib/types";
 
-export function AskBox({ meeting, receipts, onSettings }: { meeting: Meeting; receipts: Receipts; onSettings: () => void }) {
+export function AskBox({
+  meeting,
+  receipts,
+  onSettings,
+  onCite,
+}: {
+  meeting: Meeting;
+  receipts: Receipts;
+  onSettings: () => void;
+  onCite?: (id: string) => void;
+}) {
   const [q, setQ] = useState("");
   const [asked, setAsked] = useState("");
   const [answer, setAnswer] = useState<AskSentence[] | null>(null);
@@ -87,7 +97,10 @@ export function AskBox({ meeting, receipts, onSettings }: { meeting: Meeting; re
                         onMouseEnter={() => receipts.hoverCites([c])}
                         onMouseLeave={() => receipts.hoverCites(null)}
                         onFocus={() => receipts.hoverCites([c])}
-                        onClick={() => receipts.clickCite(c)}
+                        onClick={() => {
+                          receipts.clickCite(c);
+                          onCite?.(c);
+                        }}
                         aria-label={`Source: ${seg.label || seg.speaker} at ${formatClock(seg.t)}`}
                       >
                         {formatClock(seg.t)}

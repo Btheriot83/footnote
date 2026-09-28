@@ -155,3 +155,23 @@ export const AskIcon = (p: P) => (
     <path d="M10 9.2a2 2 0 1 1 2.7 1.9c-.5.2-.7.6-.7 1.1v.3M12 14.6v.1" />
   </svg>
 );
+export const SpeakerIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M4.5 9.5h3l4.5-3.8v12.6L7.5 14.5h-3z" fill="currentColor" strokeWidth={1.2} />
+    <path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" />
+  </svg>
+);
+export const MailIcon = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="3.5" y="5.5" width="17" height="13" rx="2.5" />
+    <path d="m4.5 7 7.5 6 7.5-6" />
+  </svg>
+);
+export const ListIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M9 7h11M9 12h11M9 17h11" />
+    <circle cx="4.8" cy="7" r="0.9" fill="currentColor" />
+    <circle cx="4.8" cy="12" r="0.9" fill="currentColor" />
+    <circle cx="4.8" cy="17" r="0.9" fill="currentColor" />
+  </svg>
+);

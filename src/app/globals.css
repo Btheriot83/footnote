@@ -86,6 +86,11 @@ body {
 .fn-mark[data-active="true"] {
   background: var(--color-accent-soft);
 }
+.fn-mark[data-playing="true"] {
+  background: var(--color-accent);
+  color: #fff;
+  animation: pulse-dot 1.6s ease-in-out infinite;
+}
 
 .scroll-thin {
   scrollbar-width: thin;

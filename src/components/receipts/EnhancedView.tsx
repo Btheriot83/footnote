@@ -13,9 +13,13 @@ interface Props {
   streaming?: boolean;
   /** When the transcript isn't visible (phone, share page), footnotes open an inline quote. */
   inlineQuotes?: boolean;
+  /** Called when a footnote is clicked (e.g. to play that moment). */
+  onCite?: (segmentId: string) => void;
+  /** Segment currently playing, so its footnotes can show it. */
+  playingId?: string | null;
 }
 
-export function EnhancedView({ notes, numbers, segmentsById, receipts, streaming, inlineQuotes }: Props) {
+export function EnhancedView({ notes, numbers, segmentsById, receipts, streaming, inlineQuotes, onCite, playingId }: Props) {
   const [openQuote, setOpenQuote] = useState<string | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -83,12 +87,14 @@ export function EnhancedView({ notes, numbers, segmentsById, receipts, streaming
                           type="button"
                           className="fn-mark"
                           data-active={receipts.activeSegments.has(c)}
+                          data-playing={playingId === c || undefined}
                           aria-label={`Source ${n}${seg ? `: ${seg.label || seg.speaker} at ${formatClock(seg.t)}` : ""}`}
                           onMouseEnter={() => receipts.hoverCites([c])}
                           onFocus={() => receipts.hoverCites([c])}
                           onClick={(e) => {
                             e.stopPropagation();
                             receipts.clickCite(c);
+                            onCite?.(c);
                             if (inlineQuotes) setOpenQuote(quoteOpen ? null : key);
                           }}
                         >
