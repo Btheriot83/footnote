@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { Dialog } from "@/components/Dialog";
+import { Pen } from "@/components/receipts/Pen";
 import { AskIcon } from "@/components/icons";
 import { cx } from "@/components/ui";
 import { askMeetings, ApiError, type AskSentence } from "@/lib/client/api";
@@ -217,13 +218,7 @@ export function AskAllDialog({ open, onClose, meetings, initialQuestion, onOpenS
               )}
             </p>
           )}
-          {loading && (
-            <div className="mt-3 space-y-2.5" role="status" aria-label="Reading your meetings">
-              {[90, 76, 84].map((w, i) => (
-                <div key={i} className="h-[13px] animate-pulse rounded-full bg-paper-2" style={{ width: `${w}%` }} />
-              ))}
-            </div>
-          )}
+          {loading && <Pen label="Reading your meetings…" className="mt-2" />}
           {error && (
             <p className="mt-1.5 text-[14.5px] text-ink-2">
               {error.message}{" "}

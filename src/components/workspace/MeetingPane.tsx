@@ -533,7 +533,9 @@ export function MeetingPane({
             )}
           >
             {streaming ? (
-              <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-r-transparent" aria-hidden />
+              <svg width="22" height="12" viewBox="0 0 22 12" fill="none" aria-hidden className="pen-line">
+                <path pathLength={1} d="M1 8c3-5 5-6 6-3s-1 5 2 4 3-7 6-6-1 6 2 6 3-4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+              </svg>
             ) : (
               <SparkIcon size={15} className={cx(!nudge && "hidden sm:block")} />
             )}
