@@ -1,0 +1,5 @@
+.dream-loop/
+node_modules/
+.next/
+.env*.local
+.vercel
