@@ -6,7 +6,7 @@
 
 <!-- Demo GIF goes here: docs/demo.gif (sample call -> Enhance -> hover a footnote -> click to hear it) -->
 
-**Try it in ten seconds:** open the demo and press **Try a sample meeting**. A staged two-minute renewal call plays, the transcript and rough notes fill in as if you were on it, then **Enhance** writes the notes live, with a footnote on every line the AI added. Click a footnote to hear the moment it cites. No account, no key, no setup.
+**Try it in ten seconds:** open the demo at **[footnote-receipts.vercel.app](https://footnote-receipts.vercel.app)** and press **Try a sample meeting**. A staged two-minute renewal call plays, the transcript and rough notes fill in as if you were on it, then **Enhance** writes the notes live, with a footnote on every line the AI added. Click a footnote to hear the moment it cites. No account, no key, no setup.
 
 ## Why it exists
 
