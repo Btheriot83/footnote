@@ -5,5 +5,5 @@ import dynamic from "next/dynamic";
 // so it renders on the client only.
 export const WorkspaceLoader = dynamic(() => import("./Workspace").then((m) => m.Workspace), {
   ssr: false,
-  loading: () => <div className="h-dvh bg-paper" />,
+  loading: () => <div className="desk h-dvh" />,
 });

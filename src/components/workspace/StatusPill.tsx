@@ -63,11 +63,11 @@ export function RecordingPill({
         )}
         aria-hidden
       />
-      <span className={cx("smallcaps hidden text-[10.5px] sm:inline", dot === "accent" ? "text-accent" : "text-muted")}>
+      <span className={cx("smallcaps hidden whitespace-nowrap text-[10.5px] xl:inline", dot === "accent" ? "text-accent" : "text-muted")}>
         {label}
       </span>
       <span className="font-mono text-[14px] tabular-nums text-ink">{formatClock(elapsedMs)}</span>
-      <span className="hidden sm:inline-flex">
+      <span className="hidden sm:inline-flex md:hidden xl:inline-flex">
         <Waveform active={live} />
       </span>
     </div>

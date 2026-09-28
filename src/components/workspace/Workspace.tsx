@@ -373,8 +373,8 @@ function EmptyWorkspace({
           <span className="h-2 w-2 animate-pulse-dot rounded-full bg-ink/40" />
         </div>
       ) : (
-        <div className="flex flex-1 items-center justify-center px-4 py-10 sm:px-6">
-          <div className="paper paper-cream w-full max-w-[560px] animate-settle rounded-[3px] px-7 py-10 text-center sm:px-12 sm:py-12">
+        <div className="scroll-thin flex min-h-0 flex-1 overflow-y-auto px-4 py-10 sm:px-6">
+          <div className="paper paper-cream m-auto w-full max-w-[560px] animate-settle rounded-[3px] px-7 py-10 text-center sm:px-12 sm:py-12">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/desk/icon.webp" alt="" width={240} height={240} className="mx-auto h-16 w-16" />
             <p className="smallcaps mt-5 text-muted">{hasMeetings ? "Welcome to Footnote" : "No meetings yet"}</p>

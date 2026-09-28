@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function AppPage() {
   return (
-    <Suspense fallback={<div className="h-dvh bg-paper" />}>
+    <Suspense fallback={<div className="desk h-dvh" />}>
       <WorkspaceLoader />
     </Suspense>
   );

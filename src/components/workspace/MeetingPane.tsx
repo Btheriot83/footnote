@@ -410,7 +410,7 @@ export function MeetingPane({
           title="Skip to the end of the call"
           className={cx(btn.base, btn.secondary, "h-10 shrink-0 px-3 text-[10.5px] sm:px-4")}
         >
-          <SkipIcon size={15} /> <span className="hidden sm:inline">Skip to end</span>
+          <SkipIcon size={15} /> <span className="hidden xl:inline">Skip to end</span>
         </button>
       </div>
     );
@@ -545,11 +545,11 @@ export function MeetingPane({
           <button
             type="button"
             onClick={() => setShareOpen(true)}
-            className={cx(btn.base, btn.secondary, "h-10 shrink-0 px-4 text-[10.5px] max-sm:hidden sm:px-5")}
+            className={cx(btn.base, btn.secondary, "h-10 shrink-0 px-3.5 text-[10.5px] max-sm:hidden xl:px-5")}
             aria-label="Share"
           >
             <ShareIcon size={15} />
-            <span className="hidden sm:inline">Share</span>
+            <span className="hidden xl:inline">Share</span>
           </button>
           <Menu label="More actions" trigger={<MoreIcon size={20} />} items={menuItems} />
         </div>
