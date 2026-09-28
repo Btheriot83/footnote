@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cx } from "@/components/ui";
+import { TeaserButton } from "./TeaserButton";
 
 /** A small printed photo with a white border and a handwritten caption. */
 export function PrintPhoto({
@@ -19,7 +20,7 @@ export function PrintPhoto({
     <figure className={cx("print lift relative", className)} style={style}>
       {/* Decorative: the caption says what it is. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt="" width={520} height={520} loading={eager ? "eager" : "lazy"} decoding="async" />
+      <img src={src} alt="" width={520} height={520} loading="lazy" fetchPriority={eager ? "high" : "auto"} decoding="async" />
       <figcaption className="absolute inset-x-3 bottom-[7px] truncate text-center font-hand text-[19px] leading-none text-ink-2">
         {caption}
       </figcaption>
@@ -79,12 +80,7 @@ export function CtaStrip({ className, label = "A two-minute sales call" }: { cla
     <div className={cx("mx-auto w-full max-w-[540px]", className)}>
       <div className="paper paper-cream flex flex-col items-stretch gap-3 rounded-[3px] p-3 sm:flex-row sm:items-center sm:gap-4 sm:py-3 sm:pl-5 sm:pr-3">
         <div className="flex flex-1 items-center gap-3 px-1 text-left">
-          <span
-            aria-hidden
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-rule-strong text-[11px] text-ink-2"
-          >
-            ▶
-          </span>
+          <TeaserButton className="-my-1 -ml-1" />
           <span className="leading-tight">
             <span className="block font-serif text-[17.5px] text-ink">{label}</span>
             <span className="smallcaps block text-[9.5px] tracking-[0.18em] text-muted">Sound on · AI voices · 2:20</span>
@@ -116,7 +112,7 @@ export function Hand({
     <span className={cx("hand-ink relative inline-block align-baseline", className)}>
       <span className="sr-only">{text}</span>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt="" aria-hidden width={width} height={height} className="inline-block h-full w-auto" draggable={false} />
+      <img src={src} alt="" aria-hidden width={width} height={height} loading="lazy" className="inline-block h-full w-auto" draggable={false} />
     </span>
   );
 }
