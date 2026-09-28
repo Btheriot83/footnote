@@ -13,7 +13,9 @@ import { preloadSample, startSample, stopSampleAudio } from "@/lib/client/sample
 import { getSession, resetSession, useSession } from "@/lib/client/session";
 import { useKeyStatus, useUserKey } from "@/lib/client/settings";
 import { useServerStatus } from "@/lib/client/server-status";
-import { createMeeting, flushSaves, getMeeting, loadMeeting } from "@/lib/client/store";
+import { createMeeting, flushSaves, getMeeting, loadMeeting, patchMeetingState } from "@/lib/client/store";
+import { importRecording, keepRecording } from "@/lib/client/import-audio";
+import { toast } from "@/lib/client/toast";
 import { getFlag, setFlag } from "@/lib/client/settings";
 import { SAMPLE_TEMPLATE, SAMPLE_TITLE } from "@/lib/sample";
 import { exampleMeetings } from "@/lib/sample/examples";
@@ -202,6 +204,25 @@ export function Workspace() {
       const m = await createMeeting({ title: opts.title, template: opts.template });
       id = m.id;
       select(id);
+    }
+    const imp = opts.imported;
+    if (imp?.kind === "transcript") {
+      patchMeetingState(
+        id,
+        { segments: imp.parsed.segments, durationMs: imp.parsed.durationMs, status: "ended" },
+        { immediate: true },
+      );
+      toast(`Imported ${imp.parsed.segments.length} lines from ${imp.fileName}. Add notes if you like, then Enhance.`, {
+        tone: "success",
+        duration: 7000,
+      });
+      return;
+    }
+    if (imp?.kind === "audio") {
+      await keepRecording(id, imp.file);
+      patchMeetingState(id, { status: "ended", durationMs: imp.durationMs, hasAudio: true }, { immediate: true });
+      void importRecording(id, imp.file);
+      return;
     }
     // Typing should land in the notes straight away, not on the button that opened the dialog.
     focusNotes();

@@ -34,6 +34,7 @@ import {
   stopClip,
   useClip,
 } from "@/lib/client/clip-player";
+import { cancelImport, dismissImport, useImportProgress } from "@/lib/client/import-audio";
 import { deleteRecordings } from "@/lib/client/local-audio";
 import { stopLive } from "@/lib/client/live-controller";
 import { useOnline } from "@/lib/client/online";
@@ -98,6 +99,7 @@ export function MeetingPane({
   const liveElapsed = useTicker(live, session.startedAt);
   const clip = useClip();
   const online = useOnline();
+  const importing = useImportProgress(meetingId);
 
   const [partial, setPartial] = useState<EnhancedNotes | null>(null);
   const [streaming, setStreaming] = useState(false);
@@ -494,6 +496,11 @@ export function MeetingPane({
           <p className="mt-1">Lines appear here as people talk.</p>
           <SourceList sources={session.sources} />
         </>
+      ) : importing && !importing.error && !importing.finished ? (
+        <p className="flex items-center gap-2 text-ink-2">
+          <span className="h-2 w-2 animate-pulse-dot rounded-full bg-accent" /> Transcribing the recording… lines print here
+          as each piece comes back.
+        </p>
       ) : sample ? (
         <p>The call is about to start…</p>
       ) : meeting.status === "draft" ? (
@@ -677,6 +684,55 @@ export function MeetingPane({
                   tookOver={sample.userTookOver}
                   onPlay={() => void playSample()}
                 />
+              )}
+              {importing && (
+                <div
+                  className="paper paper-sky animate-settle -rotate-[0.3deg] rounded-[2px] px-5 py-4 text-[15.5px] leading-relaxed text-ink-2"
+                  role={importing.error ? "alert" : "status"}
+                >
+                  {importing.error ? (
+                    <p>
+                      <span className="font-medium text-ink">Stopped transcribing {importing.fileName}.</span> {importing.error}
+                    </p>
+                  ) : importing.finished ? (
+                    <p>
+                      <span className="font-medium text-ink">Transcribed {importing.fileName}.</span> Add any notes of your
+                      own, then Enhance: every footnote will play its moment from the file.
+                    </p>
+                  ) : (
+                    <>
+                      <p className="flex items-center gap-2.5">
+                        <span className="h-2 w-2 animate-pulse-dot rounded-full bg-accent" aria-hidden />
+                        <span>
+                          <span className="font-medium text-ink">Transcribing {importing.fileName}</span>
+                          {importing.total > 0 ? ` · ${importing.done} of ${importing.total} pieces` : " · reading the audio…"}
+                        </span>
+                      </p>
+                      <span className="mt-3 block h-[3px] overflow-hidden rounded-full bg-ink/10" aria-hidden>
+                        <span
+                          className="block h-full rounded-full bg-accent/80 transition-[width] duration-500"
+                          style={{ width: `${importing.total ? Math.round((importing.done / importing.total) * 100) : 4}%` }}
+                        />
+                      </span>
+                    </>
+                  )}
+                  <div className="mt-2 flex gap-3">
+                    {importing.error || importing.finished ? (
+                      <button type="button" onClick={() => dismissImport(meeting.id)} className="text-muted hover:text-ink">
+                        Dismiss
+                      </button>
+                    ) : (
+                      <button type="button" onClick={() => cancelImport(meeting.id)} className="text-muted hover:text-ink">
+                        Stop
+                      </button>
+                    )}
+                    {importing.error && /key/i.test(importing.error) && (
+                      <button type="button" onClick={onSettings} className="font-medium text-ink underline underline-offset-2">
+                        Add your key
+                      </button>
+                    )}
+                  </div>
+                </div>
               )}
               {nudge && (
                 <div className="paper paper-butter animate-settle flex -rotate-[0.6deg] flex-wrap items-center gap-3 rounded-[2px] px-5 py-4 max-sm:flex-col max-sm:items-start">
@@ -900,7 +956,7 @@ export function MeetingPane({
             numbers={numbers}
             notes={meeting.enhanced}
             receipts={receipts}
-            live={(live && !notesOnly) || (!!sample && sample.phase === "playing")}
+            live={(live && !notesOnly) || (!!sample && sample.phase === "playing") || (!!importing && !importing.finished && !importing.error)}
             empty={transcriptEmpty}
             playable={audible}
             playing={playingNow}

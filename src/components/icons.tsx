@@ -175,3 +175,9 @@ export const ListIcon = (p: P) => (
     <circle cx="4.8" cy="17" r="0.9" fill="currentColor" />
   </svg>
 );
+
+export const UploadIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M5 14v4.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V14" />
+  </svg>
+);
