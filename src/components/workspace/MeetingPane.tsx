@@ -1,0 +1,808 @@
+"use client";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { EnhancedView } from "@/components/receipts/EnhancedView";
+import { TranscriptPanel } from "@/components/receipts/TranscriptPanel";
+import { useReceipts } from "@/components/receipts/useReceipts";
+import {
+  CopyIcon,
+  DownloadIcon,
+  InfoIcon,
+  MenuIcon,
+  MicIcon,
+  MoreIcon,
+  NoteIcon,
+  PauseIcon,
+  PlayIcon,
+  ShareIcon,
+  SkipIcon,
+  SlackIcon,
+  SparkIcon,
+  StopIcon,
+  TrashIcon,
+} from "@/components/icons";
+import { btn, cx } from "@/components/ui";
+import { numberFootnotes } from "@/lib/citations";
+import { ApiError, streamEnhance } from "@/lib/client/api";
+import { stopLive } from "@/lib/client/live-controller";
+import { markSampleTyping, pauseSample, playSample, skipSampleToEnd } from "@/lib/client/sample-controller";
+import { useSession } from "@/lib/client/session";
+import { deleteMeeting, getMeeting, patchMeetingState, useMeeting } from "@/lib/client/store";
+import { toast } from "@/lib/client/toast";
+import { toMarkdown, toSlack } from "@/lib/export";
+import { formatDate, formatDuration } from "@/lib/format";
+import {
+  normalizeNotes,
+  SAMPLE_CACHED_ENHANCEMENT,
+  SAMPLE_DEFAULT_NOTES,
+  SAMPLE_SEGMENTS,
+  SAMPLE_TITLE,
+} from "@/lib/sample";
+import { TEMPLATES } from "@/lib/templates";
+import type { EnhancedNotes, TemplateId } from "@/lib/types";
+import { AskBox } from "./AskBox";
+import { Menu } from "./Menu";
+import { Notepad } from "./Notepad";
+import { copyText, downloadMarkdown, ShareDialog } from "./ShareDialog";
+import { RecordingPill, useTicker } from "./StatusPill";
+
+interface Props {
+  meetingId: string;
+  isMobile: boolean;
+  onOpenSidebar: () => void;
+  onRequestStart: () => void;
+  onRetryCapture: () => void;
+  onSettings: () => void;
+  onDeleted: () => void;
+  registerEnhance: (fn: (() => void) | null) => void;
+}
+
+interface EnhanceError {
+  code: string;
+  message: string;
+  offerCached?: boolean;
+}
+
+const isMacLike = () => typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
+
+export function MeetingPane({
+  meetingId,
+  isMobile,
+  onOpenSidebar,
+  onRequestStart,
+  onRetryCapture,
+  onSettings,
+  onDeleted,
+  registerEnhance,
+}: Props) {
+  const m = useMeeting(meetingId);
+  const session = useSession();
+  const here = session.meetingId === meetingId;
+  const live = here && session.kind === "live";
+  const sample = here && session.kind === "sample" ? session.sample : null;
+  const liveElapsed = useTicker(live, session.startedAt);
+
+  const [partial, setPartial] = useState<EnhancedNotes | null>(null);
+  const [streaming, setStreaming] = useState(false);
+  const [error, setError] = useState<EnhanceError | null>(null);
+  const [view, setView] = useState<"enhanced" | "notes">("notes");
+  const [mobileTab, setMobileTab] = useState<"notes" | "transcript">("notes");
+  const [shareOpen, setShareOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [dismissedIssues, setDismissedIssues] = useState<string[]>([]);
+  const abortRef = useRef<AbortController | null>(null);
+
+  // Reset per-meeting UI state.
+  useEffect(() => {
+    abortRef.current?.abort();
+    setPartial(null);
+    setStreaming(false);
+    setError(null);
+    setMobileTab("notes");
+    setDismissedIssues([]);
+    setConfirmDelete(false);
+    const mm = getMeeting(meetingId);
+    setView(mm?.enhanced ? "enhanced" : "notes");
+  }, [meetingId]);
+
+  // When a meeting finishes loading, open its enhanced notes by default.
+  const loaded = !!m;
+  const hasEnhanced = !!m?.enhanced;
+  useEffect(() => {
+    if (loaded && hasEnhanced) setView((v) => (streaming ? v : "enhanced"));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loaded, hasEnhanced]);
+
+  const shown = partial ?? m?.enhanced ?? null;
+  const numbers = useMemo(() => numberFootnotes(shown), [shown]);
+  const segmentsById = useMemo(() => new Map((m?.segments ?? []).map((s) => [s.id, s])), [m?.segments]);
+  const receipts = useReceipts(m?.enhanced ?? null);
+
+  const notesAreDefault = !!m && normalizeNotes(m.notes) === normalizeNotes(SAMPLE_DEFAULT_NOTES);
+
+  const playCached = useCallback(
+    async (id: string) => {
+      setStreaming(true);
+      setView("enhanced");
+      const full = SAMPLE_CACHED_ENHANCEMENT;
+      const steps: EnhancedNotes[] = [];
+      full.sections.forEach((s, si) => {
+        for (let bi = 0; bi <= s.bullets.length; bi++) {
+          steps.push({
+            title: full.title,
+            sections: [...full.sections.slice(0, si), { heading: s.heading, bullets: s.bullets.slice(0, bi) }],
+          });
+        }
+      });
+      for (const step of steps) {
+        setPartial(step);
+        await new Promise((r) => setTimeout(r, 70));
+      }
+      patchMeetingState(
+        id,
+        { enhanced: full, enhancedAt: Date.now(), enhancedSource: "cached", title: getMeeting(id)?.title || SAMPLE_TITLE },
+        { immediate: true },
+      );
+      setPartial(null);
+      setStreaming(false);
+    },
+    [],
+  );
+
+  const runEnhance = useCallback(async () => {
+    if (streaming) return;
+    let cur = getMeeting(meetingId);
+    if (!cur) return;
+    if (session.kind === "sample" && session.meetingId === meetingId && session.sample.phase !== "done") {
+      skipSampleToEnd();
+      cur = getMeeting(meetingId)!;
+    }
+    if (!cur.notes.replace(/^[\s\-*•]+$/gm, "").trim() && cur.segments.length === 0) {
+      toast("Nothing to enhance yet. Type a few notes or record some of the meeting first.");
+      return;
+    }
+    abortRef.current?.abort();
+    const ac = new AbortController();
+    abortRef.current = ac;
+    setError(null);
+    setStreaming(true);
+    setView("enhanced");
+    setMobileTab("notes");
+    setPartial({ sections: [] });
+    const input = { template: cur.template, title: cur.title, userNotes: cur.notes, segments: cur.segments };
+    try {
+      const final = await streamEnhance(input, (p) => !ac.signal.aborted && setPartial(p), ac.signal);
+      if (ac.signal.aborted) return;
+      const latest = getMeeting(meetingId);
+      const retitle = latest && (latest.title === "Untitled meeting" || !latest.title.trim()) && final.title;
+      patchMeetingState(
+        meetingId,
+        {
+          enhanced: final,
+          enhancedAt: Date.now(),
+          enhancedSource: "live",
+          ...(retitle ? { title: final.title } : {}),
+        },
+        { immediate: true },
+      );
+      if (final.sections.length === 0) {
+        toast("The AI couldn't find anything it could cite. Try adding a few notes.");
+      }
+      setPartial(null);
+      setStreaming(false);
+    } catch (e) {
+      if ((e as Error).name === "AbortError" || ac.signal.aborted) return;
+      setPartial(null);
+      setStreaming(false);
+      const err = e instanceof ApiError ? e : new ApiError("error", "Enhance failed. Please try again.", 0);
+      const isSample = cur.isSample && cur.segments.length === SAMPLE_SEGMENTS.length;
+      if (isSample && (err.code === "no_key" || err.code === "limit")) {
+        if (normalizeNotes(cur.notes) === normalizeNotes(SAMPLE_DEFAULT_NOTES)) {
+          toast(
+            err.code === "no_key"
+              ? "No AI key on this server, so here's the cached demo for these notes."
+              : "Today's free allowance is used up, so here's the cached demo for these notes.",
+          );
+          await playCached(meetingId);
+          return;
+        }
+        setError({ code: err.code, message: err.message, offerCached: true });
+        return;
+      }
+      setError({ code: err.code, message: err.message });
+      if (getMeeting(meetingId)?.enhanced) setView("enhanced");
+      else setView("notes");
+    }
+  }, [meetingId, playCached, session, streaming]);
+
+  useEffect(() => {
+    registerEnhance(() => void runEnhance());
+    return () => registerEnhance(null);
+  }, [registerEnhance, runEnhance]);
+
+  useEffect(() => () => abortRef.current?.abort(), []);
+
+  if (!m) {
+    return (
+      <div className="flex h-full items-center justify-center bg-sheet text-muted" aria-busy>
+        <span className="h-2 w-2 animate-pulse-dot rounded-full bg-faint" />
+      </div>
+    );
+  }
+
+  const meeting = m;
+  const elapsed = live ? liveElapsed : sample ? sample.positionMs : meeting.durationMs;
+  const sampleDone = sample?.phase === "done" || (meeting.isSample && meeting.status === "ended");
+  const nudge = sampleDone && !meeting.enhanced && !streaming && !error;
+  const issues = here ? session.issues.filter((i) => !dismissedIssues.includes(i.source + i.code)) : [];
+  const mod = isMacLike() ? "⌘" : "Ctrl";
+
+  const menuItems = [
+    {
+      label: view === "enhanced" ? "Show my original notes" : "Show enhanced notes",
+      icon: <NoteIcon size={17} />,
+      onSelect: () => setView(view === "enhanced" ? "notes" : "enhanced"),
+      hidden: !meeting.enhanced,
+    },
+    {
+      label: "Copy as Markdown",
+      icon: <CopyIcon size={17} />,
+      onSelect: () => copyText(toMarkdown(meeting), "Markdown copied, with footnotes."),
+      separatorBefore: !!meeting.enhanced,
+    },
+    { label: "Copy for Slack", icon: <SlackIcon size={17} />, onSelect: () => copyText(toSlack(meeting), "Copied for Slack.") },
+    { label: "Download .md", icon: <DownloadIcon size={17} />, onSelect: () => downloadMarkdown(meeting) },
+    {
+      label: "Delete meeting",
+      icon: <TrashIcon size={17} />,
+      onSelect: () => setConfirmDelete(true),
+      danger: true,
+      separatorBefore: true,
+    },
+  ];
+
+  /* ---------- header status ---------- */
+  let status: React.ReactNode;
+  if (live) {
+    status = (
+      <div className="flex items-center gap-2">
+        <RecordingPill label="Recording" elapsedMs={elapsed} live />
+        <button
+          type="button"
+          onClick={() => stopLive()}
+          className={cx(btn.base, btn.secondary, "h-11 px-3.5 text-[14.5px]")}
+          aria-label="Stop recording"
+        >
+          <StopIcon size={14} /> <span className="hidden sm:inline">Stop</span>
+        </button>
+      </div>
+    );
+  } else if (sample && sample.phase !== "done") {
+    const playing = sample.phase === "playing";
+    status = (
+      <div className="flex items-center gap-2">
+        <RecordingPill label={playing ? "Sample call" : "Paused"} elapsedMs={elapsed} live={playing} dot={playing ? "accent" : "muted"} />
+        <button
+          type="button"
+          onClick={() => (playing ? pauseSample() : void playSample())}
+          className={cx(btn.base, btn.secondary, btn.icon, "h-11 w-11")}
+          aria-label={playing ? "Pause sample" : "Play sample"}
+        >
+          {playing ? <PauseIcon size={16} /> : <PlayIcon size={16} />}
+        </button>
+        <button
+          type="button"
+          onClick={() => skipSampleToEnd()}
+          className={cx(btn.base, btn.secondary, "h-11 px-3.5 text-[14.5px]")}
+        >
+          <SkipIcon size={15} /> <span className="hidden sm:inline">Skip to end</span>
+        </button>
+      </div>
+    );
+  } else if (meeting.status === "draft") {
+    status = (
+      <button type="button" onClick={onRequestStart} className={cx(btn.base, btn.secondary, "h-11 px-4 text-[15px]")}>
+        <span className="h-2.5 w-2.5 rounded-full bg-accent" aria-hidden />
+        Start recording
+      </button>
+    );
+  } else {
+    status = (
+      <div className="flex items-center gap-2">
+        <RecordingPill label="Ended" elapsedMs={meeting.durationMs} live={false} dot="muted" />
+        {!meeting.isSample && (
+          <button
+            type="button"
+            onClick={onRequestStart}
+            className={cx(btn.base, btn.ghost, "hidden h-11 px-3 text-[14.5px] sm:inline-flex")}
+          >
+            Resume
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  const transcriptEmpty = (
+    <div className="px-3 pt-2 text-[15px] leading-relaxed text-muted">
+      {live ? (
+        <>
+          <p className="flex items-center gap-2 text-ink-2">
+            <span className="h-2 w-2 animate-pulse-dot rounded-full bg-accent" /> Listening…
+          </p>
+          <p className="mt-1">Lines appear here as people talk.</p>
+          <SourceList sources={session.sources} />
+        </>
+      ) : sample ? (
+        <p>The call is about to start…</p>
+      ) : meeting.status === "draft" ? (
+        <>
+          <p>No transcript yet.</p>
+          <p className="mt-1">Start recording to capture the conversation, or just take notes.</p>
+          <button type="button" onClick={onRequestStart} className={cx(btn.base, btn.secondary, btn.sm, "mt-4")}>
+            <MicIcon size={16} /> Start recording
+          </button>
+        </>
+      ) : (
+        <p>Nothing was transcribed in this meeting.</p>
+      )}
+    </div>
+  );
+
+  const templateName = TEMPLATES.find((t) => t.id === meeting.template)?.name ?? "General";
+
+  return (
+    <div className="flex h-full min-w-0 flex-col bg-sheet">
+      {/* Top bar */}
+      <header className="flex h-[76px] shrink-0 items-center gap-2 border-b border-rule px-3 sm:gap-3 sm:px-6">
+        <button
+          type="button"
+          onClick={onOpenSidebar}
+          className="flex h-10 w-10 items-center justify-center rounded-xl text-ink-2 hover:bg-paper-2 lg:hidden"
+          aria-label="Open meetings"
+        >
+          <MenuIcon />
+        </button>
+        <div className="min-w-0">{status}</div>
+        <div className="ml-auto flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => void runEnhance()}
+            disabled={streaming}
+            title={`Enhance notes (${mod}+Enter)`}
+            className={cx(
+              btn.base,
+              nudge ? btn.primary : btn.secondary,
+              "h-11 px-3.5 text-[15px] sm:px-4",
+              nudge && "ring-4 ring-ink/10",
+            )}
+          >
+            {streaming ? (
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent" aria-hidden />
+            ) : (
+              <SparkIcon size={17} className={cx(!nudge && "hidden sm:block")} />
+            )}
+            <span className={cx(nudge ? "" : "hidden sm:inline")}>{streaming ? "Enhancing…" : "Enhance notes"}</span>
+            {!streaming && !nudge && <span className="sm:hidden">Enhance</span>}
+          </button>
+          <button
+            type="button"
+            onClick={() => setShareOpen(true)}
+            className={cx(btn.base, btn.secondary, "h-11 px-3.5 text-[15px] sm:px-4")}
+            aria-label="Share"
+          >
+            <ShareIcon size={18} />
+            <span className="hidden sm:inline">Share</span>
+          </button>
+          <Menu label="More actions" trigger={<MoreIcon size={22} />} items={menuItems} />
+        </div>
+      </header>
+
+      {/* Phone tabs */}
+      <div className="flex shrink-0 border-b border-rule md:hidden" role="tablist" aria-label="View">
+        {(["notes", "transcript"] as const).map((t) => (
+          <button
+            key={t}
+            type="button"
+            role="tab"
+            aria-selected={mobileTab === t}
+            onClick={() => setMobileTab(t)}
+            className={cx(
+              "flex-1 py-3 text-[14.5px] font-medium capitalize",
+              mobileTab === t ? "text-ink shadow-[inset_0_-2px_0_var(--color-ink)]" : "text-muted",
+            )}
+          >
+            {t}
+            {t === "transcript" && meeting.segments.length > 0 && (
+              <span className="ml-1.5 text-[12px] text-muted">{meeting.segments.length}</span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex min-h-0 flex-1">
+        {/* Document */}
+        <main
+          className={cx("scroll-thin min-w-0 flex-1 overflow-y-auto", isMobile && mobileTab !== "notes" && "hidden")}
+          onClick={(e) => {
+            if (!(e.target as HTMLElement).closest("button, [data-bullet], a, input, textarea")) receipts.clear();
+          }}
+        >
+          <article className="mx-auto w-full max-w-[720px] px-5 pb-24 pt-10 sm:px-10 sm:pt-14 xl:px-16">
+            <label htmlFor="meeting-title" className="sr-only">
+              Meeting title
+            </label>
+            <input
+              id="meeting-title"
+              value={meeting.title}
+              onChange={(e) => patchMeetingState(meeting.id, { title: e.target.value })}
+              onBlur={(e) => !e.target.value.trim() && patchMeetingState(meeting.id, { title: "Untitled meeting" })}
+              className="w-full bg-transparent font-serif text-[34px] leading-[1.15] tracking-[-0.018em] text-ink placeholder:text-faint focus:outline-none sm:text-[46px]"
+            />
+            <div className="mt-2.5 flex flex-wrap items-center gap-x-2 text-[16px] text-ink-2/80 sm:text-[17px]">
+              <span>{formatDate(meeting.createdAt)}</span>
+              {meeting.durationMs > 0 && (
+                <>
+                  <span aria-hidden>•</span>
+                  <span>{formatDuration(meeting.durationMs)}</span>
+                </>
+              )}
+              <span aria-hidden>·</span>
+              <label className="relative inline-flex items-center">
+                <span className="sr-only">Template</span>
+                <select
+                  value={meeting.template}
+                  onChange={(e) => patchMeetingState(meeting.id, { template: e.target.value as TemplateId })}
+                  className="cursor-pointer appearance-none rounded-md bg-transparent pr-1 hover:text-ink focus:outline-none"
+                >
+                  {TEMPLATES.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name} template
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {meeting.enhancedSource === "cached" && view === "enhanced" && (
+                <span className="ml-1 rounded-full border border-rule px-2 py-0.5 text-[12px] font-medium uppercase tracking-[0.06em] text-muted">
+                  Cached demo
+                </span>
+              )}
+            </div>
+
+            {/* Banners */}
+            <div className="mt-6 space-y-3 empty:hidden">
+              {sample && sample.phase !== "done" && (
+                <SampleBanner
+                  blocked={sample.blocked || sample.phase === "ready"}
+                  tookOver={sample.userTookOver}
+                  onPlay={() => void playSample()}
+                />
+              )}
+              {nudge && (
+                <div className="animate-fade-up flex flex-wrap items-center gap-3 rounded-2xl border border-rule bg-paper px-4 py-3.5">
+                  <SparkIcon size={18} className="text-ink" />
+                  <p className="flex-1 text-[15px] text-ink-2">
+                    That&rsquo;s the whole call. <strong className="font-semibold text-ink">Now hit Enhance</strong> and
+                    watch every line get its receipt.
+                  </p>
+                  <button type="button" onClick={() => void runEnhance()} className={cx(btn.base, btn.primary, btn.sm)}>
+                    Enhance <kbd className="font-sans text-[12px] opacity-70">{mod}↵</kbd>
+                  </button>
+                </div>
+              )}
+              {issues.map((issue) => (
+                <div
+                  key={issue.source + issue.code}
+                  className="animate-fade-up flex items-start gap-3 rounded-2xl border border-rule bg-paper px-4 py-3.5 text-[14.5px] leading-relaxed"
+                  role="alert"
+                >
+                  <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-accent" aria-hidden />
+                  <div className="flex-1 text-ink-2">
+                    <p>{issue.message}</p>
+                    {issue.code === "denied" && issue.source === "mic" && (
+                      <p className="mt-1 text-[13.5px] text-muted">
+                        In Chrome: click the icon left of the address, set Microphone to Allow, then try again.
+                      </p>
+                    )}
+                    <div className="mt-2 flex gap-3">
+                      {(issue.code === "denied" || issue.code === "no_audio" || issue.code === "ended") && (
+                        <button type="button" onClick={onRetryCapture} className="font-medium text-ink underline underline-offset-2">
+                          Try again
+                        </button>
+                      )}
+                      {(issue.code === "limit" || issue.code === "no_key") && (
+                        <button type="button" onClick={onSettings} className="font-medium text-ink underline underline-offset-2">
+                          Add your key
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setDismissedIssues((d) => [...d, issue.source + issue.code])}
+                        className="text-muted hover:text-ink"
+                      >
+                        Dismiss
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {error && (
+                <div
+                  className="animate-fade-up flex items-start gap-3 rounded-2xl border border-rule bg-paper px-4 py-3.5 text-[14.5px] leading-relaxed"
+                  role="alert"
+                >
+                  <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-accent" aria-hidden />
+                  <div className="flex-1 text-ink-2">
+                    <p>{error.message}</p>
+                    {error.offerCached && (
+                      <p className="mt-1 text-[13.5px] text-muted">
+                        The cached demo was made from the sample&rsquo;s original notes, not the ones you typed.
+                      </p>
+                    )}
+                    <div className="mt-2 flex flex-wrap gap-3">
+                      {(error.code === "no_key" || error.code === "limit" || error.code === "upstream") && (
+                        <button type="button" onClick={onSettings} className="font-medium text-ink underline underline-offset-2">
+                          Add your key
+                        </button>
+                      )}
+                      {error.offerCached && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setError(null);
+                            void playCached(meeting.id);
+                          }}
+                          className="font-medium text-ink underline underline-offset-2"
+                        >
+                          Show the cached demo
+                        </button>
+                      )}
+                      {error.code !== "no_key" && (
+                        <button
+                          type="button"
+                          onClick={() => void runEnhance()}
+                          className="font-medium text-ink underline underline-offset-2"
+                        >
+                          Try again
+                        </button>
+                      )}
+                      <button type="button" onClick={() => setError(null)} className="text-muted hover:text-ink">
+                        Dismiss
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Body */}
+            {view === "enhanced" && shown ? (
+              <div className="mt-9">
+                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                  <h2 className="font-serif text-[29px] leading-tight tracking-[-0.01em] sm:text-[32px]">Enhanced notes</h2>
+                  {meeting.enhanced && !streaming && (
+                    <button
+                      type="button"
+                      onClick={() => setView("notes")}
+                      className="text-[14.5px] text-muted underline decoration-rule-strong underline-offset-4 hover:text-ink"
+                    >
+                      Show my original notes
+                    </button>
+                  )}
+                </div>
+                <p className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13.5px] text-muted">
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="h-[6px] w-[6px] rounded-full bg-ink" /> Your notes
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="h-[6px] w-[6px] rounded-full bg-faint" /> Added from the transcript
+                    <sup className="font-semibold text-accent">1</sup>
+                  </span>
+                  <span className="hidden sm:inline">Hover a number to see who said it.</span>
+                </p>
+                <div className="mt-7">
+                  {streaming && shown.sections.length === 0 ? (
+                    <WritingSkeleton />
+                  ) : (
+                    <EnhancedView
+                      notes={shown}
+                      numbers={numbers}
+                      segmentsById={segmentsById}
+                      receipts={receipts}
+                      streaming={streaming}
+                      inlineQuotes={isMobile}
+                    />
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="mt-9">
+                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                  <h2 className="font-serif text-[22px] leading-tight text-ink-2">Your notes</h2>
+                  {meeting.enhanced && (
+                    <button
+                      type="button"
+                      onClick={() => setView("enhanced")}
+                      className="text-[14.5px] text-muted underline decoration-rule-strong underline-offset-4 hover:text-ink"
+                    >
+                      Show enhanced notes
+                    </button>
+                  )}
+                </div>
+                <div className="mt-3">
+                  <Notepad
+                    value={meeting.notes}
+                    onChange={(v) => patchMeetingState(meeting.id, { notes: v })}
+                    onUserInput={() => sample && markSampleTyping()}
+                    placeholder="Type rough notes as you listen. Short fragments are fine: Footnote fills in the rest from the transcript, with a receipt for every line."
+                    autoFocus={meeting.status === "draft" && !meeting.notes && !isMobile}
+                  />
+                </div>
+                {!meeting.enhanced && (meeting.notes.trim() || meeting.segments.length > 0) && !sample && !nudge && (
+                  <p className="mt-6 text-[13.5px] text-muted">
+                    When you&rsquo;re ready, press <kbd className="rounded border border-rule px-1 font-sans">{mod}</kbd>{" "}
+                    <kbd className="rounded border border-rule px-1 font-sans">Enter</kbd> to enhance.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {meeting.segments.length > 0 && !streaming && (meeting.status === "ended" || live) && (
+              <AskBox meeting={meeting} receipts={receipts} onSettings={onSettings} />
+            )}
+          </article>
+        </main>
+
+        {/* Transcript */}
+        <aside
+          className={cx(
+            "flex min-h-0 flex-col border-rule bg-sheet md:w-[340px] md:border-l xl:w-[390px]",
+            isMobile ? (mobileTab === "transcript" ? "flex-1" : "hidden") : "",
+          )}
+          aria-label="Transcript"
+        >
+          <TranscriptPanel
+            className="h-full"
+            segments={meeting.segments}
+            interim={here ? session.interim : null}
+            numbers={numbers}
+            notes={meeting.enhanced}
+            receipts={receipts}
+            live={live || (!!sample && sample.phase === "playing")}
+            empty={transcriptEmpty}
+            header={
+              <div className="flex items-baseline justify-between px-7 pb-3 pt-7">
+                <h2 className="font-serif text-[26px] leading-none tracking-[-0.01em]">Transcript</h2>
+                {live || (sample && sample.phase === "playing") ? (
+                  <span className="flex items-center gap-1.5 text-[13px] text-muted">
+                    <span className="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-accent" /> Live
+                  </span>
+                ) : meeting.segments.length > 0 ? (
+                  <span className="text-[13px] text-muted">{meeting.segments.length} lines</span>
+                ) : null}
+              </div>
+            }
+          />
+        </aside>
+      </div>
+
+      <ShareDialog open={shareOpen} onClose={() => setShareOpen(false)} meeting={meeting} />
+      <ConfirmDelete
+        open={confirmDelete}
+        title={meeting.title}
+        onCancel={() => setConfirmDelete(false)}
+        onConfirm={async () => {
+          if (live) stopLive();
+          setConfirmDelete(false);
+          await deleteMeeting(meeting.id);
+          toast("Meeting deleted.");
+          onDeleted();
+        }}
+      />
+    </div>
+  );
+}
+
+function SourceList({ sources }: { sources: ReturnType<typeof useSession>["sources"] }) {
+  const label = (s: string) =>
+    s === "on" ? "on" : s === "starting" ? "starting…" : s === "denied" ? "blocked" : s === "off" ? "off" : s === "unsupported" ? "unavailable" : "error";
+  return (
+    <ul className="mt-4 space-y-1 text-[13.5px]">
+      <li className="flex items-center gap-2">
+        <span className={cx("h-1.5 w-1.5 rounded-full", sources.mic === "on" ? "bg-ink" : "bg-rule-strong")} />
+        Your mic: {label(sources.mic)}
+        {sources.mic === "on" && sources.micMode === "chunks" && " (via OpenAI)"}
+      </li>
+      <li className="flex items-center gap-2">
+        <span className={cx("h-1.5 w-1.5 rounded-full", sources.tab === "on" ? "bg-ink" : "bg-rule-strong")} />
+        Meeting tab: {label(sources.tab)}
+        {sources.tab === "on" && " (lines arrive every ~10s)"}
+      </li>
+    </ul>
+  );
+}
+
+function SampleBanner({ blocked, tookOver, onPlay }: { blocked: boolean; tookOver: boolean; onPlay: () => void }) {
+  if (blocked) {
+    return (
+      <div className="animate-fade-up flex flex-wrap items-center gap-4 rounded-2xl border border-rule bg-paper px-5 py-4">
+        <div className="flex-1">
+          <p className="font-serif text-[19px] text-ink">A 2-minute renewal call with Dana from Acme</p>
+          <p className="mt-0.5 text-[14px] text-muted">
+            Press play: the transcript and your rough notes appear as if you were on the call. Sound on.
+          </p>
+        </div>
+        <button type="button" onClick={onPlay} className={cx(btn.base, btn.primary, btn.md)}>
+          <PlayIcon size={15} /> Play the sample call
+        </button>
+      </div>
+    );
+  }
+  return (
+    <div className="flex items-start gap-2.5 rounded-2xl bg-paper px-4 py-3 text-[14px] leading-relaxed text-muted">
+      <InfoIcon size={16} className="mt-[3px] shrink-0" />
+      <p>
+        {tookOver
+          ? "You're taking the notes now. Type anything; Enhance works from your notes and the transcript."
+          : "A staged sales call. The rough notes below are typed as if by you. Click into them to add your own."}
+      </p>
+    </div>
+  );
+}
+
+function WritingSkeleton() {
+  return (
+    <div className="space-y-4" aria-label="Writing enhanced notes" role="status">
+      {[60, 92, 78, 0, 45, 85, 70].map((w, i) =>
+        w === 0 ? (
+          <div key={i} className="h-4" />
+        ) : (
+          <div
+            key={i}
+            className={cx("h-[14px] animate-pulse rounded-full bg-paper-2", i === 0 || i === 4 ? "h-[22px]" : "")}
+            style={{ width: `${w}%`, animationDelay: `${i * 90}ms` }}
+          />
+        ),
+      )}
+    </div>
+  );
+}
+
+function ConfirmDelete({
+  open,
+  title,
+  onCancel,
+  onConfirm,
+}: {
+  open: boolean;
+  title: string;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  const ref = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const d = ref.current;
+    if (!d) return;
+    if (open && !d.open) d.showModal();
+    if (!open && d.open) d.close();
+  }, [open]);
+  return (
+    <dialog
+      ref={ref}
+      onClose={onCancel}
+      className="m-auto w-[calc(100%-24px)] max-w-[400px] rounded-[20px] border border-rule bg-sheet p-6 text-ink shadow-lift backdrop:bg-[rgba(27,25,21,0.28)]"
+    >
+      <h2 className="font-serif text-[22px]">Delete this meeting?</h2>
+      <p className="mt-2 text-[14.5px] text-muted">
+        &ldquo;{title}&rdquo; and its transcript will be removed from this device. This can&rsquo;t be undone.
+      </p>
+      <div className="mt-5 flex justify-end gap-2">
+        <button type="button" onClick={onCancel} className={cx(btn.base, btn.secondary, btn.md)}>
+          Cancel
+        </button>
+        <button type="button" onClick={onConfirm} className={cx(btn.base, btn.primary, btn.md)}>
+          Delete
+        </button>
+      </div>
+    </dialog>
+  );
+}

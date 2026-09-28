@@ -1,0 +1,150 @@
+{
+  "title": "Acme renewal — sales call",
+  "sections": [
+    {
+      "heading": "Where they are",
+      "bullets": [
+        {
+          "text": "Acme just closed its Series B and is hiring fast.",
+          "origin": "you",
+          "cites": [
+            "s3",
+            "s4"
+          ]
+        },
+        {
+          "text": "The round was $32M, led by Northstar.",
+          "origin": "ai",
+          "cites": [
+            "s4"
+          ]
+        },
+        {
+          "text": "Team size is growing from 40 to about 120 seats by March.",
+          "origin": "ai",
+          "cites": [
+            "s6"
+          ]
+        },
+        {
+          "text": "Their current contract ends on the 30th.",
+          "origin": "ai",
+          "cites": [
+            "s20"
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "What they need",
+      "bullets": [
+        {
+          "text": "Seats are growing from 40 to ~120 by March, with about 20 managers needing dashboard-only access.",
+          "origin": "you",
+          "cites": [
+            "s6",
+            "s8"
+          ]
+        },
+        {
+          "text": "A viewer seat fits the manager-only use case and is priced lower.",
+          "origin": "ai",
+          "cites": [
+            "s9"
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "Pricing",
+      "bullets": [
+        {
+          "text": "Pricing is the main concern; $65/seat will draw CFO pushback, and year one needs to stay under $90K.",
+          "origin": "you",
+          "cites": [
+            "s10",
+            "s12"
+          ]
+        },
+        {
+          "text": "A two-year term could work if it lowers per-seat pricing.",
+          "origin": "ai",
+          "cites": [
+            "s11",
+            "s12"
+          ]
+        },
+        {
+          "text": "They would move to the growth tier at this volume.",
+          "origin": "ai",
+          "cites": [
+            "s11"
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "Security & procurement",
+      "bullets": [
+        {
+          "text": "Security review will run with new CISO Marcus, and they need SOC 2 plus Okta SSO.",
+          "origin": "you",
+          "cites": [
+            "s14",
+            "s16"
+          ]
+        },
+        {
+          "text": "Send the SOC 2 Type II report and a completed security questionnaire.",
+          "origin": "ai",
+          "cites": [
+            "s15"
+          ]
+        },
+        {
+          "text": "Marcus wants a deeper security call, and he is free Tuesday afternoon.",
+          "origin": "ai",
+          "cites": [
+            "s17",
+            "s18"
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "Next steps",
+      "bullets": [
+        {
+          "text": "Send two pricing options and the SOC 2 report by Thursday.",
+          "origin": "you",
+          "cites": [
+            "s13",
+            "s19"
+          ]
+        },
+        {
+          "text": "Include annual and two-year options, with viewer seats broken out.",
+          "origin": "ai",
+          "cites": [
+            "s13"
+          ]
+        },
+        {
+          "text": "Set up a security call with Marcus on Tuesday.",
+          "origin": "ai",
+          "cites": [
+            "s19",
+            "s18"
+          ]
+        },
+        {
+          "text": "Try to sign before the 30th contract end date.",
+          "origin": "ai",
+          "cites": [
+            "s20"
+          ]
+        }
+      ]
+    }
+  ]
+}
