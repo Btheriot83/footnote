@@ -101,7 +101,7 @@ export function SharedNote() {
       ) : (
         <div className="flex min-h-0 flex-1">
           <main className="scroll-thin min-w-0 flex-1 overflow-y-auto px-2 pb-3 sm:px-4 sm:pb-5">
-            <article className="paper paper-cream mx-auto min-h-[calc(100%-4px)] w-full max-w-[800px] animate-settle rounded-[3px] px-5 pb-24 pt-9 sm:px-12 sm:pt-12 xl:px-[72px] xl:pt-14">
+            <article className="paper paper-cream sheet-shadow mx-auto min-h-[calc(100%-4px)] w-full max-w-[800px] animate-settle rounded-[3px] px-5 pb-24 pt-9 sm:px-12 sm:pt-12 xl:px-[72px] xl:pt-14">
               <h1 className="font-serif text-[34px] font-medium leading-[1.1] tracking-[-0.022em] sm:text-[46px]">{data.title}</h1>
               <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-2">
                 <p className="text-[16.5px] italic text-muted sm:text-[18px]">

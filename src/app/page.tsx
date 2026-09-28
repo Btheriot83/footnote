@@ -84,13 +84,13 @@ export default function Landing() {
       </header>
 
       {/* Hero: the desk */}
-      <section className="relative mx-auto max-w-[1440px] lg:min-h-[900px]">
+      <section className="relative mx-auto max-w-[1800px] xl:min-h-[920px]">
         {/* Papers around the edges (desktop) */}
-        <div className="pointer-events-none absolute inset-0 hidden lg:block [&>*]:pointer-events-auto">
-          <div className="absolute -left-4 top-[40px] w-[228px] -rotate-[7deg] xl:left-[1%]">
+        <div className="pointer-events-none absolute inset-0 hidden xl:block [&>*]:pointer-events-auto">
+          <div className="absolute left-[-10px] top-[40px] w-[220px] -rotate-[7deg] 2xl:left-[1%] 2xl:w-[228px]">
             <PrintPhoto src="/desk/photo-call.webp" caption="acme call, tues 10am" className="arrive [--d:120ms]" eager />
           </div>
-          <div className="absolute -left-10 top-[380px] w-[330px] rotate-[3deg] xl:left-[-1%]">
+          <div className="absolute -left-10 top-[380px] w-[320px] rotate-[3deg] 2xl:left-[-1%] 2xl:w-[330px]">
             <div className="paper paper-index lift arrive rounded-[2px] pb-8 pl-[54px] pr-6 pt-[14px] [--d:200ms] [--rule-gap:32px] [--rule-top:44px]">
               <p className="smallcaps h-[30px] pt-[9px] text-pen/80">Your notes · 00:42</p>
               <ul className="font-hand text-[23px] leading-[32px] text-pen">
@@ -101,11 +101,11 @@ export default function Landing() {
               </ul>
             </div>
           </div>
-          <div className="absolute bottom-[40px] left-[13%] w-[196px] rotate-[5deg] xl:left-[15%]">
+          <div className="absolute bottom-[40px] left-[12%] w-[190px] rotate-[5deg] 2xl:left-[15%]">
             <PrintPhoto src="/desk/photo-coffee.webp" caption="notes before the call" className="arrive [--d:520ms]" />
           </div>
           <HeroCards layout="desk" />
-          <div className="absolute bottom-[70px] right-[27%] w-[190px] rotate-[4deg] xl:right-[29%]">
+          <div className="absolute bottom-[26px] right-[21%] w-[180px] rotate-[4deg] 2xl:right-[26%]">
             <div className="paper paper-butter lift arrive rounded-[1px] px-5 pb-6 pt-5 [--d:620ms]">
               <p className="font-hand text-[24px] leading-[1.05] text-ink-2">
                 thurs: send 2 pricing options + SOC 2
@@ -115,7 +115,7 @@ export default function Landing() {
         </div>
 
         {/* Photos peeking in (phone and tablet) */}
-        <div className="pointer-events-none relative h-[150px] sm:h-[190px] lg:hidden" aria-hidden>
+        <div className="pointer-events-none relative h-[150px] sm:h-[190px] xl:hidden" aria-hidden>
           <div className="absolute -left-8 top-4 w-[170px] -rotate-[8deg] sm:w-[210px]">
             <PrintPhoto src="/desk/photo-call.webp" caption="acme call, tues" className="arrive" eager />
           </div>
@@ -129,7 +129,7 @@ export default function Landing() {
         </div>
 
         {/* The words */}
-        <div className="relative z-10 mx-auto max-w-[680px] px-5 pb-10 text-center lg:pt-[78px]">
+        <div className="relative z-10 mx-auto max-w-[680px] px-5 pb-10 text-center xl:pt-[78px]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/desk/icon.webp"
@@ -165,13 +165,13 @@ export default function Landing() {
         </div>
 
         {/* The demo pair, in the flow on smaller screens */}
-        <div className="px-5 lg:hidden">
+        <div className="px-5 xl:hidden">
           <HeroCards layout="flow" />
         </div>
       </section>
 
       {/* Price receipt */}
-      <section className="relative px-5 pb-20 pt-6 lg:pt-0" aria-labelledby="cost-heading">
+      <section className="relative px-5 pb-20 pt-6 xl:pt-0" aria-labelledby="cost-heading">
         <div className="reveal mx-auto w-full max-w-[400px] -rotate-[1.2deg]">
           <Receipt className="lift px-6 pb-6 pt-5 text-[13px]">
             <h2 id="cost-heading" className="text-center text-[13px] font-medium tracking-[0.22em]">
@@ -180,10 +180,10 @@ export default function Landing() {
             <p className="text-center text-[11px] text-[#6f6a60]">MEETING NOTES, PER PERSON</p>
             <ReceiptRule className="my-3" />
             <dl className="space-y-2.5">
-              <div className="flex items-baseline gap-2 text-[#7a756b]">
-                <dt className="line-through decoration-[#7a756b]/70">Granola, every month</dt>
+              <div className="flex items-baseline gap-2 text-[#6f6a60]">
+                <dt className="line-through decoration-[#6f6a60]/70">Granola, every month</dt>
                 <span className="mb-1 flex-1 border-b border-dotted border-[#a8a296]" aria-hidden />
-                <dd className="tabular-nums line-through decoration-[#7a756b]/70">$14.00</dd>
+                <dd className="tabular-nums line-through decoration-[#6f6a60]/70">$14.00</dd>
               </div>
               <div>
                 <div className="flex items-baseline gap-2">

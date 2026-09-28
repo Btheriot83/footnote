@@ -150,10 +150,10 @@ export function HeroCards({ layout }: { layout: "desk" | "flow" }) {
   }
   return (
     <>
-      <div className="absolute right-[-26px] top-[92px] w-[372px] rotate-[3.5deg] xl:right-[2%]">
+      <div className="absolute right-[-14px] top-[92px] w-[336px] rotate-[3.5deg] 2xl:right-[2%] 2xl:w-[372px]">
         <NoteCard active={active} onPick={setActive} onHover={setHovering} className="arrive [--d:260ms]" />
       </div>
-      <div className="absolute right-[1.5%] top-[500px] w-[290px] -rotate-[3deg] xl:right-[3%]">
+      <div className="absolute right-[1.5%] top-[486px] w-[276px] -rotate-[3deg] 2xl:right-[3%] 2xl:w-[290px]">
         <QuoteReceipt active={active} className="arrive [--d:420ms]" />
       </div>
     </>

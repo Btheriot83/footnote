@@ -181,6 +181,15 @@ select:focus-visible {
   background-position: 0 0, 0 var(--rule-top);
 }
 
+/* A full sheet lying flat: a wider, softer shadow than a small card. */
+.sheet-shadow {
+  box-shadow:
+    0 0.5px 0 rgba(255, 255, 255, 0.7) inset,
+    0 1px 1px rgba(70, 48, 20, 0.1),
+    0 6px 12px -6px rgba(70, 48, 20, 0.16),
+    0 28px 48px -26px rgba(70, 48, 20, 0.42);
+}
+
 /* Thermal receipt paper: bright, cool, torn zigzag ends, a hint of curl. */
 .receipt {
   --paper: var(--color-receipt);
