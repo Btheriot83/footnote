@@ -86,14 +86,14 @@ export async function POST(req: Request) {
           pending = partial;
           const now = Date.now();
           if (now - last > 60) {
-            send({ type: "partial", notes: sanitizePartial(partial, validIds) });
+            send({ type: "partial", notes: sanitizePartial(partial, validIds, userNotes) });
             last = now;
             pending = null;
           }
         }
-        if (pending) send({ type: "partial", notes: sanitizePartial(pending, validIds) });
+        if (pending) send({ type: "partial", notes: sanitizePartial(pending, validIds, userNotes) });
         const object = await result.object;
-        const { notes, report } = validateEnhanced(object, validIds);
+        const { notes, report } = validateEnhanced(object, validIds, { userNotes });
         send({ type: "final", notes, report });
       } catch (err) {
         logUpstreamError("enhance", err);

@@ -19,7 +19,9 @@ How to write the notes:
 5. Be concise: one idea per bullet, at most about 18 words, no filler, no "the speaker said". Use numerals ($90K, 120 seats, Tuesday).
 6. Use the suggested section headings when they fit, in that order. Omit a section when there is nothing to say. Add at most one extra section if something important does not fit.
 7. Only cite ids that appear in the transcript, exactly as written (like "s12"). Cite the most specific segments (usually one or two). Do not put citation markers inside the text.
-8. "You" in the transcript is the note-taker. Write in the transcript's language.`;
+8. Say each fact once. Never repeat a fact, number or commitment in a second bullet or a second section, even reworded; put it where it fits best. If an "ai" bullet would only restate a "you" bullet, leave it out.
+9. Cite the person the fact comes from. A customer's need, number or constraint should cite the line where they said it, not a line where the note-taker repeated it back.
+10. "You" in the transcript is the note-taker. Write in the transcript's language.`;
 
 export function transcriptBlock(segments: PromptSegment[], maxChars = 60000): string {
   const lines = segments.map(

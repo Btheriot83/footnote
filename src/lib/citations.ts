@@ -1,3 +1,4 @@
+import { dedupeBullets, reconcileOrigins } from "./reconcile";
 import type { EnhancedBullet, EnhancedNotes, EnhancedSection, Origin } from "./types";
 
 type Loose<T> = { [K in keyof T]?: unknown };
@@ -5,6 +6,10 @@ type Loose<T> = { [K in keyof T]?: unknown };
 export interface ValidationReport {
   droppedCites: number;
   droppedBullets: number;
+  /** Bullets whose ink/gray origin was corrected against the user's notes. */
+  reOriginated?: number;
+  /** Near-duplicate bullets folded into an earlier one. */
+  merged?: number;
 }
 
 function cleanCites(cites: unknown, valid: Set<string>, report?: ValidationReport): string[] {
@@ -44,6 +49,7 @@ function normalizeOrigin(o: unknown): Origin {
 export function validateEnhanced(
   raw: unknown,
   validIds: Iterable<string>,
+  opts?: { userNotes?: string },
 ): { notes: EnhancedNotes; report: ValidationReport } {
   const valid = new Set(validIds);
   const report: ValidationReport = { droppedCites: 0, droppedBullets: 0 };
@@ -71,7 +77,14 @@ export function validateEnhanced(
     if (heading && bullets.length) sections.push({ heading, bullets });
   }
   const title = typeof input.title === "string" ? input.title.trim().slice(0, 80) : undefined;
-  return { notes: { ...(title ? { title } : {}), sections }, report };
+  let notes: EnhancedNotes = { ...(title ? { title } : {}), sections };
+  if (opts?.userNotes !== undefined) {
+    const r = { toYou: 0, toAi: 0, merged: 0 };
+    notes = dedupeBullets(reconcileOrigins(notes, opts.userNotes, r), r);
+    report.reOriginated = r.toYou + r.toAi;
+    report.merged = r.merged;
+  }
+  return { notes, report };
 }
 
 /**
@@ -79,7 +92,7 @@ export function validateEnhanced(
  * shown once their `text` has started streaming; because `cites` precede `text`
  * in the schema, the cite list is complete by then and can be validated.
  */
-export function sanitizePartial(partial: unknown, validIds: Set<string>): EnhancedNotes {
+export function sanitizePartial(partial: unknown, validIds: Set<string>, userNotes?: string): EnhancedNotes {
   const input = (partial ?? {}) as Loose<EnhancedNotes>;
   const sections: EnhancedSection[] = [];
   const rawSections = Array.isArray(input.sections) ? input.sections : [];
@@ -97,7 +110,9 @@ export function sanitizePartial(partial: unknown, validIds: Set<string>): Enhanc
     sections.push({ heading: s.heading, bullets });
   }
   const title = typeof input.title === "string" ? input.title : undefined;
-  return { ...(title ? { title } : {}), sections };
+  const notes = { ...(title ? { title } : {}), sections };
+  // Correct ink/gray while streaming too, so colors don't flip when the final arrives.
+  return userNotes !== undefined ? reconcileOrigins(notes, userNotes) : notes;
 }
 
 /** Assigns footnote numbers to cited segments in order of first appearance. */
