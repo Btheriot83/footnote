@@ -539,10 +539,10 @@ export function MeetingPane({
             ) : (
               <SparkIcon size={15} className={cx(!nudge && "hidden sm:block")} />
             )}
-            <span className={cx(nudge ? "" : "hidden sm:inline")}>
+            <span className="hidden sm:inline">
               {streaming ? "Enhancing…" : meeting.enhanced ? "Re-enhance" : "Enhance notes"}
             </span>
-            {!streaming && !nudge && <span className="sm:hidden">{meeting.enhanced ? "Redo" : "Enhance"}</span>}
+            {!streaming && <span className="sm:hidden">{meeting.enhanced ? "Redo" : "Enhance"}</span>}
           </button>
           <button
             type="button"
