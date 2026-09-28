@@ -237,7 +237,7 @@ export function HeroCards({ layout }: { layout: "desk" | "flow" }) {
   }
   return (
     <div ref={root} className="absolute right-[18px] top-[86px] w-[340px] rotate-[3deg] 2xl:right-[2.5%] 2xl:w-[372px]">
-      <p aria-hidden className="on-wood-2 absolute -left-[118px] top-[200px] w-[110px] -rotate-[8deg] text-right font-hand text-[21px] leading-[1.05]">
+      <p aria-hidden className="on-wood-2 arrive absolute -left-[118px] top-[200px] w-[110px] -rotate-[8deg] text-right font-hand text-[21px] leading-[1.05] [--d:1400ms] [--r-from:-4deg]">
         click a number
         <svg width="46" height="20" viewBox="0 0 46 20" fill="none" className="ml-auto mt-1 block">
           <path d="M2 4c12 10 26 12 40 6M36 4l6 6-8 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { preload } from "react-dom";
 import { Caveat, IBM_Plex_Mono, Inter, Newsreader } from "next/font/google";
 import { DeskLamp } from "@/components/desk/DeskLamp";
 import { PageTurnLinks } from "@/components/desk/PageTurnLinks";
@@ -48,6 +49,8 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // The desk is under everything: fetch it with the page, not after the stylesheet.
+  preload("/desk/wood.webp", { as: "image", fetchPriority: "high" });
   return (
     <html lang="en" className={`${inter.variable} ${serif.variable} ${mono.variable} ${hand.variable} h-full antialiased`}>
       <body className="min-h-full">
