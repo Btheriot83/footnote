@@ -830,6 +830,19 @@ button.fn-mark::before {
   100% { background-color: rgba(240, 96, 58, 0); }
 }
 
+/* Pencil lines where words will be (loading skeletons), with a slow glint of lamplight. */
+.ghost-line {
+  background-color: color-mix(in srgb, var(--color-ink) 8%, transparent);
+  background-image: linear-gradient(100deg, transparent 30%, color-mix(in srgb, var(--color-sheet) 55%, transparent) 50%, transparent 70%);
+  background-size: 300% 100%;
+  background-repeat: no-repeat;
+  animation: ghost-glint 2.2s ease-in-out infinite;
+}
+@keyframes ghost-glint {
+  from { background-position: 120% 0; }
+  to { background-position: -20% 0; }
+}
+
 /* A pen writing while the model reads: an endless loop of ink. */
 .pen-line path {
   stroke-dasharray: 1;

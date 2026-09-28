@@ -57,6 +57,7 @@ import { AskBox } from "./AskBox";
 import { Menu } from "./Menu";
 import { focusNotes, Notepad } from "./Notepad";
 import { copyText, downloadMarkdown, ShareDialog } from "./ShareDialog";
+import { PaneSkeleton } from "./Skeleton";
 import { RecordingPill, useTicker } from "./StatusPill";
 
 interface Props {
@@ -305,13 +306,7 @@ export function MeetingPane({
     return () => window.removeEventListener("footnote:pending-focus", reveal);
   }, [loaded, meetingId, clickCite]);
 
-  if (!m) {
-    return (
-      <div className="flex h-full items-center justify-center text-muted" aria-busy>
-        <span className="h-2 w-2 animate-pulse-dot rounded-full bg-ink/40" />
-      </div>
-    );
-  }
+  if (!m) return <PaneSkeleton />;
 
   const meeting = m;
   const elapsed = live ? liveElapsed : sample ? sample.positionMs : meeting.durationMs;

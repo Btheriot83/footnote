@@ -24,6 +24,7 @@ import { AskAllDialog } from "./AskAllDialog";
 import { MeetingPane } from "./MeetingPane";
 import { focusNotes } from "./Notepad";
 import { NewMeetingDialog, type StartOptions } from "./NewMeetingDialog";
+import { PaneSkeleton } from "./Skeleton";
 import { SettingsDialog } from "./SettingsDialog";
 import { Sidebar } from "./Sidebar";
 
@@ -135,8 +136,13 @@ export function Workspace() {
       return;
     }
     const pick = [deep, last].find((id) => id && meetings.some((m) => m.id === id)) ?? meetings[0]?.id ?? null;
-    if (pick) void loadMeeting(pick).then(() => select(pick));
-    setReady(true);
+    // Ready once the meeting is on the desk, so the welcome card never flashes up first.
+    if (pick)
+      void loadMeeting(pick).then(() => {
+        select(pick);
+        setReady(true);
+      });
+    else setReady(true);
   }, [meetings, params, runSample, select]);
 
   // Keep the selection valid when meetings are deleted.
@@ -353,6 +359,7 @@ function EmptyWorkspace({
   onNew: () => void;
   onSample: () => void;
 }) {
+  if (loading) return <PaneSkeleton />;
   return (
     <div className="flex h-full flex-col">
       <header className="flex h-[68px] shrink-0 items-center gap-3 px-3 sm:px-6 lg:hidden">
@@ -368,11 +375,7 @@ function EmptyWorkspace({
           <Wordmark size={24} />
         </Link>
       </header>
-      {loading ? (
-        <div className="flex flex-1 items-center justify-center" aria-busy>
-          <span className="h-2 w-2 animate-pulse-dot rounded-full bg-ink/40" />
-        </div>
-      ) : (
+      {(
         <div className="scroll-thin flex min-h-0 flex-1 overflow-y-auto px-4 py-10 sm:px-6">
           <div className="paper paper-cream m-auto w-full max-w-[560px] animate-settle rounded-[3px] px-7 py-10 text-center sm:px-12 sm:py-12">
             {/* eslint-disable-next-line @next/next/no-img-element */}

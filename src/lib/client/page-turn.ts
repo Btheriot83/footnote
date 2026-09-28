@@ -231,10 +231,16 @@ export async function turnPage({ rect, onCovered, ready, duration = 1150 }: Turn
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   };
 
+  // Time advances at most a frame and a bit per frame: if the page underneath is busy
+  // mounting (a long task), the sheet waits for it instead of jumping to the end.
   const sweep = async (ms: number, fn: (k: number) => void) => {
-    const start = performance.now();
+    let elapsed = 0;
+    let last = performance.now();
     for (;;) {
-      const k = Math.min(1, (performance.now() - start) / ms);
+      const now = performance.now();
+      elapsed += Math.min(34, now - last);
+      last = now;
+      const k = Math.min(1, elapsed / ms);
       fn(easeInOut(k));
       if (k >= 1) break;
       await frame();
@@ -259,6 +265,8 @@ export async function turnPage({ rect, onCovered, ready, duration = 1150 }: Turn
         await frame();
       }
     }
+    // Let what's underneath paint (and finish its first long task) before the sheet lifts.
+    await frame();
     await frame();
     // 3. It rolls away from the other edge, revealing the new page.
     await sweep(reveal, (k) => draw(far * 4, -far + k * 2 * far, 0));
