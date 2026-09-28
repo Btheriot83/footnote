@@ -174,8 +174,10 @@ export function MeetingPane({
     let cur = getMeeting(meetingId);
     if (!cur) return;
     if (session.kind === "sample" && session.meetingId === meetingId && session.sample.phase !== "done") {
+      // Enhance reads the whole call, so the sample jumps to its end first. Say so.
       skipSampleToEnd();
       cur = getMeeting(meetingId)!;
+      toast("Skipped to the end of the sample call, so Enhance can read all of it.", { duration: 6000 });
     }
     if (!navigator.onLine) {
       setError({ code: "offline", message: "You're offline. Your notes are saved on this device; Enhance works again once you're back online." });
