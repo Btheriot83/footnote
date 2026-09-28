@@ -123,6 +123,6 @@ export function Hand({
 
 export function Sup({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <sup className={cx("ml-0.5 font-sans text-[0.58em] font-semibold text-accent", className)}>{children}</sup>
+    <span className={cx("fn-mark !cursor-default", className)}>{children}</span>
   );
 }
