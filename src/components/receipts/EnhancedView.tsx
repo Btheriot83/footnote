@@ -39,7 +39,7 @@ export function EnhancedView({ notes, numbers, segmentsById, receipts, streaming
     <div ref={rootRef} className="space-y-7" onMouseLeave={() => receipts.hoverCites(null)}>
       {notes.sections.map((section, si) => (
         <section key={si} className="animate-fade-up">
-          <h3 className="font-serif text-[25px] leading-tight tracking-[-0.01em] text-ink sm:text-[27px]">
+          <h3 className="font-serif text-[25px] font-medium leading-tight tracking-[-0.015em] text-ink sm:text-[27px]">
             {section.heading}
           </h3>
           <ul className="mt-3 space-y-2.5">
@@ -105,17 +105,21 @@ export function EnhancedView({ notes, numbers, segmentsById, receipts, streaming
                   })}
                   </span>
                   {inlineQuotes && quoteOpen && (
-                    <div className="animate-fade-in mt-2 space-y-2 rounded-xl border border-rule bg-paper px-3.5 py-3">
+                    <div className="receipt animate-fade-in mb-3 mt-3 space-y-2 px-4 py-3">
                       {b.cites.map((c) => {
                         const seg = segmentsById.get(c);
                         if (!seg) return null;
                         return (
-                          <figure key={c} className="text-[15px] leading-snug">
-                            <figcaption className="mb-0.5 font-sans text-[12.5px] text-muted">
-                              <span className="font-semibold text-accent">{numbers.get(c)}</span> · {seg.label || seg.speaker} ·{" "}
-                              {formatClock(seg.t)}
+                          <figure key={c} className="text-[13.5px] leading-[1.6]">
+                            <figcaption className="mb-0.5 flex justify-between text-[11.5px] uppercase text-[#6a655b]">
+                              <span>
+                                {seg.label || seg.speaker} <span className="font-sans font-bold text-accent">{numbers.get(c)}</span>
+                              </span>
+                              <span className="tabular-nums">{formatClock(seg.t)}</span>
                             </figcaption>
-                            <blockquote className="font-serif italic text-ink-2">&ldquo;{seg.text}&rdquo;</blockquote>
+                            <blockquote className="text-[#26241f]">
+                              <span className="hl hl-swipe">{seg.text}</span>
+                            </blockquote>
                           </figure>
                         );
                       })}

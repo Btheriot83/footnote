@@ -33,8 +33,8 @@ export function Toaster() {
         <div
           key={t.id}
           className={cx(
-            "pointer-events-auto flex max-w-[520px] animate-fade-up items-start gap-3 rounded-2xl px-4 py-3 text-[14.5px] leading-snug shadow-lift",
-            t.tone === "error" ? "border border-rule bg-sheet text-ink" : "bg-ink text-paper",
+            "paper pointer-events-auto flex max-w-[520px] animate-settle items-start gap-3 rounded-[3px] px-4 py-3 text-[16px] leading-snug text-ink shadow-lift",
+            t.tone === "error" ? "paper-blush" : "paper-white",
           )}
         >
           {t.tone === "error" && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-accent" aria-hidden />}
@@ -42,7 +42,7 @@ export function Toaster() {
           {t.action && (
             <button
               type="button"
-              className="shrink-0 font-semibold underline underline-offset-2"
+              className="smallcaps shrink-0 self-center text-[10.5px] text-accent underline underline-offset-4"
               onClick={() => {
                 t.action!.onClick();
                 dismissToast(t.id);

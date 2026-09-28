@@ -83,11 +83,11 @@ export function TranscriptPanel({
   }, [playingId]);
 
   return (
-    <div className={cx("flex min-h-0 flex-col", className)}>
+    <div className={cx("receipt flex min-h-0 flex-col", className)}>
       {header}
       <div
         ref={scroller}
-        className="scroll-thin min-h-0 flex-1 overflow-y-auto px-4 pb-10 sm:px-5"
+        className="scroll-thin min-h-0 flex-1 overflow-y-auto px-2.5 pb-8 pt-1 sm:px-3"
         onScroll={(e) => {
           const el = e.currentTarget;
           stickToBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 90;
@@ -98,7 +98,7 @@ export function TranscriptPanel({
         {segments.length === 0 && !interim ? (
           empty
         ) : (
-          <ol className="space-y-1.5">
+          <ol className="space-y-0.5">
             {segments.map((s) => {
               const n = numbers.get(s.id);
               const active = receipts.activeSegments.has(s.id);
@@ -106,7 +106,7 @@ export function TranscriptPanel({
               const citing = open ? citingBullets(notes, s.id) : [];
               const sounding = playing?.id === s.id;
               return (
-                <li key={s.id} data-segment={s.id} className="group/line relative animate-fade-up">
+                <li key={s.id} data-segment={s.id} className="group/line relative animate-print">
                   <div
                     role={n ? "button" : undefined}
                     tabIndex={n ? 0 : undefined}
@@ -123,29 +123,37 @@ export function TranscriptPanel({
                           }
                         : undefined
                     }
+                    data-active={active || undefined}
                     className={cx(
-                      "relative overflow-hidden rounded-2xl px-3 py-3 transition-colors duration-200",
-                      active || (sounding && playing?.single) ? "bg-accent-soft" : sounding ? "bg-paper-2" : n ? "hover:bg-paper-2/70" : "",
+                      "relative overflow-hidden rounded-[3px] px-2.5 py-2.5 transition-colors duration-200",
+                      sounding && !(active || playing?.single) ? "bg-[#f3efe6]" : n ? "hover:bg-[#f6f3ec]" : "",
                       n && "cursor-pointer",
                     )}
                   >
                     {sounding && (
                       <span
                         aria-hidden
-                        className="absolute bottom-0 left-0 h-[2px] bg-accent/70 transition-[width] duration-100 ease-linear"
+                        className="absolute bottom-0 left-0 h-[2px] rounded-full bg-accent/70 transition-[width] duration-100 ease-linear"
                         style={{ width: `${Math.round((playing?.progress ?? 0) * 100)}%` }}
                       />
                     )}
-                    <div className={cx("flex items-baseline justify-between gap-3 text-[14px] text-muted", playable && "pr-8")}>
+                    <div className={cx("flex items-baseline justify-between gap-3 text-[11.5px] uppercase text-[#6a655b]", playable && "pr-8")}>
                       <span className="truncate">
                         {speakerLabel(s)}
                         {n && (
-                          <span className="ml-1.5 align-super text-[10.5px] font-semibold text-accent">{n}</span>
+                          <span className="ml-1.5 align-super font-sans text-[10.5px] font-bold text-accent">{n}</span>
                         )}
                       </span>
                       <time className="shrink-0 tabular-nums">{formatClock(s.t)}</time>
                     </div>
-                    <p className="mt-1 font-serif text-[17.5px] leading-[1.45] text-ink">{s.text}</p>
+                    <p className="mt-1 text-[13.5px] leading-[1.62] text-[#26241f]">
+                      <span
+                        key={active || (sounding && playing?.single) ? "on" : "off"}
+                        className={cx(active || (sounding && playing?.single) ? "hl hl-swipe" : "")}
+                      >
+                        {s.text}
+                      </span>
+                    </p>
                   </div>
                   {playable && onPlay && (
                     <button
@@ -154,7 +162,7 @@ export function TranscriptPanel({
                       aria-label={sounding ? "Stop playback" : `Hear this line (${formatClock(s.t)})`}
                       title={sounding ? "Stop" : "Hear this moment"}
                       className={cx(
-                        "absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-opacity hover:bg-paper-2 hover:text-ink focus-visible:opacity-100",
+                        "absolute right-1 top-1.5 flex h-8 w-8 items-center justify-center rounded-full text-muted transition-opacity hover:bg-[#efeae0] hover:text-ink focus-visible:opacity-100",
                         sounding ? "text-accent opacity-100" : "opacity-0 group-hover/line:opacity-100 [@media(hover:none)]:opacity-60",
                       )}
                     >
@@ -162,12 +170,10 @@ export function TranscriptPanel({
                     </button>
                   )}
                   {open && (
-                    <div className="animate-fade-in mx-3 mb-2 mt-1 rounded-xl border border-rule bg-sheet p-3 shadow-card">
-                      <p className="mb-1.5 text-[12px] font-medium uppercase tracking-[0.08em] text-muted">
-                        Cited in your notes
-                      </p>
+                    <div className="paper paper-cream animate-settle mx-2 mb-3 mt-1 rotate-[-0.5deg] rounded-[2px] p-3 font-serif">
+                      <p className="smallcaps mb-1.5 text-[10px] text-muted">Cited in your notes</p>
                       {citing.length === 0 ? (
-                        <p className="text-[14px] text-muted">No bullets cite this line.</p>
+                        <p className="text-[15px] italic text-muted">No bullets cite this line.</p>
                       ) : (
                         <ul className="space-y-1">
                           {citing.map((b) => (
@@ -175,9 +181,9 @@ export function TranscriptPanel({
                               <button
                                 type="button"
                                 onClick={() => receipts.selectBullet(b.key)}
-                                className="w-full rounded-lg px-2 py-1.5 text-left text-[14.5px] leading-snug text-ink-2 hover:bg-paper-2"
+                                className="w-full rounded-sm px-2 py-1.5 text-left text-[15.5px] leading-snug text-ink-2 hover:bg-white/70"
                               >
-                                <span className="block text-[12px] text-muted">{b.heading}</span>
+                                <span className="block text-[13px] italic text-muted">{b.heading}</span>
                                 {b.text}
                               </button>
                             </li>
@@ -190,15 +196,15 @@ export function TranscriptPanel({
               );
             })}
             {interim && interim.text && (
-              <li className="px-3 py-3" aria-hidden>
-                <div className="flex items-baseline justify-between gap-3 text-[14px] text-muted">
+              <li className="px-2.5 py-2.5" aria-hidden>
+                <div className="flex items-baseline justify-between gap-3 text-[11.5px] uppercase text-[#6a655b]">
                   <span className="flex items-center gap-1.5">
                     {speakerLabel(interim)}
                     <span className="inline-block h-1.5 w-1.5 animate-pulse-dot rounded-full bg-faint" />
                   </span>
                   <time className="tabular-nums">{formatClock(interim.t)}</time>
                 </div>
-                <p className="mt-1 font-serif text-[17.5px] leading-[1.45] text-faint">{interim.text}</p>
+                <p className="mt-1 text-[13.5px] leading-[1.62] text-faint">{interim.text}</p>
               </li>
             )}
           </ol>

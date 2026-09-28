@@ -67,7 +67,7 @@ test("sample meeting: plays, enhances with receipts, shows originals, shares", a
   const marker = page.locator("[data-bullet='0:0'] .fn-mark").first();
   await marker.hover();
   const cited = transcript.locator(`[data-segment='${firstBullet.cites[0]}'] > div`);
-  await expect(cited).toHaveClass(/bg-accent-soft/);
+  await expect(cited).toHaveAttribute("data-active", "true");
 
   // Clicking a cited line shows which bullets cite it.
   await cited.click();
@@ -152,7 +152,7 @@ test("recipes and asking across meetings answer with receipts", async ({ page })
   await page.getByPlaceholder("What did we decide about pricing?").press("Enter");
   await page.getByRole("button", { name: /Source: Weekly 1:1 with Priya/ }).click();
   await expect(page.locator("#meeting-title")).toHaveValue("Weekly 1:1 with Priya");
-  await expect(page.locator("[data-segment='s2'] > div").first()).toHaveClass(/bg-accent-soft/);
+  await expect(page.locator("[data-segment='s2'] > div").first()).toHaveAttribute("data-active", "true");
 });
 
 test("a live meeting keeps its audio locally, so its receipts play", async ({ page }) => {

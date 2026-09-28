@@ -63,16 +63,16 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
       }
     >
       <section>
-        <h3 className="text-[15px] font-semibold">Your OpenAI API key</h3>
-        <p className="mt-1 text-[14px] leading-relaxed text-muted">
+        <h3 className="smallcaps text-[10.5px] text-muted">Your OpenAI API key</h3>
+        <p className="mt-2 text-[15.5px] leading-relaxed text-ink-2">
           Kept in this browser&rsquo;s local storage and sent only with your own requests. The server uses it for that
           request and never stores or logs it. A 30-minute meeting costs roughly 10 cents.
         </p>
         {saved ? (
-          <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-rule bg-paper px-3.5 py-2.5">
+          <div className="receipt mt-4 flex flex-wrap items-center gap-2 px-4 py-2.5">
             <span className={cx("h-2 w-2 rounded-full", rejected ? "bg-accent" : "bg-ink")} aria-hidden />
-            <code className="text-[14px]">{maskKey(saved)}</code>
-            <span className="text-[13px] text-muted">{rejected ? "rejected by OpenAI, not in use" : "in use"}</span>
+            <code className="text-[13.5px]">{maskKey(saved)}</code>
+            <span className="text-[11.5px] uppercase text-[#6a655b]">{rejected ? "rejected by OpenAI, not in use" : "in use"}</span>
             <button
               type="button"
               className={cx(btn.base, btn.ghost, btn.sm, "ml-auto")}
@@ -117,12 +117,12 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 placeholder="sk-..."
-                className="h-11 w-full rounded-xl border border-rule bg-paper/60 px-3.5 pr-16 font-mono text-[14px] placeholder:text-faint focus:border-ink-2 focus:bg-sheet focus:outline-none"
+                className="paper paper-white h-11 w-full rounded-[3px] px-4 pr-16 font-mono text-[14px] placeholder:text-faint focus:shadow-[0_0_0_1.5px_var(--color-ink-2),var(--shadow-card)] focus:outline-none"
               />
               <button
                 type="button"
                 onClick={() => setReveal((r) => !r)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-[12.5px] text-muted hover:text-ink"
+                className="smallcaps absolute right-2 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-[10px] text-muted hover:text-ink"
               >
                 {reveal ? "Hide" : "Show"}
               </button>
@@ -133,23 +133,23 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
           </form>
         )}
         {!saved && hint && (
-          <p className="mt-2 flex items-center gap-2 text-[13px] text-ink-2" role="status">
+          <p className="mt-2 flex items-center gap-2 text-[14.5px] text-ink-2" role="status">
             <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden /> {hint}
           </p>
         )}
         {rejected && check.state === "idle" && (
-          <p className="mt-2 flex items-center gap-2 text-[13px] text-ink-2" role="status">
+          <p className="mt-2 flex items-center gap-2 text-[14.5px] text-ink-2" role="status">
             <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />
             OpenAI rejected this key, so Footnote stopped sending it. Remove it and paste a new one, or test it again.
           </p>
         )}
         {check.state === "ok" || check.state === "bad" ? (
-          <p className="mt-2 flex items-center gap-2 text-[13px] text-ink-2" role="status">
+          <p className="mt-2 flex items-center gap-2 text-[14.5px] text-ink-2" role="status">
             <span className={cx("h-1.5 w-1.5 rounded-full", check.state === "ok" ? "bg-ink" : "bg-accent")} aria-hidden />
             {check.message}
           </p>
         ) : null}
-        <p className="mt-2 text-[13px] text-muted">
+        <p className="mt-2 text-[14.5px] text-muted">
           Get one at{" "}
           <a
             href="https://platform.openai.com/api-keys"
@@ -163,18 +163,18 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
         </p>
       </section>
 
-      <section className="mt-6 border-t border-rule pt-5">
-        <h3 className="text-[15px] font-semibold">How AI is paid for</h3>
+      <section className="mt-6 border-t border-dashed border-rule-strong pt-5">
+        <h3 className="smallcaps text-[10.5px] text-muted">How AI is paid for</h3>
         {status === "loading" ? (
-          <p className="mt-1 text-[14px] text-muted">Checking…</p>
+          <p className="mt-2 text-[15.5px] italic text-muted">Checking…</p>
         ) : !status ? (
-          <p className="mt-1 text-[14px] text-muted">Couldn&rsquo;t reach the server.</p>
+          <p className="mt-2 text-[15.5px] italic text-muted">Couldn&rsquo;t reach the server.</p>
         ) : saved && !rejected ? (
-          <p className="mt-1 text-[14px] leading-relaxed text-muted">
+          <p className="mt-2 text-[15.5px] leading-relaxed text-ink-2">
             Your own key, so there are no limits. You pay OpenAI directly for what you use.
           </p>
         ) : status.hosted ? (
-          <p className="mt-1 text-[14px] leading-relaxed text-muted">
+          <p className="mt-2 text-[15.5px] leading-relaxed text-ink-2">
             {rejected ? "Until the key is fixed, you're on the free allowance: " : "Without a key you get a free allowance: "}
             {status.limits.enhances} enhancements, {status.limits.asks} questions and {status.limits.transcribeMinutes}{" "}
             minutes of tab-audio transcription a day. Left today:{" "}
@@ -185,13 +185,13 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
             .
           </p>
         ) : (
-          <p className="mt-1 text-[14px] leading-relaxed text-muted">
+          <p className="mt-2 text-[15.5px] leading-relaxed text-ink-2">
             This demo server doesn&rsquo;t include an AI key. The sample call still shows Enhance and the one-click recipes
             as cached demos. For your own meetings, add a key above. Notes, history, search, export and your mic transcript
             all work without one.
           </p>
         )}
-        <p className="mt-3 text-[13px] leading-relaxed text-muted">
+        <p className="mt-3 text-[14.5px] italic leading-relaxed text-muted">
           Footnote is free and open source with your own key. <span className="text-ink-2">Footnote Pro</span>, $59 once
           (coming soon), includes the AI instead: 1,000 enhancements and 20 hours of transcription a year, no key needed.
         </p>

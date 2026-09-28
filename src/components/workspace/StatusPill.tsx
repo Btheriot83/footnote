@@ -21,7 +21,7 @@ export function Waveform({ active }: { active: boolean }) {
       {(active ? history.current : Array<number>(BARS).fill(0.08)).map((v, i) => (
         <span
           key={i}
-          className="w-[2px] rounded-full bg-faint transition-[height] duration-100"
+          className="w-[2px] rounded-full bg-ink/40 transition-[height] duration-100"
           style={{ height: `${Math.round(3 + v * 17)}px`, opacity: 0.45 + (i / BARS) * 0.55 }}
         />
       ))}
@@ -52,7 +52,7 @@ export function RecordingPill({
 }) {
   return (
     <div
-      className="flex h-11 items-center gap-2 rounded-xl border border-rule bg-sheet pl-3 pr-3 sm:gap-2.5 sm:pl-3.5 shadow-[0_1px_1px_rgba(40,32,20,0.04)]"
+      className="paper paper-white flex h-10 items-center gap-2 rounded-full pl-3.5 pr-4 sm:gap-2.5"
       role="status"
     >
       <span
@@ -63,10 +63,10 @@ export function RecordingPill({
         )}
         aria-hidden
       />
-      <span className={cx("hidden text-[15px] font-medium sm:inline", dot === "accent" ? "text-accent" : "text-muted")}>
+      <span className={cx("smallcaps hidden text-[10.5px] sm:inline", dot === "accent" ? "text-accent" : "text-muted")}>
         {label}
       </span>
-      <span className="text-[15px] font-medium tabular-nums text-ink">{formatClock(elapsedMs)}</span>
+      <span className="font-mono text-[14px] tabular-nums text-ink">{formatClock(elapsedMs)}</span>
       <span className="hidden sm:inline-flex">
         <Waveform active={live} />
       </span>

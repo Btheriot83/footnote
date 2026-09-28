@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { MenuIcon, MicIcon, PlayIcon, PlusIcon } from "@/components/icons";
 import { Toaster } from "@/components/Toaster";
 import { btn, cx } from "@/components/ui";
+import { Wordmark } from "@/components/Wordmark";
 import { db } from "@/lib/db";
 import { startLive, stopLive } from "@/lib/client/live-controller";
 import { preloadSample, startSample, stopSampleAudio } from "@/lib/client/sample-controller";
@@ -239,9 +240,9 @@ export function Workspace() {
   );
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-paper text-ink">
+    <div className="desk flex h-dvh overflow-hidden text-ink">
       {/* Desktop sidebar */}
-      <aside className="hidden w-[300px] shrink-0 border-r border-rule lg:block xl:w-[356px]">{isDesktop && sidebar}</aside>
+      <aside className="hidden w-[292px] shrink-0 lg:block xl:w-[330px]">{isDesktop && sidebar}</aside>
 
       {/* Drawer */}
       <div
@@ -249,13 +250,13 @@ export function Workspace() {
         aria-hidden={!drawer}
       >
         <div
-          className={cx("absolute inset-0 bg-ink/25 transition-opacity duration-200", drawer ? "opacity-100" : "opacity-0")}
+          className={cx("absolute inset-0 bg-[rgba(52,38,20,0.32)] transition-opacity duration-200", drawer ? "opacity-100" : "opacity-0")}
           onClick={() => setDrawer(false)}
         />
         <div
           className={cx(
-            "absolute inset-y-0 left-0 w-[86%] max-w-[340px] border-r border-rule transition-[transform,box-shadow] duration-250 ease-out",
-            drawer ? "translate-x-0 shadow-lift" : "-translate-x-full shadow-none",
+            "desk absolute inset-y-0 left-0 w-[86%] max-w-[340px] transition-[transform,box-shadow] duration-300 ease-out",
+            drawer ? "translate-x-0 shadow-[12px_0_40px_-12px_rgba(52,38,20,0.5)]" : "-translate-x-full shadow-none",
           )}
           inert={!drawer}
         >
@@ -330,44 +331,46 @@ function EmptyWorkspace({
   onSample: () => void;
 }) {
   return (
-    <div className="flex h-full flex-col bg-sheet">
-      <header className="flex h-[76px] shrink-0 items-center border-b border-rule px-3 sm:px-6 lg:hidden">
+    <div className="flex h-full flex-col">
+      <header className="flex h-[68px] shrink-0 items-center gap-3 px-3 sm:px-6 lg:hidden">
         <button
           type="button"
           onClick={onMenu}
-          className="flex h-10 w-10 items-center justify-center rounded-xl text-ink-2 hover:bg-paper-2"
+          className="pill h-10 w-10 shrink-0 p-0 tracking-normal"
           aria-label="Open meetings"
         >
-          <MenuIcon />
+          <MenuIcon size={20} />
         </button>
-        <Link href="/" className="ml-2 font-serif text-[24px]">
-          Footnote
+        <Link href="/" className="rounded-sm">
+          <Wordmark size={24} />
         </Link>
       </header>
       {loading ? (
         <div className="flex flex-1 items-center justify-center" aria-busy>
-          <span className="h-2 w-2 animate-pulse-dot rounded-full bg-faint" />
+          <span className="h-2 w-2 animate-pulse-dot rounded-full bg-ink/40" />
         </div>
       ) : (
-        <div className="flex flex-1 items-center justify-center px-6 py-16">
-          <div className="max-w-[520px] animate-fade-up text-center">
-            <p className="font-serif text-[15px] italic text-muted">{hasMeetings ? "Welcome to Footnote" : "No meetings yet"}</p>
-            <h1 className="mt-3 font-serif text-[40px] leading-[1.1] tracking-[-0.02em] sm:text-[48px]">
+        <div className="flex flex-1 items-center justify-center px-4 py-10 sm:px-6">
+          <div className="paper paper-cream w-full max-w-[560px] animate-settle rounded-[3px] px-7 py-10 text-center sm:px-12 sm:py-12">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/desk/icon.webp" alt="" width={240} height={240} className="mx-auto h-16 w-16" />
+            <p className="smallcaps mt-5 text-muted">{hasMeetings ? "Welcome to Footnote" : "No meetings yet"}</p>
+            <h1 className="mt-3 font-serif text-[36px] font-medium leading-[1.08] tracking-[-0.02em] sm:text-[44px]">
               Notes with receipts start here.
             </h1>
-            <p className="mx-auto mt-4 max-w-[430px] text-[16.5px] leading-relaxed text-ink-2">
+            <p className="mx-auto mt-4 max-w-[430px] text-[17.5px] leading-relaxed text-ink-2">
               Start a meeting and type rough notes while you talk. Afterwards, Footnote writes them up and links every line
               to the moment it was said.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <button type="button" onClick={onSample} className={cx(btn.base, btn.primary, btn.lg)}>
-                <PlayIcon size={16} /> Try a sample meeting
+                <PlayIcon size={14} /> Try a sample meeting
               </button>
               <button type="button" onClick={onNew} className={cx(btn.base, btn.secondary, btn.lg)}>
-                <PlusIcon size={18} /> New meeting
+                <PlusIcon size={16} /> New meeting
               </button>
             </div>
-            <p className="mt-6 inline-flex items-center gap-1.5 text-[13.5px] text-muted">
+            <p className="mt-6 inline-flex items-center gap-1.5 text-[15px] italic text-muted">
               <MicIcon size={15} /> Works best in Chrome or Edge on a desktop.
             </p>
           </div>

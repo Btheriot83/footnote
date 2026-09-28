@@ -176,12 +176,12 @@ export function AskAllDialog({ open, onClose, meetings, initialQuestion, onOpenS
           onChange={(e) => setQ(e.target.value)}
           disabled={!usable.length}
           placeholder="What did we decide about pricing?"
-          className="h-12 w-full rounded-2xl border border-rule bg-paper/50 pl-11 pr-20 text-[15.5px] placeholder:text-faint focus:border-rule-strong focus:bg-sheet focus:outline-none disabled:opacity-60"
+          className="paper paper-white h-12 w-full rounded-[3px] pl-11 pr-20 text-[17px] placeholder:italic placeholder:text-faint focus:shadow-[0_0_0_1.5px_var(--color-ink-2),var(--shadow-card)] focus:outline-none disabled:opacity-60"
         />
         <button
           type="submit"
           disabled={!q.trim() || loading}
-          className="absolute right-2 top-1/2 h-8 -translate-y-1/2 rounded-lg bg-ink px-3 text-[13.5px] font-medium text-paper disabled:opacity-40"
+          className="pill pill-ink absolute right-2 top-1/2 h-8 -translate-y-1/2 px-4 text-[10px]"
         >
           Ask
         </button>
@@ -194,7 +194,7 @@ export function AskAllDialog({ open, onClose, meetings, initialQuestion, onOpenS
               key={ex}
               type="button"
               onClick={() => void run(ex)}
-              className="rounded-full border border-rule bg-sheet px-3 py-1.5 text-[13.5px] text-ink-2 hover:border-rule-strong"
+              className="pill h-auto whitespace-normal px-3.5 py-1.5 text-left font-serif text-[15px] font-normal normal-case tracking-normal text-ink-2"
             >
               {ex}
             </button>
@@ -203,13 +203,13 @@ export function AskAllDialog({ open, onClose, meetings, initialQuestion, onOpenS
       )}
 
       {(loading || answer || error) && (
-        <div className="animate-fade-up mt-5 rounded-2xl bg-paper/60 px-5 py-4" aria-live="polite">
+        <div className="paper paper-white animate-settle mt-5 rounded-[2px] px-6 py-5" aria-live="polite">
           {asked && (
-            <p className="flex items-center gap-2 text-[13px] font-medium text-muted">
+            <p className="flex items-center gap-2 text-[15px] italic text-muted">
               {asked}
               {cached && (
                 <span
-                  className="rounded-full border border-rule px-2 py-0.5 text-[11px] font-medium uppercase tracking-[0.06em]"
+                  className="-rotate-[2deg] rounded-[2px] border-[1.5px] border-accent/60 px-1.5 py-[1px] font-sans text-[9px] font-bold not-italic uppercase tracking-[0.18em] text-accent/90"
                   title="No AI key is available right now, so this answer was computed ahead of time from the example meetings."
                 >
                   Cached demo
@@ -254,7 +254,7 @@ export function AskAllDialog({ open, onClose, meetings, initialQuestion, onOpenS
             </div>
           )}
           {answer && refs.size > 0 && (
-            <p className="mt-4 border-t border-rule pt-3 text-[12.5px] text-muted">
+            <p className="mt-4 border-t border-dashed border-rule-strong pt-3 text-[14px] italic text-muted">
               Read {refs.size === 1 ? "1 meeting" : `${refs.size} meetings`}:{" "}
               {[...refs.values()].map((m) => m.title || "Untitled").join(" · ")}
             </p>

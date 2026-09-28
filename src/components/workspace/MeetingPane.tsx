@@ -279,8 +279,8 @@ export function MeetingPane({
 
   if (!m) {
     return (
-      <div className="flex h-full items-center justify-center bg-sheet text-muted" aria-busy>
-        <span className="h-2 w-2 animate-pulse-dot rounded-full bg-faint" />
+      <div className="flex h-full items-center justify-center text-muted" aria-busy>
+        <span className="h-2 w-2 animate-pulse-dot rounded-full bg-ink/40" />
       </div>
     );
   }
@@ -374,7 +374,7 @@ export function MeetingPane({
         <button
           type="button"
           onClick={() => stopLive()}
-          className={cx(btn.base, btn.secondary, "h-11 shrink-0 px-3.5 text-[14.5px]")}
+          className={cx(btn.base, btn.secondary, "h-10 shrink-0 px-4 text-[10.5px]")}
           aria-label={notesOnly ? "End meeting" : "Stop recording"}
         >
           <StopIcon size={14} /> <span className="hidden sm:inline">{notesOnly ? "End" : "Stop"}</span>
@@ -389,7 +389,7 @@ export function MeetingPane({
         <button
           type="button"
           onClick={() => (playing ? pauseSample() : void playSample())}
-          className={cx(btn.base, btn.secondary, btn.icon, "h-11 w-11 shrink-0")}
+          className={cx(btn.base, btn.secondary, btn.icon, "h-10 w-10 shrink-0")}
           aria-label={playing ? "Pause sample" : "Play sample"}
         >
           {playing ? <PauseIcon size={16} /> : <PlayIcon size={16} />}
@@ -398,7 +398,7 @@ export function MeetingPane({
           type="button"
           onClick={() => skipSampleToEnd()}
           aria-label="Skip to end"
-          className={cx(btn.base, btn.secondary, "h-11 shrink-0 px-3.5 text-[14.5px] max-sm:hidden")}
+          className={cx(btn.base, btn.secondary, "h-10 shrink-0 px-4 text-[10.5px] max-sm:hidden")}
         >
           <SkipIcon size={15} /> Skip to end
         </button>
@@ -406,7 +406,7 @@ export function MeetingPane({
     );
   } else if (meeting.status === "draft") {
     status = (
-      <button type="button" onClick={onRequestStart} className={cx(btn.base, btn.secondary, "h-11 px-4 text-[15px]")}>
+      <button type="button" onClick={onRequestStart} className={cx(btn.base, btn.secondary, "h-10 px-5 text-[10.5px]")}>
         <span className="h-2.5 w-2.5 rounded-full bg-accent" aria-hidden />
         Start recording
       </button>
@@ -424,7 +424,7 @@ export function MeetingPane({
           <button
             type="button"
             onClick={() => (listening ? stopClip() : playCall(meeting))}
-            className={cx(btn.base, btn.secondary, "h-11 shrink-0 px-3.5 text-[14.5px]")}
+            className={cx(btn.base, btn.secondary, "h-10 shrink-0 px-4 text-[10.5px]")}
             aria-label={listening ? "Stop listening" : "Listen to the call"}
           >
             {listening ? <PauseIcon size={15} /> : <SpeakerIcon size={16} />}
@@ -435,7 +435,7 @@ export function MeetingPane({
           <button
             type="button"
             onClick={onRequestStart}
-            className={cx(btn.base, btn.ghost, "h-11 px-3 text-[14.5px] max-sm:hidden")}
+            className={cx(btn.base, btn.ghost, "h-10 px-3 text-[10.5px] max-sm:hidden")}
           >
             Resume
           </button>
@@ -445,7 +445,7 @@ export function MeetingPane({
   }
 
   const transcriptEmpty = (
-    <div className="px-3 pt-2 text-[15px] leading-relaxed text-muted">
+    <div className="px-2 pt-3 font-serif text-[16px] leading-relaxed text-muted">
       {notesOnly ? (
         <>
           <p className="flex items-center gap-2 text-ink-2">
@@ -486,16 +486,16 @@ export function MeetingPane({
 
 
   return (
-    <div className="flex h-full min-w-0 flex-col bg-sheet">
-      {/* Top bar */}
-      <header className="flex h-[76px] shrink-0 items-center gap-2 border-b border-rule px-3 sm:gap-3 sm:px-6">
+    <div className="flex h-full min-w-0 flex-col">
+      {/* Top bar, on the desk */}
+      <header className="flex h-[64px] shrink-0 items-center gap-2 px-3 sm:h-[72px] sm:gap-3 sm:px-5 lg:pl-1">
         <button
           type="button"
           onClick={onOpenSidebar}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-ink-2 hover:bg-paper-2 lg:hidden"
+          className="pill h-10 w-10 shrink-0 p-0 tracking-normal lg:hidden"
           aria-label="Open meetings"
         >
-          <MenuIcon />
+          <MenuIcon size={20} />
         </button>
         <div className="min-w-0 shrink">{status}</div>
         <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
@@ -507,14 +507,14 @@ export function MeetingPane({
             className={cx(
               btn.base,
               nudge ? btn.primary : btn.secondary,
-              "h-11 shrink-0 px-3.5 text-[15px] sm:px-4",
-              nudge && "ring-4 ring-ink/10",
+              "h-10 shrink-0 px-4 text-[10.5px] sm:px-5",
+              nudge && "ring-[5px] ring-white/45",
             )}
           >
             {streaming ? (
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent" aria-hidden />
+              <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-r-transparent" aria-hidden />
             ) : (
-              <SparkIcon size={17} className={cx(!nudge && "hidden sm:block")} />
+              <SparkIcon size={15} className={cx(!nudge && "hidden sm:block")} />
             )}
             <span className={cx(nudge ? "" : "hidden sm:inline")}>
               {streaming ? "Enhancing…" : meeting.enhanced ? "Re-enhance" : "Enhance notes"}
@@ -524,18 +524,18 @@ export function MeetingPane({
           <button
             type="button"
             onClick={() => setShareOpen(true)}
-            className={cx(btn.base, btn.secondary, "h-11 shrink-0 px-3.5 text-[15px] max-sm:hidden sm:px-4")}
+            className={cx(btn.base, btn.secondary, "h-10 shrink-0 px-4 text-[10.5px] max-sm:hidden sm:px-5")}
             aria-label="Share"
           >
-            <ShareIcon size={18} />
+            <ShareIcon size={15} />
             <span className="hidden sm:inline">Share</span>
           </button>
-          <Menu label="More actions" trigger={<MoreIcon size={22} />} items={menuItems} />
+          <Menu label="More actions" trigger={<MoreIcon size={20} />} items={menuItems} />
         </div>
       </header>
 
       {/* Phone tabs */}
-      <div className="flex shrink-0 border-b border-rule md:hidden" role="tablist" aria-label="View">
+      <div className="paper paper-stone mx-3 mb-2 flex shrink-0 rounded-full p-1 md:hidden" role="tablist" aria-label="View">
         {(["notes", "transcript"] as const).map((t) => (
           <button
             key={t}
@@ -544,13 +544,13 @@ export function MeetingPane({
             aria-selected={mobileTab === t}
             onClick={() => setMobileTab(t)}
             className={cx(
-              "flex-1 py-3 text-[14.5px] font-medium capitalize",
-              mobileTab === t ? "text-ink shadow-[inset_0_-2px_0_var(--color-ink)]" : "text-muted",
+              "flex-1 rounded-full py-2 font-sans text-[11px] font-semibold uppercase tracking-[0.14em] transition-colors",
+              mobileTab === t ? "pill text-ink" : "text-muted hover:text-ink",
             )}
           >
-            {t}
+            {t === "notes" ? "Notes" : "Transcript"}
             {t === "transcript" && meeting.segments.length > 0 && (
-              <span className="ml-1.5 text-[12px] text-muted">{meeting.segments.length}</span>
+              <span className="ml-1.5 font-mono text-[11px] tracking-normal text-muted">{meeting.segments.length}</span>
             )}
           </button>
         ))}
@@ -559,12 +559,15 @@ export function MeetingPane({
       <div className="flex min-h-0 flex-1">
         {/* Document */}
         <main
-          className={cx("scroll-thin min-w-0 flex-1 overflow-y-auto", isMobile && mobileTab !== "notes" && "hidden")}
+          className={cx(
+            "scroll-thin min-w-0 flex-1 overflow-y-auto px-2 pb-3 pt-1 sm:px-4 sm:pb-5 lg:pl-1",
+            isMobile && mobileTab !== "notes" && "hidden",
+          )}
           onClick={(e) => {
             if (!(e.target as HTMLElement).closest("button, [data-bullet], a, input, textarea")) receipts.clear();
           }}
         >
-          <article className="mx-auto w-full max-w-[720px] px-5 pb-24 pt-10 sm:px-10 sm:pt-14 xl:px-16">
+          <article className="paper paper-cream mx-auto min-h-[calc(100%-4px)] w-full max-w-[800px] rounded-[3px] px-5 pb-24 pt-9 sm:px-12 sm:pt-12 xl:px-[72px] xl:pt-14">
             <label htmlFor="meeting-title" className="sr-only">
               Meeting title
             </label>
@@ -582,9 +585,9 @@ export function MeetingPane({
                 }
               }}
               onBlur={(e) => e.target.value !== e.target.value.trim() && patchMeetingState(meeting.id, { title: e.target.value.trim() })}
-              className="block w-full resize-none overflow-hidden bg-transparent [field-sizing:content] font-serif text-[34px] leading-[1.15] tracking-[-0.018em] text-ink placeholder:text-faint focus:outline-none sm:text-[46px]"
+              className="block w-full resize-none overflow-hidden bg-transparent [field-sizing:content] font-serif text-[34px] font-medium leading-[1.1] tracking-[-0.022em] text-ink placeholder:text-faint focus:outline-none sm:text-[46px]"
             />
-            <div className="mt-2.5 flex flex-wrap items-center gap-x-2 text-[16px] text-ink-2/80 sm:text-[17px]">
+            <div className="mt-2.5 flex flex-wrap items-center gap-x-2 text-[16.5px] italic text-muted sm:text-[18px]">
               <span>{formatDate(meeting.createdAt)}</span>
               {meeting.durationMs > 0 && (
                 <>
@@ -598,7 +601,7 @@ export function MeetingPane({
                 <select
                   value={meeting.template}
                   onChange={(e) => patchMeetingState(meeting.id, { template: e.target.value as TemplateId })}
-                  className="cursor-pointer appearance-none rounded-md bg-transparent pr-1 hover:text-ink focus:outline-none"
+                  className="cursor-pointer appearance-none rounded-md bg-transparent pr-1 italic hover:text-ink focus:outline-none"
                 >
                   {TEMPLATES.map((t) => (
                     <option key={t.id} value={t.id}>
@@ -608,12 +611,12 @@ export function MeetingPane({
                 </select>
               </label>
               {meeting.isExample && (
-                <span className="ml-1 rounded-full border border-rule px-2 py-0.5 text-[12px] font-medium uppercase tracking-[0.06em] text-muted">
+                <span className="ml-2 inline-block -rotate-[2deg] rounded-[2px] border-[1.5px] border-accent/60 px-1.5 py-[1px] font-sans text-[9.5px] font-bold not-italic uppercase tracking-[0.18em] text-accent/90">
                   Example
                 </span>
               )}
               {meeting.enhancedSource === "cached" && !meeting.isExample && view === "enhanced" && (
-                <span className="ml-1 rounded-full border border-rule px-2 py-0.5 text-[12px] font-medium uppercase tracking-[0.06em] text-muted">
+                <span className="ml-2 inline-block -rotate-[2deg] rounded-[2px] border-[1.5px] border-accent/60 px-1.5 py-[1px] font-sans text-[9.5px] font-bold not-italic uppercase tracking-[0.18em] text-accent/90">
                   Cached demo
                 </span>
               )}
@@ -629,21 +632,21 @@ export function MeetingPane({
                 />
               )}
               {nudge && (
-                <div className="animate-fade-up flex flex-wrap items-center gap-3 rounded-2xl border border-rule bg-paper px-4 py-3.5">
+                <div className="paper paper-butter animate-settle flex -rotate-[0.6deg] flex-wrap items-center gap-3 rounded-[2px] px-5 py-4 max-sm:flex-col max-sm:items-start">
                   <SparkIcon size={18} className="text-ink" />
-                  <p className="flex-1 text-[15px] text-ink-2">
+                  <p className="flex-1 text-[16.5px] leading-snug text-ink-2">
                     That&rsquo;s the whole call. <strong className="font-semibold text-ink">Now hit Enhance</strong> and
                     watch every line get its receipt.
                   </p>
                   <button type="button" onClick={() => void runEnhance()} className={cx(btn.base, btn.primary, btn.sm)}>
-                    Enhance <kbd className="font-sans text-[12px] opacity-70">{mod}↵</kbd>
+                    Enhance <kbd className="font-sans text-[11px] tracking-normal opacity-70">{mod}↵</kbd>
                   </button>
                 </div>
               )}
               {issues.map((issue) => (
                 <div
                   key={issue.source + issue.code}
-                  className="animate-fade-up flex items-start gap-3 rounded-2xl border border-rule bg-paper px-4 py-3.5 text-[14.5px] leading-relaxed"
+                  className="paper paper-blush animate-settle flex rotate-[0.4deg] items-start gap-3 rounded-[2px] px-5 py-4 text-[15.5px] leading-relaxed"
                   role="alert"
                 >
                   <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-accent" aria-hidden />
@@ -678,7 +681,7 @@ export function MeetingPane({
               ))}
               {error && (
                 <div
-                  className="animate-fade-up flex items-start gap-3 rounded-2xl border border-rule bg-paper px-4 py-3.5 text-[14.5px] leading-relaxed"
+                  className="paper paper-blush animate-settle flex rotate-[0.4deg] items-start gap-3 rounded-[2px] px-5 py-4 text-[15.5px] leading-relaxed"
                   role="alert"
                 >
                   <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-accent" aria-hidden />
@@ -729,19 +732,19 @@ export function MeetingPane({
             {view === "enhanced" && shown ? (
               <div className="mt-9">
                 <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                  <h2 className="font-serif text-[29px] leading-tight tracking-[-0.01em] sm:text-[32px]">Enhanced notes</h2>
+                  <h2 className="font-serif text-[29px] font-medium leading-tight tracking-[-0.015em] sm:text-[32px]">Enhanced notes</h2>
                   {meeting.enhanced && !streaming && (
                     <button
                       type="button"
                       onClick={() => setView("notes")}
-                      className="text-[14.5px] text-muted underline decoration-rule-strong underline-offset-4 hover:text-ink"
+                      className="text-[15.5px] italic text-muted underline decoration-rule-strong underline-offset-4 hover:text-ink"
                     >
                       Show my original notes
                     </button>
                   )}
                 </div>
                 {(numbers.size > 0 || streaming) && (
-                  <p className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13.5px] text-muted">
+                  <p className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[14.5px] text-muted">
                     <span className="inline-flex items-center gap-1.5">
                       <span className="h-[6px] w-[6px] rounded-full bg-ink" /> Your notes
                     </span>
@@ -749,7 +752,7 @@ export function MeetingPane({
                       <span className="h-[6px] w-[6px] rounded-full bg-faint" /> Added from the transcript
                       <sup className="font-semibold text-accent">1</sup>
                     </span>
-                    <span className="hidden sm:inline">
+                    <span className="hidden italic sm:inline">
                       {audible ? "Hover a number to see who said it. Click to hear it." : "Hover a number to see who said it."}
                     </span>
                   </p>
@@ -779,12 +782,12 @@ export function MeetingPane({
             ) : (
               <div className="mt-9">
                 <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                  <h2 className="font-serif text-[22px] leading-tight text-ink-2">Your notes</h2>
+                  <h2 className="smallcaps text-muted">Your notes</h2>
                   {meeting.enhanced && (
                     <button
                       type="button"
                       onClick={() => setView("enhanced")}
-                      className="text-[14.5px] text-muted underline decoration-rule-strong underline-offset-4 hover:text-ink"
+                      className="text-[15.5px] italic text-muted underline decoration-rule-strong underline-offset-4 hover:text-ink"
                     >
                       Show enhanced notes
                     </button>
@@ -817,7 +820,7 @@ export function MeetingPane({
         {/* Transcript */}
         <aside
           className={cx(
-            "flex min-h-0 flex-col border-rule bg-sheet md:w-[340px] md:border-l xl:w-[390px]",
+            "flex min-h-0 shrink-0 flex-col px-3 pb-4 pt-3 md:w-[340px] md:pl-1 md:pr-4 md:pt-2 xl:w-[392px] xl:pr-5",
             isMobile ? (mobileTab === "transcript" ? "flex-1" : "hidden") : "",
           )}
           aria-label="Transcript"
@@ -835,15 +838,25 @@ export function MeetingPane({
             playing={playingNow}
             onPlay={(id) => (playingNow?.id === id ? stopClip() : playSegment(meeting, id))}
             header={
-              <div className="flex items-baseline justify-between px-7 pb-3 pt-7">
-                <h2 className="font-serif text-[26px] leading-none tracking-[-0.01em]">Transcript</h2>
-                {(live && !notesOnly) || (sample && sample.phase === "playing") ? (
-                  <span className="flex items-center gap-1.5 text-[13px] text-muted">
-                    <span className="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-accent" /> Live
-                  </span>
-                ) : meeting.segments.length > 0 ? (
-                  <span className="text-[13px] text-muted">{meeting.segments.length} lines</span>
-                ) : null}
+              <div className="shrink-0 px-5 pb-1 pt-5 text-center">
+                <h2 className="font-mono text-[13px] font-medium uppercase tracking-[0.3em]">Transcript</h2>
+                <p className="mt-1 truncate font-mono text-[11px] uppercase text-[#6f6a60]">
+                  {meeting.title || "Untitled meeting"}
+                </p>
+                <p className="mt-0.5 flex justify-center gap-2 font-mono text-[11px] uppercase text-[#6f6a60]">
+                  <span>{formatDate(meeting.createdAt)}</span>
+                  <span aria-hidden>·</span>
+                  {(live && !notesOnly) || (sample && sample.phase === "playing") ? (
+                    <span className="inline-flex items-center gap-1.5 text-accent">
+                      <span className="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-accent" /> Live
+                    </span>
+                  ) : meeting.segments.length > 0 ? (
+                    <span>{meeting.segments.length} lines</span>
+                  ) : (
+                    <span>No lines yet</span>
+                  )}
+                </p>
+                <hr className="receipt-rule mt-3" />
               </div>
             }
           />
@@ -889,10 +902,10 @@ function SourceList({ sources }: { sources: ReturnType<typeof useSession>["sourc
 function SampleBanner({ blocked, tookOver, onPlay }: { blocked: boolean; tookOver: boolean; onPlay: () => void }) {
   if (blocked) {
     return (
-      <div className="animate-fade-up flex flex-col items-start gap-4 rounded-2xl border border-rule bg-paper px-5 py-4 sm:flex-row sm:items-center">
+      <div className="paper paper-sky animate-settle flex -rotate-[0.4deg] flex-col items-start gap-4 rounded-[2px] px-5 py-4 sm:flex-row sm:items-center">
         <div className="min-w-0 flex-1">
-          <p className="font-serif text-[19px] text-ink">A 2-minute renewal call with Dana from Acme</p>
-          <p className="mt-0.5 text-[14px] text-muted">
+          <p className="font-serif text-[20px] font-medium text-ink">A 2-minute renewal call with Dana from Acme</p>
+          <p className="mt-0.5 text-[15px] text-ink-2">
             Press play: the transcript and your rough notes appear as if you were on the call. Sound on.
           </p>
         </div>
@@ -903,8 +916,8 @@ function SampleBanner({ blocked, tookOver, onPlay }: { blocked: boolean; tookOve
     );
   }
   return (
-    <div className="flex items-start gap-2.5 rounded-2xl bg-paper px-4 py-3 text-[14px] leading-relaxed text-muted">
-      <InfoIcon size={16} className="mt-[3px] shrink-0" />
+    <div className="flex items-start gap-2.5 border-l-2 border-margin/70 py-0.5 pl-3.5 text-[15.5px] italic leading-relaxed text-muted">
+      <InfoIcon size={16} className="mt-[4px] shrink-0 not-italic" />
       <p>
         {tookOver
           ? "You're taking the notes now. Type anything; Enhance works from your notes and the transcript."
@@ -954,10 +967,10 @@ function ConfirmDelete({
     <dialog
       ref={ref}
       onClose={onCancel}
-      className="m-auto w-[calc(100%-24px)] max-w-[400px] rounded-[20px] border border-rule bg-sheet p-6 text-ink shadow-lift backdrop:bg-[rgba(27,25,21,0.28)]"
+      className="paper paper-cream m-auto w-[calc(100%-24px)] max-w-[420px] rounded-[3px] p-7 text-ink shadow-lift backdrop:bg-[rgba(52,38,20,0.35)] open:animate-settle"
     >
-      <h2 className="font-serif text-[22px]">Delete this meeting?</h2>
-      <p className="mt-2 text-[14.5px] text-muted">
+      <h2 className="font-serif text-[25px] font-medium">Delete this meeting?</h2>
+      <p className="mt-2 text-[16px] text-ink-2">
         &ldquo;{title}&rdquo; and its transcript will be removed from this device. This can&rsquo;t be undone.
       </p>
       <div className="mt-5 flex justify-end gap-2">

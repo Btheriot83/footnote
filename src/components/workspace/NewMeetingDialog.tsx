@@ -75,7 +75,7 @@ export function NewMeetingDialog({ open, onClose, mode, initialTemplate, onStart
       footer={
         <>
           {liveElsewhere && (
-            <span className="mr-auto text-[13px] text-muted">This stops the recording in progress.</span>
+            <span className="mr-auto text-[14.5px] italic text-muted">This stops the recording in progress.</span>
           )}
           {mode === "new" && (
             <button type="button" className={cx(btn.base, btn.secondary, btn.md)} onClick={() => start(false)}>
@@ -97,24 +97,26 @@ export function NewMeetingDialog({ open, onClose, mode, initialTemplate, onStart
       {mode === "new" && (
         <>
           <label className="block">
-            <span className="text-[13px] font-medium text-muted">Title</span>
+            <span className="smallcaps text-[10.5px] text-muted">Title</span>
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Untitled meeting"
-              className="mt-1.5 h-11 w-full rounded-xl border border-rule bg-paper/60 px-3.5 font-serif text-[18px] placeholder:text-faint focus:border-ink-2 focus:bg-sheet focus:outline-none"
+              className="paper paper-white mt-2 h-12 w-full rounded-[3px] px-4 font-serif text-[19px] placeholder:italic placeholder:text-faint focus:shadow-[0_0_0_1.5px_var(--color-ink-2),var(--shadow-card)] focus:outline-none"
             />
           </label>
 
           <fieldset className="mt-5">
-            <legend className="text-[13px] font-medium text-muted">Template</legend>
+            <legend className="smallcaps text-[10.5px] text-muted">Template</legend>
             <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
               {TEMPLATES.map((t) => (
                 <label
                   key={t.id}
                   className={cx(
-                    "relative cursor-pointer rounded-xl border px-3.5 py-3 transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ink",
-                    template === t.id ? "border-ink bg-sheet shadow-card" : "border-rule bg-paper/50 hover:border-rule-strong",
+                    "relative cursor-pointer rounded-[3px] border px-3.5 py-3 transition-[background-color,border-color,box-shadow,rotate] duration-300 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ink",
+                    template === t.id
+                      ? "paper paper-white -rotate-[0.8deg] border-ink/70"
+                      : "border-ink/10 bg-white/30 hover:border-ink/25 hover:bg-white/60",
                   )}
                 >
                   <input
@@ -125,8 +127,8 @@ export function NewMeetingDialog({ open, onClose, mode, initialTemplate, onStart
                     onChange={() => setTemplate(t.id)}
                     className="sr-only"
                   />
-                  <span className="block font-serif text-[17px] leading-tight">{t.name}</span>
-                  <span className="mt-1 block text-[12.5px] leading-snug text-muted">{t.blurb}</span>
+                  <span className="block font-serif text-[18px] font-medium leading-tight">{t.name}</span>
+                  <span className="mt-1 block text-[14px] leading-snug text-muted">{t.blurb}</span>
                 </label>
               ))}
             </div>
@@ -135,7 +137,7 @@ export function NewMeetingDialog({ open, onClose, mode, initialTemplate, onStart
       )}
 
       <fieldset className={mode === "new" ? "mt-5" : ""}>
-        <legend className="text-[13px] font-medium text-muted">Listen to</legend>
+        <legend className="smallcaps text-[10.5px] text-muted">Listen to</legend>
         <div className="mt-2 grid gap-2 sm:grid-cols-2">
           <SourceToggle
             checked={mic}
@@ -165,7 +167,7 @@ export function NewMeetingDialog({ open, onClose, mode, initialTemplate, onStart
           />
         </div>
         {noAi && needsAi && (
-          <p className="mt-2 flex items-start gap-2 text-[13px] leading-snug text-ink-2" role="status">
+          <p className="mt-2 flex items-start gap-2 text-[14.5px] leading-snug text-ink-2" role="status">
             <span className="mt-[6px] h-1.5 w-1.5 shrink-0 rounded-full bg-accent" aria-hidden />
             {tab && tabAvailable ? "Tab audio" : "Your mic, in this browser,"} is transcribed by OpenAI, and this demo server
             has no key. Add your own in Settings first, or just take notes.
@@ -174,7 +176,7 @@ export function NewMeetingDialog({ open, onClose, mode, initialTemplate, onStart
       </fieldset>
 
       {support.recorder && (
-        <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-xl px-1 text-[14px] leading-snug">
+        <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-sm px-1 text-[15.5px] leading-snug">
           <input
             type="checkbox"
             checked={keepAudio}
@@ -183,7 +185,7 @@ export function NewMeetingDialog({ open, onClose, mode, initialTemplate, onStart
           />
           <span>
             <span className="font-medium text-ink">Keep the audio on this device</span>
-            <span className="block text-[12.5px] text-muted">
+            <span className="block text-[14px] text-muted">
               So clicking a footnote plays the exact moment. Stored in this browser only, never uploaded. Delete it any time.
             </span>
           </span>
@@ -191,7 +193,7 @@ export function NewMeetingDialog({ open, onClose, mode, initialTemplate, onStart
       )}
 
       {showExplainer ? (
-        <div className="mt-5 rounded-2xl border border-rule bg-paper px-4 py-3.5 text-[14px] leading-relaxed text-ink-2">
+        <div className="paper paper-sky mt-5 rotate-[0.3deg] rounded-[2px] px-5 py-4 text-[15.5px] leading-relaxed text-ink-2">
           <p className="flex items-center gap-2 font-medium text-ink">
             <InfoIcon size={16} /> How a browser hears your meeting
           </p>
@@ -212,7 +214,7 @@ export function NewMeetingDialog({ open, onClose, mode, initialTemplate, onStart
               setFlag("seenCaptureExplainer", true);
               setShowExplainer(false);
             }}
-            className="mt-2 text-[13.5px] font-medium text-ink underline underline-offset-2"
+            className="smallcaps mt-2 text-[10.5px] text-ink underline underline-offset-4"
           >
             Got it
           </button>
@@ -221,7 +223,7 @@ export function NewMeetingDialog({ open, onClose, mode, initialTemplate, onStart
         <button
           type="button"
           onClick={() => setShowExplainer(true)}
-          className="mt-4 inline-flex items-center gap-1.5 text-[13.5px] text-muted hover:text-ink"
+          className="mt-4 inline-flex items-center gap-1.5 text-[15px] italic text-muted hover:text-ink"
         >
           <InfoIcon size={15} /> What can a browser hear?
         </button>
@@ -248,8 +250,8 @@ function SourceToggle({
   return (
     <label
       className={cx(
-        "flex cursor-pointer items-start gap-3 rounded-xl border px-3.5 py-3 transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ink",
-        checked ? "border-ink bg-sheet shadow-card" : "border-rule bg-paper/50 hover:border-rule-strong",
+        "flex cursor-pointer items-start gap-3 rounded-[3px] border px-3.5 py-3 transition-[background-color,border-color,box-shadow] duration-300 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ink",
+        checked ? "paper paper-white border-ink/70" : "border-ink/10 bg-white/30 hover:border-ink/25 hover:bg-white/60",
         disabled && "cursor-not-allowed opacity-60",
       )}
     >
@@ -262,8 +264,8 @@ function SourceToggle({
       />
       <span className={cx("mt-0.5", checked ? "text-ink" : "text-muted")}>{icon}</span>
       <span className="flex-1">
-        <span className="block text-[15px] font-medium">{title}</span>
-        <span className="mt-0.5 block text-[12.5px] leading-snug text-muted">{detail}</span>
+        <span className="block text-[17px] font-medium">{title}</span>
+        <span className="mt-0.5 block text-[14px] leading-snug text-muted">{detail}</span>
       </span>
       <span
         aria-hidden

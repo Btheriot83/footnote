@@ -61,7 +61,7 @@ export function ShareDialog({ open, onClose, meeting }: { open: boolean; onClose
           readOnly
           value={url}
           onFocus={(e) => e.currentTarget.select()}
-          className="h-11 min-w-0 flex-1 truncate rounded-xl border border-rule bg-paper/60 px-3.5 text-[14px] text-ink-2 focus:outline-none"
+          className="receipt h-11 min-w-0 flex-1 truncate px-3.5 text-[13px] text-ink-2 focus:outline-none"
         />
         <button
           type="button"
@@ -77,7 +77,7 @@ export function ShareDialog({ open, onClose, meeting }: { open: boolean; onClose
           {copied ? "Copied" : "Copy link"}
         </button>
       </div>
-      <p className="mt-2 text-[12.5px] text-muted">
+      <p className="mt-3 text-[14px] italic text-muted">
         Read-only · {kb} KB link ·{" "}
         <a href={url} target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-ink">
           Preview
@@ -90,14 +90,14 @@ export function ShareDialog({ open, onClose, meeting }: { open: boolean; onClose
           <Check checked={includeNotes} onChange={setIncludeNotes} label="Include my rough notes" />
         </div>
       ) : (
-        <p className="mt-4 rounded-xl bg-paper px-3.5 py-2.5 text-[13.5px] text-muted">
+        <p className="paper paper-butter mt-4 rounded-[2px] px-4 py-3 text-[15px] text-ink-2">
           Not enhanced yet, so the link contains your notes and the transcript. Enhance first to share notes with receipts.
         </p>
       )}
 
-      <div className="mt-6 border-t border-rule pt-5">
-        <h3 className="text-[13px] font-medium text-muted">Export</h3>
-        <div className="mt-2 grid gap-2 sm:grid-cols-3 [&>button]:whitespace-nowrap [&>button]:px-3">
+      <div className="mt-6 border-t border-dashed border-rule-strong pt-5">
+        <h3 className="smallcaps text-[10.5px] text-muted">Export</h3>
+        <div className="mt-3 grid gap-2.5 sm:grid-cols-3 [&>button]:whitespace-nowrap [&>button]:px-3">
           <button
             type="button"
             className={cx(btn.base, btn.secondary, btn.md)}
@@ -133,7 +133,7 @@ function Check({
   hint?: string;
 }) {
   return (
-    <label className="flex cursor-pointer items-start gap-3 text-[14.5px]">
+    <label className="flex cursor-pointer items-start gap-3 text-[16px]">
       <input
         type="checkbox"
         checked={checked}
@@ -142,7 +142,7 @@ function Check({
       />
       <span>
         {label}
-        {hint && <span className="block text-[12.5px] text-muted">{hint}</span>}
+        {hint && <span className="block text-[14px] italic text-muted">{hint}</span>}
       </span>
     </label>
   );

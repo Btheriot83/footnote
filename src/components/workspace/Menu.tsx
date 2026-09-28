@@ -48,7 +48,7 @@ export function Menu({ trigger, items, label }: { trigger: React.ReactNode; item
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className="flex h-10 w-10 items-center justify-center rounded-xl text-ink-2 hover:bg-paper-2"
+        className="pill h-10 w-10 p-0 tracking-normal"
       >
         {trigger}
       </button>
@@ -56,13 +56,13 @@ export function Menu({ trigger, items, label }: { trigger: React.ReactNode; item
         <div
           ref={list}
           role="menu"
-          className="animate-fade-in absolute right-0 top-12 z-30 w-60 rounded-2xl border border-rule bg-sheet p-1.5 shadow-lift"
+          className="paper paper-white animate-settle absolute right-0 top-12 z-30 w-64 rounded-[3px] p-1.5 shadow-lift"
         >
           {items
             .filter((i) => !i.hidden)
             .map((item) => (
               <div key={item.label}>
-                {item.separatorBefore && <div className="my-1 h-px bg-rule" />}
+                {item.separatorBefore && <div className="receipt-rule mx-2 my-1.5 h-px" />}
                 <button
                   type="button"
                   role="menuitem"
@@ -71,7 +71,7 @@ export function Menu({ trigger, items, label }: { trigger: React.ReactNode; item
                     item.onSelect();
                   }}
                   className={cx(
-                    "flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-[14.5px] hover:bg-paper-2 focus:bg-paper-2 focus:outline-none",
+                    "flex w-full items-center gap-2.5 rounded-sm px-3 py-2 text-left text-[16px] hover:bg-paper-2/70 focus:bg-paper-2/70 focus:outline-none",
                     item.danger ? "text-accent" : "text-ink",
                   )}
                 >

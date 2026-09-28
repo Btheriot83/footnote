@@ -164,10 +164,10 @@ export function AskBox({
   return (
     <section className="mt-16 border-t border-rule pt-8" aria-labelledby="ask-heading">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h2 id="ask-heading" className="font-serif text-[22px] leading-tight text-ink">
+        <h2 id="ask-heading" className="font-serif text-[25px] font-medium leading-tight tracking-[-0.015em] text-ink">
           Ask this meeting
         </h2>
-        <p className="text-[13px] text-muted">Answers cite the transcript, like the notes do.</p>
+        <p className="text-[15px] italic text-muted">Answers cite the transcript, like the notes do.</p>
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
@@ -177,7 +177,7 @@ export function AskBox({
             type="button"
             disabled={loading}
             onClick={() => void run(r.question, r)}
-            className={cx(btn.base, btn.secondary, "h-9 rounded-full px-3.5 text-[14px] font-normal text-ink-2")}
+            className={cx(btn.base, btn.secondary, "h-9 px-4 text-[10.5px]")}
           >
             <span className="text-muted">{RECIPE_ICONS[r.id]}</span>
             {r.label}
@@ -195,12 +195,12 @@ export function AskBox({
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Or ask anything… “What did they say about budget?”"
-          className="h-12 w-full rounded-2xl border border-rule bg-paper/50 pl-11 pr-20 text-[15.5px] placeholder:text-faint focus:border-rule-strong focus:bg-sheet focus:outline-none"
+          className="paper paper-white h-12 w-full rounded-[3px] pl-11 pr-20 text-[17px] placeholder:italic placeholder:text-faint focus:shadow-[0_0_0_1.5px_var(--color-ink-2),var(--shadow-card)] focus:outline-none"
         />
         <button
           type="submit"
           disabled={!q.trim() || loading}
-          className="absolute right-2 top-1/2 h-8 -translate-y-1/2 rounded-lg bg-ink px-3 text-[13.5px] font-medium text-paper disabled:opacity-40"
+          className="pill pill-ink absolute right-2 top-1/2 h-8 -translate-y-1/2 px-4 text-[10px]"
         >
           Ask
         </button>
@@ -210,17 +210,17 @@ export function AskBox({
         <div
           ref={resultRef}
           className={cx(
-            "animate-fade-up mt-4 scroll-mb-6 rounded-2xl px-5 py-4",
-            asked.layout === "email" ? "border border-rule bg-white shadow-card" : "bg-paper/60",
+            "animate-settle mt-5 scroll-mb-6 rounded-[2px] px-6 py-5",
+            asked.layout === "email" ? "paper paper-white" : asked.layout === "list" ? "paper paper-butter" : "paper paper-stone",
           )}
           aria-live="polite"
         >
           <div className="flex items-center justify-between gap-3">
-            <p className="flex items-center gap-2 text-[13px] font-medium text-muted">
+            <p className="smallcaps flex items-center gap-2 text-[10.5px] text-muted">
               {asked.label}
               {cached && (
                 <span
-                  className="rounded-full border border-rule px-2 py-0.5 text-[11px] font-medium uppercase tracking-[0.06em]"
+                  className="-rotate-[2deg] rounded-[2px] border-[1.5px] border-accent/60 px-1.5 py-[1px] text-[9px] font-bold tracking-[0.18em] text-accent/90"
                   title="No AI key is available right now, so this answer was computed ahead of time from the sample call."
                 >
                   Cached demo
@@ -231,7 +231,7 @@ export function AskBox({
               <button
                 type="button"
                 onClick={() => void copy()}
-                className="-mr-2 inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-[13px] text-muted hover:bg-paper-2 hover:text-ink"
+                className="smallcaps -mr-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] text-muted hover:bg-ink/5 hover:text-ink"
               >
                 {copied ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
                 {copied ? "Copied" : asked.layout === "email" ? "Copy email" : "Copy"}
