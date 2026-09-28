@@ -50,21 +50,13 @@ export function Dialog({ open, onClose, title, description, children, footer, cl
       const o = originOf(document.activeElement);
       d.style.setProperty("--from-x", `${o ? Math.round(o.x * 0.85) : 0}px`);
       d.style.setProperty("--from-y", `${o ? Math.round(o.y * 0.85) : 40}px`);
-      d.classList.remove("is-closing");
       d.showModal();
     }
     if (!open && d.open) {
-      // Tuck the paper away before the dialog leaves the top layer.
-      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      if (!reduce) d.classList.add("is-closing");
-      const t = setTimeout(
-        () => {
-          d.classList.remove("is-closing");
-          d.close();
-          setLinger(false);
-        },
-        reduce ? 0 : 170,
-      );
+      // Close right away (focus and interactivity return to the page now); CSS keeps the
+      // paper in the top layer for its exit, and the contents stay until it's gone.
+      d.close();
+      const t = setTimeout(() => setLinger(false), 200);
       return () => clearTimeout(t);
     }
   }, [open]);
