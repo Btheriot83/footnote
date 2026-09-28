@@ -18,11 +18,12 @@ interface Props {
   onSample: () => void;
   onSettings: () => void;
   onAskAll: (question?: string) => void;
-  hasKey: boolean;
+  /** Short note beside Settings on how AI is paid for right now. */
+  aiLabel: string;
 }
 
 export const Sidebar = forwardRef<HTMLInputElement, Props>(function Sidebar(
-  { meetings, activeId, query, onQuery, onSelect, onNew, onSample, onSettings, onAskAll, hasKey },
+  { meetings, activeId, query, onQuery, onSelect, onNew, onSample, onSettings, onAskAll, aiLabel },
   searchRef,
 ) {
   const session = useSession();
@@ -147,7 +148,7 @@ export const Sidebar = forwardRef<HTMLInputElement, Props>(function Sidebar(
           className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-[14.5px] text-ink-2 hover:bg-paper-2"
         >
           <KeyIcon size={16} /> Settings
-          <span className="ml-auto text-[12.5px] text-muted">{hasKey ? "Your key" : "Free allowance"}</span>
+          {aiLabel && <span className="ml-auto text-[12.5px] text-muted">{aiLabel}</span>}
         </button>
       </div>
     </nav>

@@ -55,7 +55,7 @@ export async function POST(req: Request) {
   }
   if (!res.ok) {
     const f = friendlyUpstreamError(res.status, key.mode);
-    return Response.json({ error: "upstream", message: f.message }, { status: f.status });
+    return Response.json({ error: f.code, message: f.message }, { status: f.status });
   }
   const data = (await res.json()) as { text?: string };
   return Response.json({ text: (data.text || "").trim() }, { headers });

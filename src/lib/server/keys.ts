@@ -34,17 +34,22 @@ export function noKeyResponse() {
     {
       error: "no_key",
       message:
-        "This server has no OpenAI key configured. Add your own key in Settings to use AI features. It stays in your browser.",
+        "This demo server doesn't include an AI key, so AI features need your own OpenAI key. Add it in Settings; it stays in your browser.",
     },
     { status: 503 },
   );
 }
 
 /** Maps upstream OpenAI errors to friendly, key-free messages. */
-export function friendlyUpstreamError(status: number | undefined, mode: KeyMode): { status: number; message: string } {
+export function friendlyUpstreamError(
+  status: number | undefined,
+  mode: KeyMode,
+): { status: number; message: string; code: string } {
   if (status === 401) {
     return {
       status: 401,
+      // The client parks a rejected user key and retries on the free allowance.
+      code: mode === "user" ? "bad_key" : "upstream",
       message:
         mode === "user"
           ? "OpenAI rejected your API key. Check it in Settings."
@@ -54,13 +59,14 @@ export function friendlyUpstreamError(status: number | undefined, mode: KeyMode)
   if (status === 429) {
     return {
       status: 429,
+      code: "upstream",
       message:
         mode === "user"
           ? "OpenAI is rate limiting your key (or it's out of credit). Try again in a moment."
           : "The hosted allowance is busy right now. Try again shortly, or add your own key in Settings.",
     };
   }
-  return { status: 502, message: "The AI service had a hiccup. Please try again." };
+  return { status: 502, code: "upstream", message: "The AI service had a hiccup. Please try again." };
 }
 
 /** Sampling settings that work for both reasoning (gpt-5*, o*) and classic models. */

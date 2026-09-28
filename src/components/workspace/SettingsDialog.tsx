@@ -2,12 +2,15 @@
 import { useEffect, useState } from "react";
 import { Dialog } from "@/components/Dialog";
 import { btn, cx } from "@/components/ui";
-import { fetchStatus, type Status } from "@/lib/client/api";
-import { maskKey, setUserKey, useUserKey } from "@/lib/client/settings";
+import type { Status } from "@/lib/client/api";
+import { refreshServerStatus } from "@/lib/client/server-status";
+import { getUserKey, maskKey, setKeyStatus, setUserKey, useKeyStatus, useUserKey } from "@/lib/client/settings";
 import { toast } from "@/lib/client/toast";
 
 export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const saved = useUserKey();
+  const keyStatus = useKeyStatus();
+  const rejected = !!saved && keyStatus === "bad";
   const [draft, setDraft] = useState("");
   const [reveal, setReveal] = useState(false);
   const [status, setStatus] = useState<Status | null | "loading">("loading");
@@ -19,7 +22,7 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
     setReveal(false);
     setCheck({ state: "idle" });
     setStatus("loading");
-    void fetchStatus().then(setStatus);
+    void refreshServerStatus().then(setStatus);
   }, [open, saved]);
 
   const trimmed = draft.trim();
@@ -40,6 +43,8 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
       const res = await fetch("/api/check-key", { method: "POST", headers: { "x-user-openai-key": key } });
       const data = (await res.json()) as { ok: boolean; message: string };
       setCheck({ state: data.ok ? "ok" : "bad", message: data.message });
+      // Only a definite answer from OpenAI changes whether the key is used.
+      if (res.ok && getUserKey() === key) setKeyStatus(data.ok ? "ok" : "bad");
     } catch {
       setCheck({ state: "bad", message: "Couldn't reach the server to check the key." });
     }
@@ -65,9 +70,9 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
         </p>
         {saved ? (
           <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-rule bg-paper px-3.5 py-2.5">
-            <span className="h-2 w-2 rounded-full bg-ink" aria-hidden />
+            <span className={cx("h-2 w-2 rounded-full", rejected ? "bg-accent" : "bg-ink")} aria-hidden />
             <code className="text-[14px]">{maskKey(saved)}</code>
-            <span className="text-[13px] text-muted">in use</span>
+            <span className="text-[13px] text-muted">{rejected ? "rejected by OpenAI, not in use" : "in use"}</span>
             <button
               type="button"
               className={cx(btn.base, btn.ghost, btn.sm, "ml-auto")}
@@ -132,6 +137,12 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
             <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden /> {hint}
           </p>
         )}
+        {rejected && check.state === "idle" && (
+          <p className="mt-2 flex items-center gap-2 text-[13px] text-ink-2" role="status">
+            <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />
+            OpenAI rejected this key, so Footnote stopped sending it. Remove it and paste a new one, or test it again.
+          </p>
+        )}
         {check.state === "ok" || check.state === "bad" ? (
           <p className="mt-2 flex items-center gap-2 text-[13px] text-ink-2" role="status">
             <span className={cx("h-1.5 w-1.5 rounded-full", check.state === "ok" ? "bg-ink" : "bg-accent")} aria-hidden />
@@ -153,30 +164,37 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
       </section>
 
       <section className="mt-6 border-t border-rule pt-5">
-        <h3 className="text-[15px] font-semibold">Free hosted allowance</h3>
+        <h3 className="text-[15px] font-semibold">How AI is paid for</h3>
         {status === "loading" ? (
           <p className="mt-1 text-[14px] text-muted">Checking…</p>
         ) : !status ? (
           <p className="mt-1 text-[14px] text-muted">Couldn&rsquo;t reach the server.</p>
-        ) : saved ? (
+        ) : saved && !rejected ? (
           <p className="mt-1 text-[14px] leading-relaxed text-muted">
-            You&rsquo;re using your own key, so there are no limits.
+            Your own key, so there are no limits. You pay OpenAI directly for what you use.
           </p>
         ) : status.hosted ? (
           <p className="mt-1 text-[14px] leading-relaxed text-muted">
-            Without a key you get {status.limits.enhances} enhancements and {status.limits.transcribeMinutes} minutes of
-            tab-audio transcription a day. Left today:{" "}
+            {rejected ? "Until the key is fixed, you're on the free allowance: " : "Without a key you get a free allowance: "}
+            {status.limits.enhances} enhancements, {status.limits.asks} questions and {status.limits.transcribeMinutes}{" "}
+            minutes of tab-audio transcription a day. Left today:{" "}
             <strong className="font-semibold text-ink">
-              {status.remaining.enhances} enhancements, {status.remaining.transcribeMinutes} minutes
+              {status.remaining.enhances} enhancements, {status.remaining.asks} questions, {status.remaining.transcribeMinutes}{" "}
+              minutes
             </strong>
             .
           </p>
         ) : (
           <p className="mt-1 text-[14px] leading-relaxed text-muted">
-            This server doesn&rsquo;t provide a hosted key, so AI features need your own key. Your mic transcript (via the
-            browser) and your notes still work without one.
+            This demo server doesn&rsquo;t include an AI key. The sample call still shows Enhance and the one-click recipes
+            as cached demos. For your own meetings, add a key above. Notes, history, search, export and your mic transcript
+            all work without one.
           </p>
         )}
+        <p className="mt-3 text-[13px] leading-relaxed text-muted">
+          Footnote is free and open source with your own key. <span className="text-ink-2">Footnote Pro</span>, $59 once
+          (coming soon), includes the AI instead: 1,000 enhancements and 20 hours of transcription a year, no key needed.
+        </p>
       </section>
     </Dialog>
   );

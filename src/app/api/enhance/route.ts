@@ -99,7 +99,7 @@ export async function POST(req: Request) {
         logUpstreamError("enhance", err);
         const status = upstreamStatus ?? (err as { statusCode?: number })?.statusCode;
         const friendly = friendlyUpstreamError(status, key.mode);
-        send({ type: "error", message: friendly.message });
+        send({ type: "error", code: friendly.code, message: friendly.message });
       } finally {
         controller.close();
       }

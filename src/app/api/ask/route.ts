@@ -78,6 +78,6 @@ export async function POST(req: Request) {
   } catch (err) {
     logUpstreamError("ask", err);
     const f = friendlyUpstreamError((err as { statusCode?: number })?.statusCode, key.mode);
-    return Response.json({ error: "upstream", message: f.message }, { status: f.status });
+    return Response.json({ error: f.code, message: f.message }, { status: f.status });
   }
 }

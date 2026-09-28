@@ -10,7 +10,8 @@ import { db } from "@/lib/db";
 import { startLive, stopLive } from "@/lib/client/live-controller";
 import { preloadSample, startSample, stopSampleAudio } from "@/lib/client/sample-controller";
 import { getSession, resetSession, useSession } from "@/lib/client/session";
-import { useUserKey } from "@/lib/client/settings";
+import { useKeyStatus, useUserKey } from "@/lib/client/settings";
+import { useServerStatus } from "@/lib/client/server-status";
 import { createMeeting, flushSaves, getMeeting, loadMeeting } from "@/lib/client/store";
 import { getFlag, setFlag } from "@/lib/client/settings";
 import { SAMPLE_TEMPLATE, SAMPLE_TITLE } from "@/lib/sample";
@@ -67,6 +68,18 @@ export function Workspace() {
   const isMobile = useIsMobile();
   const isDesktop = useMedia("(min-width: 1024px)");
   const userKey = useUserKey();
+  const keyStatus = useKeyStatus();
+  const server = useServerStatus();
+  const aiLabel =
+    userKey && keyStatus !== "bad"
+      ? "Your key"
+      : userKey
+        ? "Key rejected"
+        : server?.hosted
+          ? "Free allowance"
+          : server
+            ? "Add a key"
+            : "";
   const session = useSession();
 
   const select = useCallback((id: string | null) => {
@@ -221,7 +234,7 @@ export function Workspace() {
         setDrawer(false);
         setDialog({ kind: "ask", question });
       }}
-      hasKey={!!userKey}
+      aiLabel={aiLabel}
     />
   );
 
