@@ -75,12 +75,13 @@ export const Sidebar = forwardRef<HTMLInputElement, Props>(function Sidebar(
         {/* The index card's red margin line. */}
         <span aria-hidden className="pointer-events-none absolute inset-y-0 left-[30px] w-px bg-margin/80" />
         <p className="smallcaps border-b border-index-line py-3 pl-[44px] pr-4 text-pen/75">Meetings</p>
-        <div className="scroll-thin min-h-0 flex-1 overflow-y-auto pb-2">
+        {/* Below the last meeting the card stays ruled, like a real index card. */}
+        <div className="scroll-thin min-h-0 flex-1 overflow-y-auto bg-[repeating-linear-gradient(180deg,transparent_0_35px,var(--color-index-line)_35px_36px)] bg-local pb-2">
           {query.trim().length > 2 && meetings?.some((m) => m.segments.length > 0) && (
             <button
               type="button"
               onClick={() => onAskAll(query.trim())}
-              className="flex w-full items-start gap-2 border-b border-index-line py-2.5 pl-[44px] pr-4 text-left text-[15px] text-ink-2 hover:bg-white/50"
+              className="flex w-full items-start gap-2 border-b border-index-line bg-index py-2.5 pl-[44px] pr-4 text-left text-[15px] text-ink-2 hover:bg-[#f4f7fa]"
             >
               <AskIcon size={15} className="mt-[3px] shrink-0 text-pen" />
               <span>
@@ -101,14 +102,14 @@ export const Sidebar = forwardRef<HTMLInputElement, Props>(function Sidebar(
                 const live = session.meetingId === m.id && session.kind !== "none" && m.status === "live";
                 const snippet = query ? matchSnippet(m, query) : null;
                 return (
-                  <li key={m.id} className="border-b border-index-line">
+                  <li key={m.id} className="border-b border-index-line bg-index">
                     <button
                       type="button"
                       onClick={() => onSelect(m.id)}
                       aria-current={active ? "page" : undefined}
                       className={cx(
                         "relative block w-full py-3 pl-[44px] pr-4 text-left transition-colors",
-                        active ? "bg-white/70" : "hover:bg-white/40",
+                        active ? "bg-[#fafbfc]" : "hover:bg-[#f4f7fa]",
                       )}
                     >
                       {active && (
