@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 import cached from "../../src/lib/sample/cached-enhancement.json";
 
@@ -273,4 +274,64 @@ test("the notepad keeps one bullet when you type your own", async ({ page }) => 
   await page.keyboard.press("Enter");
   await page.keyboard.type("- decide by friday");
   await expect(notes).toHaveValue("- budget is 50k\n- decide by friday");
+});
+
+test("unknown addresses land on the desk with ways back", async ({ page }) => {
+  const res = await page.goto("/no-such-page");
+  expect(res?.status()).toBe(404);
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("This page has no source.");
+  await page.getByRole("link", { name: "Back to the desk" }).click();
+  await expect(page).toHaveURL(/\/$/);
+});
+
+test("a Zoom transcript imports with its speakers and times, and meetings back up and restore", async ({ page }) => {
+  await page.goto("/app");
+  await page.getByRole("button", { name: "New meeting" }).first().click();
+  await page.getByRole("button", { name: /Already had the meeting/ }).click();
+  const vtt = [
+    "WEBVTT",
+    "",
+    "1",
+    "00:00:15.910 --> 00:00:22.324",
+    "Dana Smith: Right, we closed our Series B two weeks ago.",
+    "",
+    "2",
+    "00:00:22.704 --> 00:00:26.278",
+    "Brandon: Congratulations! How does that change your team size?",
+  ].join("\n");
+  await page.getByLabel("Choose a recording or transcript file").setInputFiles({
+    name: "GMT20260928-150000_Acme_renewal.vtt",
+    mimeType: "text/vtt",
+    buffer: Buffer.from(vtt),
+  });
+  await expect(page.getByText("2 lines")).toBeVisible();
+  await page.getByLabel("Which one is you?").selectOption("Brandon");
+  await page.getByRole("button", { name: "Import", exact: true }).click();
+
+  await expect(page.locator("#meeting-title")).toHaveValue("Acme renewal");
+  const transcript = page.getByRole("complementary", { name: "Transcript" });
+  await expect(transcript.locator("[data-segment='s1']")).toContainText("Dana Smith");
+  await expect(transcript.locator("[data-segment='s1']")).toContainText("00:15");
+  await expect(transcript.locator("[data-segment='s2']")).toContainText("You");
+
+  // Back up, delete, restore.
+  await page.getByRole("button", { name: /Settings/ }).click();
+  const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "Back up (.json)" }).click()]);
+  const path = await download.path();
+  const backup = JSON.parse(readFileSync(path, "utf8"));
+  expect(backup.app).toBe("footnote");
+  expect(backup.meetings.some((m: { title: string }) => m.title === "Acme renewal")).toBe(true);
+  await page.getByRole("button", { name: "Done" }).click();
+
+  await page.getByRole("button", { name: "More actions" }).click();
+  await page.getByRole("menuitem", { name: "Delete meeting" }).click();
+  await page.getByRole("button", { name: "Delete", exact: true }).click();
+  const nav = page.getByRole("navigation", { name: "Meetings" });
+  await expect(nav.getByText("Acme renewal")).toHaveCount(0);
+
+  await page.getByRole("button", { name: /Settings/ }).click();
+  await page.getByLabel("Choose a Footnote backup file").setInputFiles(path!);
+  await expect(page.getByRole("dialog").getByText(/Restored: 1 added/)).toBeVisible();
+  await page.getByRole("button", { name: "Done" }).click();
+  await expect(nav.getByText("Acme renewal")).toBeVisible();
 });
