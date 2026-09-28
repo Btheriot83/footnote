@@ -57,6 +57,7 @@ import { AskBox } from "./AskBox";
 import { Menu } from "./Menu";
 import { focusNotes, Notepad } from "./Notepad";
 import { copyText, downloadMarkdown, ShareDialog } from "./ShareDialog";
+import { NotesGhost } from "./NotesGhost";
 import { PaneSkeleton } from "./Skeleton";
 import { RecordingPill, useTicker } from "./StatusPill";
 
@@ -319,7 +320,8 @@ export function MeetingPane({
   const samplePlaying = !!sample && sample.phase !== "done";
   const mod = isMacLike() ? "⌘" : "Ctrl";
   // Nothing to write up yet: no notes typed and nothing heard.
-  const nothingYet = !meeting.notes.replace(/^[\s\-*•]+$/gm, "").trim() && meeting.segments.length === 0 && !sample;
+  const notesEmpty = !meeting.notes.replace(/^[\s\-*•]+$/gm, "").trim() && !sample;
+  const nothingYet = notesEmpty && meeting.segments.length === 0;
   // Receipts you can hear: the sample call has a recording behind every line.
   const audible = hasRecording(meeting) && !samplePlaying && !live;
   const clipHere = clip.meetingId === meeting.id && clip.playing;
@@ -849,16 +851,23 @@ export function MeetingPane({
                     </button>
                   )}
                 </div>
-                <div className="mt-3">
+                <div className={cx("relative mt-3", notesEmpty && "min-h-[560px]")}>
+                  {notesEmpty && (
+                    <NotesGhost
+                      template={meeting.template}
+                      started={meeting.notes.length > 0}
+                      listening={live && !notesOnly}
+                    />
+                  )}
                   <Notepad
                     value={meeting.notes}
                     onChange={(v) => patchMeetingState(meeting.id, { notes: v })}
                     onUserInput={() => sample && markSampleTyping()}
-                    placeholder="Type rough notes as you listen. Short fragments are fine: Footnote fills in the rest from the transcript, with a receipt for every line."
+                    placeholder={notesEmpty ? "" : "Type rough notes as you listen."}
                     autoFocus={(meeting.status === "draft" || live) && !meeting.notes.trim() && !isMobile}
                   />
                 </div>
-                {!meeting.enhanced && (meeting.notes.trim() || meeting.segments.length > 0) && !sample && !nudge && (
+                {!meeting.enhanced && !notesEmpty && !sample && !nudge && (
                   <p className="mt-6 text-[13.5px] text-muted">
                     <span className="hover-only">
                       When you&rsquo;re ready, press <kbd className="rounded border border-rule px-1 font-sans">{mod}</kbd>{" "}
