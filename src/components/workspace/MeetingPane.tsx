@@ -431,12 +431,14 @@ export function MeetingPane({
             <label htmlFor="meeting-title" className="sr-only">
               Meeting title
             </label>
-            <input
+            <textarea
               id="meeting-title"
+              rows={1}
               value={meeting.title}
-              onChange={(e) => patchMeetingState(meeting.id, { title: e.target.value })}
+              onChange={(e) => patchMeetingState(meeting.id, { title: e.target.value.replace(/\n/g, " ") })}
+              onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), e.currentTarget.blur())}
               onBlur={(e) => !e.target.value.trim() && patchMeetingState(meeting.id, { title: "Untitled meeting" })}
-              className="w-full bg-transparent font-serif text-[34px] leading-[1.15] tracking-[-0.018em] text-ink placeholder:text-faint focus:outline-none sm:text-[46px]"
+              className="block w-full resize-none overflow-hidden bg-transparent [field-sizing:content] font-serif text-[34px] leading-[1.15] tracking-[-0.018em] text-ink placeholder:text-faint focus:outline-none sm:text-[46px]"
             />
             <div className="mt-2.5 flex flex-wrap items-center gap-x-2 text-[16px] text-ink-2/80 sm:text-[17px]">
               <span>{formatDate(meeting.createdAt)}</span>

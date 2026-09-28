@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "sample:audio": "node scripts/sample/generate.mjs",
+    "sample:cache": "node scripts/sample/cache-enhancement.mjs"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.119",

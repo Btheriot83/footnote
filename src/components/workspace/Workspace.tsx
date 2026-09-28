@@ -21,6 +21,18 @@ import { Sidebar } from "./Sidebar";
 
 const ACTIVE_KEY = "footnote.active";
 
+function useMedia(query: string) {
+  const [match, setMatch] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const on = () => setMatch(mq.matches);
+    on();
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, [query]);
+  return match;
+}
+
 function useIsMobile() {
   const [mobile, setMobile] = useState(false);
   useEffect(() => {
@@ -48,6 +60,7 @@ export function Workspace() {
   const searchRef = useRef<HTMLInputElement>(null);
   const booted = useRef(false);
   const isMobile = useIsMobile();
+  const isDesktop = useMedia("(min-width: 1024px)");
   const userKey = useUserKey();
   const session = useSession();
 
@@ -198,7 +211,7 @@ export function Workspace() {
   return (
     <div className="flex h-dvh overflow-hidden bg-paper text-ink">
       {/* Desktop sidebar */}
-      <aside className="hidden w-[300px] shrink-0 border-r border-rule lg:block xl:w-[356px]">{sidebar}</aside>
+      <aside className="hidden w-[300px] shrink-0 border-r border-rule lg:block xl:w-[356px]">{isDesktop && sidebar}</aside>
 
       {/* Drawer */}
       <div
@@ -216,7 +229,7 @@ export function Workspace() {
           )}
           inert={!drawer}
         >
-          {sidebar}
+          {!isDesktop && sidebar}
         </div>
       </div>
 

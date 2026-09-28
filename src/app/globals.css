@@ -73,9 +73,11 @@ body {
   font-family: var(--font-sans);
   font-size: 0.62em;
   font-weight: 600;
-  line-height: 0;
+  display: inline-block;
+  line-height: 1;
   vertical-align: super;
-  padding: 0 0.08em;
+  margin-top: -0.6em;
+  padding: 0.1em 0.14em;
   cursor: pointer;
   border-radius: 3px;
   transition: background-color 120ms ease;

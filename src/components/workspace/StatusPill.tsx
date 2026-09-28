@@ -52,7 +52,7 @@ export function RecordingPill({
 }) {
   return (
     <div
-      className="flex h-11 items-center gap-2.5 rounded-xl border border-rule bg-sheet pl-3.5 pr-3 shadow-[0_1px_1px_rgba(40,32,20,0.04)]"
+      className="flex h-11 items-center gap-2 rounded-xl border border-rule bg-sheet pl-3 pr-3 sm:gap-2.5 sm:pl-3.5 shadow-[0_1px_1px_rgba(40,32,20,0.04)]"
       role="status"
     >
       <span
@@ -63,7 +63,9 @@ export function RecordingPill({
         )}
         aria-hidden
       />
-      <span className={cx("text-[15px] font-medium", dot === "accent" ? "text-accent" : "text-muted")}>{label}</span>
+      <span className={cx("hidden text-[15px] font-medium sm:inline", dot === "accent" ? "text-accent" : "text-muted")}>
+        {label}
+      </span>
       <span className="text-[15px] font-medium tabular-nums text-ink">{formatClock(elapsedMs)}</span>
       <span className="hidden sm:inline-flex">
         <Waveform active={live} />
