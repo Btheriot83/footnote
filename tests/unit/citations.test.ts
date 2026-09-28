@@ -132,7 +132,7 @@ describe("export and share", () => {
 
   it("renders markdown footnotes that quote the transcript", () => {
     const md = toMarkdown(meeting);
-    expect(md).toContain("- Multi-year lowers price[^1][^2]");
+    expect(md).toContain("- _Multi-year lowers price_[^1][^2]");
     expect(md).toContain('[^1]: You, 01:01: "A multi-year term brings it down."');
     expect(md).toContain("[^2]: Dana (Acme), 00:50:");
   });
@@ -144,5 +144,7 @@ describe("export and share", () => {
     expect(decoded?.title).toBe("Acme renewal");
     expect(decoded?.enhanced?.sections[0].bullets[0].cites).toEqual(["s2", "s1"]);
     expect(decodeShare("#garbage")).toBeNull();
+    expect(payload.sample).toBeUndefined();
+    expect(buildSharePayload({ ...meeting, isSample: true }, { fullTranscript: true, includeNotes: false }).sample).toBe(true);
   });
 });

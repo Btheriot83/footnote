@@ -4,8 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import { EnhancedView } from "@/components/receipts/EnhancedView";
 import { TranscriptPanel } from "@/components/receipts/TranscriptPanel";
 import { useReceipts } from "@/components/receipts/useReceipts";
+import { PauseIcon, SpeakerIcon } from "@/components/icons";
 import { btn, cx } from "@/components/ui";
 import { numberFootnotes } from "@/lib/citations";
+import { hasRecording, playCall, playSegment, segmentAt, spansFor, stopClip, useClip } from "@/lib/client/clip-player";
 import { formatDate, formatDuration } from "@/lib/format";
 import { decodeShare, type SharePayload } from "@/lib/share";
 import { getTemplate } from "@/lib/templates";
@@ -37,6 +39,30 @@ export function SharedNote() {
   const numbers = useMemo(() => numberFootnotes(data?.enhanced), [data]);
   const byId = useMemo(() => new Map((data?.segments ?? []).map((s) => [s.id, s])), [data]);
   const receipts = useReceipts(data?.enhanced ?? null);
+
+  // A shared sample call can still be heard: its audio ships with the app.
+  const clip = useClip();
+  const playable = useMemo(
+    () =>
+      data
+        ? { id: "shared", isSample: !!data.sample, segments: data.segments, hasAudio: false, durationMs: data.durationMs }
+        : null,
+    [data],
+  );
+  const audible = !!playable && hasRecording(playable);
+  const spans = useMemo(() => (playable ? spansFor(playable) : []), [playable]);
+  const clipHere = clip.meetingId === "shared" && clip.playing;
+  const listening = clipHere && !clip.segmentId;
+  const playingNow = clipHere
+    ? (() => {
+        const id = clip.segmentId ?? segmentAt(spans, clip.positionMs);
+        const seg = id ? spans.find((x) => x.id === id) : null;
+        if (!id || !seg) return null;
+        const progress = Math.min(1, Math.max(0, (clip.positionMs - seg.t) / Math.max(1, seg.end - seg.t)));
+        return { id, progress, single: !!clip.segmentId };
+      })()
+    : null;
+  useEffect(() => () => stopClip(), []);
 
   useEffect(() => {
     if (data) document.title = `${data.title} · Footnote`;
@@ -77,11 +103,23 @@ export function SharedNote() {
           <main className="scroll-thin min-w-0 flex-1 overflow-y-auto bg-sheet">
             <article className="mx-auto w-full max-w-[720px] px-5 pb-24 pt-10 sm:px-10 sm:pt-14">
               <h1 className="font-serif text-[34px] leading-[1.15] tracking-[-0.018em] sm:text-[46px]">{data.title}</h1>
-              <p className="mt-2.5 text-[16px] text-ink-2/80 sm:text-[17px]">
-                {formatDate(data.createdAt, { year: true })}
-                {data.durationMs > 0 && <> • {formatDuration(data.durationMs)}</>} · {getTemplate(data.template).name}{" "}
-                template
-              </p>
+              <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-2">
+                <p className="text-[16px] text-ink-2/80 sm:text-[17px]">
+                  {formatDate(data.createdAt, { year: true })}
+                  {data.durationMs > 0 && <> • {formatDuration(data.durationMs)}</>} · {getTemplate(data.template).name}{" "}
+                  template
+                </p>
+                {audible && !data.citedOnly && (
+                  <button
+                    type="button"
+                    onClick={() => (listening ? stopClip() : playable && playCall(playable))}
+                    className={cx(btn.base, btn.secondary, btn.sm)}
+                  >
+                    {listening ? <PauseIcon size={14} /> : <SpeakerIcon size={15} />}
+                    {listening ? "Stop" : "Listen to the call"}
+                  </button>
+                )}
+              </div>
               {data.enhanced && data.enhanced.sections.length > 0 ? (
                 <div className="mt-9">
                   <h2 className="font-serif text-[29px] leading-tight sm:text-[32px]">Enhanced notes</h2>
@@ -93,6 +131,7 @@ export function SharedNote() {
                       <span className="h-[6px] w-[6px] rounded-full bg-faint" /> Added from the transcript
                       <sup className="font-semibold text-accent">1</sup>
                     </span>
+                    {audible && <span className="hidden sm:inline">Click a number to hear the moment.</span>}
                   </p>
                   <div className="mt-7">
                     <EnhancedView
@@ -101,6 +140,8 @@ export function SharedNote() {
                       segmentsById={byId}
                       receipts={receipts}
                       inlineQuotes={!wide}
+                      onCite={audible && playable ? (id) => playSegment(playable, id) : undefined}
+                      playingId={playingNow?.single ? playingNow.id : null}
                     />
                   </div>
                 </div>
@@ -136,6 +177,9 @@ export function SharedNote() {
                 numbers={numbers}
                 notes={data.enhanced}
                 receipts={receipts}
+                playable={audible}
+                playing={playingNow}
+                onPlay={(id) => (playingNow?.id === id ? stopClip() : playable && playSegment(playable, id))}
                 header={
                   <div className="px-7 pb-3 pt-7">
                     <h2 className="font-serif text-[26px] leading-none">{data.citedOnly ? "Sources" : "Transcript"}</h2>

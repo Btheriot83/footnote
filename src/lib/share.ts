@@ -14,10 +14,12 @@ export interface SharePayload {
   segments: Segment[];
   /** true when only the cited transcript lines were included */
   citedOnly?: boolean;
+  /** The bundled sample call: its audio ships with the app, so shared receipts can play. */
+  sample?: true;
 }
 
 export function buildSharePayload(
-  m: Omit<SharePayload, "v" | "citedOnly">,
+  m: Omit<SharePayload, "v" | "citedOnly" | "sample"> & { isSample?: boolean },
   opts: { fullTranscript: boolean; includeNotes: boolean },
 ): SharePayload {
   const cited = numberFootnotes(m.enhanced);
@@ -32,6 +34,7 @@ export function buildSharePayload(
     enhanced: m.enhanced,
     segments,
     citedOnly: !opts.fullTranscript,
+    ...(m.isSample ? { sample: true as const } : {}),
   };
 }
 

@@ -41,7 +41,8 @@ export function toMarkdown(m: ExportableMeeting): string {
     lines.push(`## ${section.heading}`, "");
     for (const b of section.bullets) {
       const marks = b.cites.map((c) => `[^${numbers.get(c)}]`).join("");
-      lines.push(`- ${b.text}${marks}`);
+      // AI additions are set in italics, the way the app sets them in gray.
+      lines.push(`- ${b.origin === "ai" ? `_${b.text}_` : b.text}${marks}`);
     }
     lines.push("");
   }
@@ -53,7 +54,7 @@ export function toMarkdown(m: ExportableMeeting): string {
     }
     lines.push("");
   }
-  lines.push("_Written with Footnote. Every AI line links back to what was said._", "");
+  lines.push("_Written with Footnote: plain lines are the note-taker's, italic lines were added by AI, and every footnote quotes the transcript._", "");
   return lines.join("\n");
 }
 
@@ -72,7 +73,7 @@ export function toSlack(m: ExportableMeeting): string {
         .map((c) => byId.get(c))
         .filter(Boolean)
         .map((s) => formatClock(s!.t));
-      out.push(`• ${b.text}${stamps.length ? `  _(${stamps.join(", ")})_` : ""}`);
+      out.push(`• ${b.origin === "ai" ? `_${b.text}_` : b.text}${stamps.length ? `  (${stamps.join(", ")})` : ""}`);
     }
     out.push("");
   }
