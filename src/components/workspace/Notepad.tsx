@@ -10,6 +10,14 @@ interface Props {
   readOnly?: boolean;
 }
 
+const FOCUS_EVENT = "footnote:focus-notes";
+
+/** Moves the caret into the notepad (after dialogs close and restore focus). */
+export function focusNotes() {
+  if (typeof window === "undefined") return;
+  setTimeout(() => window.dispatchEvent(new Event(FOCUS_EVENT)), 60);
+}
+
 /** A plain, fast notepad. Markdown-ish: "- " bullets continue on Enter. */
 export function Notepad({ value, onChange, onUserInput, placeholder, autoFocus, readOnly }: Props) {
   const ref = useRef<HTMLTextAreaElement>(null);
@@ -24,6 +32,18 @@ export function Notepad({ value, onChange, onUserInput, placeholder, autoFocus, 
   useEffect(() => {
     if (autoFocus) ref.current?.focus({ preventScroll: true });
   }, [autoFocus]);
+
+  useEffect(() => {
+    const onFocus = () => {
+      const el = ref.current;
+      if (!el || el.offsetParent === null) return;
+      el.focus({ preventScroll: true });
+      const end = el.value.length;
+      el.setSelectionRange(end, end);
+    };
+    window.addEventListener(FOCUS_EVENT, onFocus);
+    return () => window.removeEventListener(FOCUS_EVENT, onFocus);
+  }, []);
 
   function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key !== "Enter" || e.shiftKey || e.metaKey || e.ctrlKey || e.nativeEvent.isComposing) return;

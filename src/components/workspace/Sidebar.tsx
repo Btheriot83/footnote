@@ -50,7 +50,7 @@ export const Sidebar = forwardRef<HTMLInputElement, Props>(function Sidebar(
             className="h-11 w-full rounded-xl border border-rule bg-paper-2/70 pl-11 pr-12 text-[16px] text-ink placeholder:text-ink-2 focus:border-rule-strong focus:bg-sheet focus:outline-none"
           />
           {!query && (
-            <kbd className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-md border border-rule bg-sheet px-1.5 py-0.5 font-sans text-[11px] text-muted">
+            <kbd className="pointer-events-none absolute right-3 hidden [@media(hover:hover)]:block top-1/2 -translate-y-1/2 rounded-md border border-rule bg-sheet px-1.5 py-0.5 font-sans text-[11px] text-muted">
               {isMac ? "⌘K" : "Ctrl K"}
             </kbd>
           )}
@@ -90,7 +90,7 @@ export const Sidebar = forwardRef<HTMLInputElement, Props>(function Sidebar(
                     )}
                   >
                     <span className="flex items-center gap-2">
-                      <span className="line-clamp-2 font-serif text-[19px] leading-snug text-ink">{m.title}</span>
+                      <span className="line-clamp-2 font-serif text-[19px] leading-snug text-ink">{m.title || "Untitled meeting"}</span>
                       {live && <span className="h-2 w-2 shrink-0 animate-pulse-dot rounded-full bg-accent" aria-label="recording" />}
                     </span>
                     <span className="mt-0.5 block text-[14.5px] text-ink-2/80">

@@ -41,7 +41,7 @@ import { TEMPLATES } from "@/lib/templates";
 import type { EnhancedNotes, TemplateId } from "@/lib/types";
 import { AskBox } from "./AskBox";
 import { Menu } from "./Menu";
-import { Notepad } from "./Notepad";
+import { focusNotes, Notepad } from "./Notepad";
 import { copyText, downloadMarkdown, ShareDialog } from "./ShareDialog";
 import { RecordingPill, useTicker } from "./StatusPill";
 
@@ -160,6 +160,9 @@ export function MeetingPane({
       toast("Nothing to enhance yet. Type a few notes or record some of the meeting first.");
       return;
     }
+    const previous = cur.enhanced
+      ? { enhanced: cur.enhanced, enhancedAt: cur.enhancedAt, enhancedSource: cur.enhancedSource }
+      : null;
     abortRef.current?.abort();
     const ac = new AbortController();
     abortRef.current = ac;
@@ -186,6 +189,19 @@ export function MeetingPane({
       );
       if (final.sections.length === 0) {
         toast("The AI couldn't find anything it could cite. Try adding a few notes.");
+      } else if (previous) {
+        toast("Notes re-enhanced.", {
+          duration: 8000,
+          action: {
+            label: "Undo",
+            onClick: () =>
+              patchMeetingState(
+                meetingId,
+                { enhanced: previous.enhanced, enhancedAt: previous.enhancedAt, enhancedSource: previous.enhancedSource },
+                { immediate: true },
+              ),
+          },
+        });
       }
       setPartial(null);
       setStreaming(false);
@@ -234,9 +250,25 @@ export function MeetingPane({
   const sampleDone = sample?.phase === "done" || (meeting.isSample && meeting.status === "ended");
   const nudge = sampleDone && !meeting.enhanced && !streaming && !error;
   const issues = here ? session.issues.filter((i) => !dismissedIssues.includes(i.source + i.code)) : [];
+  // Recording, but nothing is actually listening (mic blocked, tab not shared).
+  const hearing = (st: string) => st === "on" || st === "starting";
+  const notesOnly = live && !hearing(session.sources.mic) && !hearing(session.sources.tab);
+  const samplePlaying = !!sample && sample.phase !== "done";
   const mod = isMacLike() ? "⌘" : "Ctrl";
 
   const menuItems = [
+    {
+      label: "Skip to end of sample",
+      icon: <SkipIcon size={16} />,
+      onSelect: () => skipSampleToEnd(),
+      hidden: !samplePlaying || !isMobile,
+    },
+    {
+      label: "Share…",
+      icon: <ShareIcon size={16} />,
+      onSelect: () => setShareOpen(true),
+      hidden: !isMobile,
+    },
     {
       label: view === "enhanced" ? "Show my original notes" : "Show enhanced notes",
       icon: <NoteIcon size={17} />,
@@ -265,14 +297,18 @@ export function MeetingPane({
   if (live) {
     status = (
       <div className="flex items-center gap-2">
-        <RecordingPill label="Recording" elapsedMs={elapsed} live />
+        {notesOnly ? (
+          <RecordingPill label="Notes only" elapsedMs={elapsed} live={false} dot="muted" />
+        ) : (
+          <RecordingPill label="Recording" elapsedMs={elapsed} live />
+        )}
         <button
           type="button"
           onClick={() => stopLive()}
-          className={cx(btn.base, btn.secondary, "h-11 px-3.5 text-[14.5px]")}
-          aria-label="Stop recording"
+          className={cx(btn.base, btn.secondary, "h-11 shrink-0 px-3.5 text-[14.5px]")}
+          aria-label={notesOnly ? "End meeting" : "Stop recording"}
         >
-          <StopIcon size={14} /> <span className="hidden sm:inline">Stop</span>
+          <StopIcon size={14} /> <span className="hidden sm:inline">{notesOnly ? "End" : "Stop"}</span>
         </button>
       </div>
     );
@@ -284,7 +320,7 @@ export function MeetingPane({
         <button
           type="button"
           onClick={() => (playing ? pauseSample() : void playSample())}
-          className={cx(btn.base, btn.secondary, btn.icon, "h-11 w-11")}
+          className={cx(btn.base, btn.secondary, btn.icon, "h-11 w-11 shrink-0")}
           aria-label={playing ? "Pause sample" : "Play sample"}
         >
           {playing ? <PauseIcon size={16} /> : <PlayIcon size={16} />}
@@ -292,9 +328,10 @@ export function MeetingPane({
         <button
           type="button"
           onClick={() => skipSampleToEnd()}
-          className={cx(btn.base, btn.secondary, "h-11 px-3.5 text-[14.5px]")}
+          aria-label="Skip to end"
+          className={cx(btn.base, btn.secondary, "hidden h-11 shrink-0 px-3.5 text-[14.5px] sm:inline-flex")}
         >
-          <SkipIcon size={15} /> <span className="hidden sm:inline">Skip to end</span>
+          <SkipIcon size={15} /> Skip to end
         </button>
       </div>
     );
@@ -324,7 +361,21 @@ export function MeetingPane({
 
   const transcriptEmpty = (
     <div className="px-3 pt-2 text-[15px] leading-relaxed text-muted">
-      {live ? (
+      {notesOnly ? (
+        <>
+          <p className="flex items-center gap-2 text-ink-2">
+            <span className="h-2 w-2 rounded-full bg-faint" /> Not listening
+          </p>
+          <p className="mt-1">
+            Footnote can&rsquo;t hear this meeting, so it&rsquo;s notes only for now. Your notes still save, and Enhance
+            still tidies them up.
+          </p>
+          <SourceList sources={session.sources} />
+          <button type="button" onClick={onRetryCapture} className={cx(btn.base, btn.secondary, btn.sm, "mt-4")}>
+            <MicIcon size={16} /> Try the mic again
+          </button>
+        </>
+      ) : live ? (
         <>
           <p className="flex items-center gap-2 text-ink-2">
             <span className="h-2 w-2 animate-pulse-dot rounded-full bg-accent" /> Listening…
@@ -362,13 +413,13 @@ export function MeetingPane({
         >
           <MenuIcon />
         </button>
-        <div className="min-w-0">{status}</div>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="min-w-0 shrink">{status}</div>
+        <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
           <button
             type="button"
             onClick={() => void runEnhance()}
             disabled={streaming}
-            title={`Enhance notes (${mod}+Enter)`}
+            title={`${meeting.enhanced ? "Re-enhance" : "Enhance"} notes (${mod}+Enter)`}
             className={cx(
               btn.base,
               nudge ? btn.primary : btn.secondary,
@@ -381,13 +432,15 @@ export function MeetingPane({
             ) : (
               <SparkIcon size={17} className={cx(!nudge && "hidden sm:block")} />
             )}
-            <span className={cx(nudge ? "" : "hidden sm:inline")}>{streaming ? "Enhancing…" : "Enhance notes"}</span>
-            {!streaming && !nudge && <span className="sm:hidden">Enhance</span>}
+            <span className={cx(nudge ? "" : "hidden sm:inline")}>
+              {streaming ? "Enhancing…" : meeting.enhanced ? "Re-enhance" : "Enhance notes"}
+            </span>
+            {!streaming && !nudge && <span className="sm:hidden">{meeting.enhanced ? "Redo" : "Enhance"}</span>}
           </button>
           <button
             type="button"
             onClick={() => setShareOpen(true)}
-            className={cx(btn.base, btn.secondary, "h-11 px-3.5 text-[15px] sm:px-4")}
+            className={cx(btn.base, btn.secondary, "hidden h-11 px-3.5 text-[15px] sm:inline-flex sm:px-4")}
             aria-label="Share"
           >
             <ShareIcon size={18} />
@@ -434,10 +487,17 @@ export function MeetingPane({
             <textarea
               id="meeting-title"
               rows={1}
-              value={meeting.title}
+              value={meeting.title === "Untitled meeting" ? "" : meeting.title}
+              placeholder="Untitled meeting"
               onChange={(e) => patchMeetingState(meeting.id, { title: e.target.value.replace(/\n/g, " ") })}
-              onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), e.currentTarget.blur())}
-              onBlur={(e) => !e.target.value.trim() && patchMeetingState(meeting.id, { title: "Untitled meeting" })}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  e.currentTarget.blur();
+                  focusNotes();
+                }
+              }}
+              onBlur={(e) => e.target.value !== e.target.value.trim() && patchMeetingState(meeting.id, { title: e.target.value.trim() })}
               className="block w-full resize-none overflow-hidden bg-transparent [field-sizing:content] font-serif text-[34px] leading-[1.15] tracking-[-0.018em] text-ink placeholder:text-faint focus:outline-none sm:text-[46px]"
             />
             <div className="mt-2.5 flex flex-wrap items-center gap-x-2 text-[16px] text-ink-2/80 sm:text-[17px]">
@@ -636,7 +696,7 @@ export function MeetingPane({
                     onChange={(v) => patchMeetingState(meeting.id, { notes: v })}
                     onUserInput={() => sample && markSampleTyping()}
                     placeholder="Type rough notes as you listen. Short fragments are fine: Footnote fills in the rest from the transcript, with a receipt for every line."
-                    autoFocus={meeting.status === "draft" && !meeting.notes && !isMobile}
+                    autoFocus={(meeting.status === "draft" || live) && !meeting.notes.trim() && !isMobile}
                   />
                 </div>
                 {!meeting.enhanced && (meeting.notes.trim() || meeting.segments.length > 0) && !sample && !nudge && (
@@ -690,7 +750,7 @@ export function MeetingPane({
       <ShareDialog open={shareOpen} onClose={() => setShareOpen(false)} meeting={meeting} />
       <ConfirmDelete
         open={confirmDelete}
-        title={meeting.title}
+        title={meeting.title || "Untitled meeting"}
         onCancel={() => setConfirmDelete(false)}
         onConfirm={async () => {
           if (live) stopLive();
@@ -726,14 +786,14 @@ function SourceList({ sources }: { sources: ReturnType<typeof useSession>["sourc
 function SampleBanner({ blocked, tookOver, onPlay }: { blocked: boolean; tookOver: boolean; onPlay: () => void }) {
   if (blocked) {
     return (
-      <div className="animate-fade-up flex flex-wrap items-center gap-4 rounded-2xl border border-rule bg-paper px-5 py-4">
-        <div className="flex-1">
+      <div className="animate-fade-up flex flex-col items-start gap-4 rounded-2xl border border-rule bg-paper px-5 py-4 sm:flex-row sm:items-center">
+        <div className="min-w-0 flex-1">
           <p className="font-serif text-[19px] text-ink">A 2-minute renewal call with Dana from Acme</p>
           <p className="mt-0.5 text-[14px] text-muted">
             Press play: the transcript and your rough notes appear as if you were on the call. Sound on.
           </p>
         </div>
-        <button type="button" onClick={onPlay} className={cx(btn.base, btn.primary, btn.md)}>
+        <button type="button" onClick={onPlay} className={cx(btn.base, btn.primary, btn.md, "w-full shrink-0 sm:w-auto")}>
           <PlayIcon size={15} /> Play the sample call
         </button>
       </div>

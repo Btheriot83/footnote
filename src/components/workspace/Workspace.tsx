@@ -15,6 +15,7 @@ import { createMeeting, flushSaves, getMeeting, loadMeeting } from "@/lib/client
 import { SAMPLE_TEMPLATE, SAMPLE_TITLE } from "@/lib/sample";
 import type { Meeting } from "@/lib/types";
 import { MeetingPane } from "./MeetingPane";
+import { focusNotes } from "./Notepad";
 import { NewMeetingDialog, type StartOptions } from "./NewMeetingDialog";
 import { SettingsDialog } from "./SettingsDialog";
 import { Sidebar } from "./Sidebar";
@@ -172,9 +173,12 @@ export function Workspace() {
       id = m.id;
       select(id);
     }
+    // Typing should land in the notes straight away, not on the button that opened the dialog.
+    focusNotes();
     if (opts.record) {
       lastCapture.current = { meetingId: id, mic: opts.mic, tab: opts.tab };
       await startLive(id, { mic: opts.mic, tab: opts.tab });
+      focusNotes();
     }
   }
 

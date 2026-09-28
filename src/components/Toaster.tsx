@@ -1,13 +1,31 @@
 "use client";
+import { useEffect, useRef } from "react";
 import { dismissToast, useToasts } from "@/lib/client/toast";
 import { CloseIcon } from "./icons";
 import { cx } from "./ui";
 
 export function Toaster() {
   const toasts = useToasts();
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Toasts live in the top layer (a manual popover) so they sit above open dialogs.
+  // Re-showing moves them to the top of the stack if a dialog opened since.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof el.showPopover !== "function") return;
+    try {
+      if (el.matches(":popover-open")) el.hidePopover();
+      if (toasts.length) el.showPopover();
+    } catch {
+      /* popover unsupported: falls back to z-index */
+    }
+  }, [toasts]);
+
   return (
     <div
-      className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex flex-col items-center gap-2 px-4"
+      ref={ref}
+      popover="manual"
+      className="pointer-events-none fixed inset-x-0 bottom-4 top-auto z-50 m-0 flex h-auto w-full max-w-none flex-col items-center gap-2 overflow-visible border-0 bg-transparent p-0 px-4 [&:not(:popover-open)]:hidden"
       role="status"
       aria-live="polite"
     >

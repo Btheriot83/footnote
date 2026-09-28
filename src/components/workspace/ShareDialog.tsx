@@ -97,7 +97,7 @@ export function ShareDialog({ open, onClose, meeting }: { open: boolean; onClose
 
       <div className="mt-6 border-t border-rule pt-5">
         <h3 className="text-[13px] font-medium text-muted">Export</h3>
-        <div className="mt-2 grid gap-2 sm:grid-cols-3">
+        <div className="mt-2 grid gap-2 sm:grid-cols-3 [&>button]:whitespace-nowrap [&>button]:px-3">
           <button
             type="button"
             className={cx(btn.base, btn.secondary, btn.md)}

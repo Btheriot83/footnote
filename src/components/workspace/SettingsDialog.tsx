@@ -16,11 +16,34 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
     if (!open) return;
     setDraft("");
     setReveal(false);
+    setCheck({ state: "idle" });
     setStatus("loading");
     void fetchStatus().then(setStatus);
   }, [open, saved]);
 
-  const valid = /^sk-[A-Za-z0-9_\-]{20,}$/.test(draft.trim());
+  const trimmed = draft.trim();
+  const valid = /^sk-[A-Za-z0-9_\-]{20,}$/.test(trimmed);
+  const hint = !trimmed
+    ? null
+    : !trimmed.startsWith("sk-")
+      ? "OpenAI keys start with “sk-”."
+      : /\s/.test(trimmed)
+        ? "The key has a space in it. Paste it again."
+        : !valid
+          ? "That key looks too short. Copy the whole thing."
+          : null;
+  const [check, setCheck] = useState<{ state: "idle" | "checking" | "ok" | "bad"; message?: string }>({ state: "idle" });
+
+  async function testKey(key: string) {
+    setCheck({ state: "checking" });
+    try {
+      const res = await fetch("/api/check-key", { method: "POST", headers: { "x-user-openai-key": key } });
+      const data = (await res.json()) as { ok: boolean; message: string };
+      setCheck({ state: data.ok ? "ok" : "bad", message: data.message });
+    } catch {
+      setCheck({ state: "bad", message: "Couldn't reach the server to check the key." });
+    }
+  }
 
   return (
     <Dialog
@@ -48,6 +71,14 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
             <button
               type="button"
               className={cx(btn.base, btn.ghost, btn.sm, "ml-auto")}
+              disabled={check.state === "checking"}
+              onClick={() => void testKey(saved)}
+            >
+              {check.state === "checking" ? "Checking…" : "Test key"}
+            </button>
+            <button
+              type="button"
+              className={cx(btn.base, btn.ghost, btn.sm)}
               onClick={() => {
                 setUserKey("");
                 toast("Key removed from this browser.");
@@ -62,9 +93,11 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
             onSubmit={(e) => {
               e.preventDefault();
               if (!valid) return;
-              setUserKey(draft.trim());
+              const key = draft.trim();
+              setUserKey(key);
               setDraft("");
               toast("Key saved in this browser.", { tone: "success" });
+              void testKey(key);
             }}
           >
             <label className="sr-only" htmlFor="openai-key">
@@ -94,6 +127,17 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
             </button>
           </form>
         )}
+        {!saved && hint && (
+          <p className="mt-2 flex items-center gap-2 text-[13px] text-ink-2" role="status">
+            <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden /> {hint}
+          </p>
+        )}
+        {check.state === "ok" || check.state === "bad" ? (
+          <p className="mt-2 flex items-center gap-2 text-[13px] text-ink-2" role="status">
+            <span className={cx("h-1.5 w-1.5 rounded-full", check.state === "ok" ? "bg-ink" : "bg-accent")} aria-hidden />
+            {check.message}
+          </p>
+        ) : null}
         <p className="mt-2 text-[13px] text-muted">
           Get one at{" "}
           <a

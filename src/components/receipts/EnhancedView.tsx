@@ -62,7 +62,12 @@ export function EnhancedView({ notes, numbers, segmentsById, receipts, streaming
                     )}
                   />
                   <span className={b.origin === "you" ? "text-ink" : "text-muted"}>
-                    {b.text}
+                    {splitLastWord(b.text)[0]}
+                  </span>
+                  {/* The last word and its footnote numbers never wrap apart. */}
+                  <span className="whitespace-nowrap">
+                  <span className={b.origin === "you" ? "text-ink" : "text-muted"}>
+                    {splitLastWord(b.text)[1]}
                     {b.origin === "ai" && <span className="sr-only"> (added by AI)</span>}
                   </span>
                   {[...b.cites]
@@ -92,6 +97,7 @@ export function EnhancedView({ notes, numbers, segmentsById, receipts, streaming
                       </Fragment>
                     );
                   })}
+                  </span>
                   {inlineQuotes && quoteOpen && (
                     <div className="animate-fade-in mt-2 space-y-2 rounded-xl border border-rule bg-paper px-3.5 py-3">
                       {b.cites.map((c) => {
@@ -122,4 +128,10 @@ export function EnhancedView({ notes, numbers, segmentsById, receipts, streaming
       ))}
     </div>
   );
+}
+
+/** "a b c" -> ["a b ", "c"], so the last word can sit with its footnote markers. */
+export function splitLastWord(text: string): [string, string] {
+  const i = text.trimEnd().lastIndexOf(" ");
+  return i < 0 ? ["", text] : [text.slice(0, i + 1), text.slice(i + 1)];
 }

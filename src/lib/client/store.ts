@@ -86,7 +86,7 @@ export async function createMeeting(init: {
   const now = Date.now();
   const m: Meeting = {
     id: init.id ?? uid("m_"),
-    title: init.title?.trim() || "Untitled meeting",
+    title: init.title?.trim() || "",
     template: init.template,
     createdAt: now,
     updatedAt: now,
