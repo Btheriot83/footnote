@@ -39,6 +39,8 @@ export function contentTokens(text: string): Set<string> {
     .toLowerCase()
     .replace(/[’']/g, "")
     .replace(/(\d),(\d)/g, "$1$2")
+    // "SOC 2" / "SOC2", "Type II" / "type 2"
+    .replace(/\b(soc|type|tier|q|v)\s?(\d|ii|iii)\b/g, (_, a: string, n: string) => a + (n === "ii" ? "2" : n === "iii" ? "3" : n))
     // "$32M", "32 million" -> "32m"; "$90K", "90 thousand" -> "90k"
     .replace(/(\d+(?:\.\d+)?)\s*(m|mil|million|k|thousand)\b/g, (_, n: string, u: string) => n + (u[0] === "k" || u[0] === "t" ? "k" : "m"))
     .split(/[^a-z0-9.]+/)
@@ -66,11 +68,24 @@ function overlap(a: Set<string>, b: Set<string>): number {
 
 /** Lines of the user's rough notes that carry content (bullet markers stripped). */
 export function noteLines(userNotes: string): Set<string>[] {
-  return userNotes
-    .split(/\n+/)
-    .map((l) => l.replace(/^\s*(?:[-*•]|\d+\.)\s*/, "").trim())
-    .map(contentTokens)
-    .filter((t) => t.size > 0);
+  const out: Set<string>[] = [];
+  for (const raw of userNotes.split(/\n+/)) {
+    const line = raw.replace(/^\s*(?:[-*•]|\d+\.)\s*/, "").trim();
+    if (!line) continue;
+    const whole = contentTokens(line);
+    if (whole.size) out.push(whole);
+    // People cram several points into one line ("leo: sso fix shipped, SOC2 export w/ sam"),
+    // so each clause counts as a note of its own too.
+    const clauses = line.split(/\s*[,;]\s*|\s+->\s+|\s+\/\s+/).filter(Boolean);
+    if (clauses.length > 1) {
+      const lead = line.match(/^([a-z][\w ]{0,20}):/i)?.[1];
+      for (const c of clauses) {
+        const t = contentTokens(lead && !c.startsWith(lead) ? `${lead} ${c}` : c);
+        if (t.size >= 2) out.push(t);
+      }
+    }
+  }
+  return out;
 }
 
 /** How much of the best-matching note line this bullet covers (0..1). */
@@ -108,8 +123,11 @@ function similarity(a: Set<string>, b: Set<string>): number {
 
 /** Same fact twice: near-identical wording, or the same figures in similar words. */
 function isRepeat(a: Set<string>, b: Set<string>): boolean {
-  if (a.size < 3 || b.size < 3) return false;
+  if (a.size < 2 || b.size < 2) return false;
   const sim = similarity(a, b);
+  // A short bullet wholly contained in another ("Brightline closed." vs "Brightline closed Thursday, 42 seats.")
+  if (sim === 1) return true;
+  if (a.size < 3 || b.size < 3) return false;
   if (sim >= 0.8) return true;
   if (sim >= 0.7 && Math.min(a.size, b.size) >= 4) return true;
   const sharedNumbers = [...a].filter((t) => /\d/.test(t) && b.has(t)).length;

@@ -12,7 +12,9 @@ import { preloadSample, startSample, stopSampleAudio } from "@/lib/client/sample
 import { getSession, resetSession, useSession } from "@/lib/client/session";
 import { useUserKey } from "@/lib/client/settings";
 import { createMeeting, flushSaves, getMeeting, loadMeeting } from "@/lib/client/store";
+import { getFlag, setFlag } from "@/lib/client/settings";
 import { SAMPLE_TEMPLATE, SAMPLE_TITLE } from "@/lib/sample";
+import { exampleMeetings } from "@/lib/sample/examples";
 import type { Meeting } from "@/lib/types";
 import { setPendingFocus } from "@/lib/client/pending-focus";
 import { AskAllDialog } from "./AskAllDialog";
@@ -96,6 +98,11 @@ export function Workspace() {
     if (booted.current || meetings === undefined) return;
     booted.current = true;
     preloadSample();
+    // First visit: seed two finished example meetings (once; deleting them sticks).
+    if (!getFlag("seededExamples")) {
+      setFlag("seededExamples", true);
+      void db.meetings.bulkPut(exampleMeetings().filter((e) => !meetings.some((m) => m.id === e.id)));
+    }
     // Any meeting marked live from a previous visit has ended.
     meetings
       .filter((m) => m.status === "live")
@@ -259,6 +266,7 @@ export function Workspace() {
         ) : (
           <EmptyWorkspace
             loading={!ready}
+            hasMeetings={!!meetings?.length}
             onMenu={() => setDrawer(true)}
             onNew={() => setDialog({ kind: "new" })}
             onSample={() => void runSample()}
@@ -295,11 +303,13 @@ export function Workspace() {
 
 function EmptyWorkspace({
   loading,
+  hasMeetings,
   onMenu,
   onNew,
   onSample,
 }: {
   loading: boolean;
+  hasMeetings: boolean;
   onMenu: () => void;
   onNew: () => void;
   onSample: () => void;
@@ -326,7 +336,7 @@ function EmptyWorkspace({
       ) : (
         <div className="flex flex-1 items-center justify-center px-6 py-16">
           <div className="max-w-[520px] animate-fade-up text-center">
-            <p className="font-serif text-[15px] italic text-muted">No meetings yet</p>
+            <p className="font-serif text-[15px] italic text-muted">{hasMeetings ? "Welcome to Footnote" : "No meetings yet"}</p>
             <h1 className="mt-3 font-serif text-[40px] leading-[1.1] tracking-[-0.02em] sm:text-[48px]">
               Notes with receipts start here.
             </h1>

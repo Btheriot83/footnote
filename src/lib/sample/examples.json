@@ -1,0 +1,467 @@
+[
+  {
+    "key": "one-on-one",
+    "title": "Weekly 1:1 with Priya",
+    "template": "one-on-one",
+    "daysAgo": 6,
+    "hour": 10,
+    "durationMs": 1452000,
+    "notes": "- brightline closed! 42 seats annual\n- SSO guide unblocked it -> add to all sec reviews\n- acme: CFO will push on price, ~120 seats\n- priya owns northwind e2e, me on pricing only\n- feedback: demo too long -> 20 min\n- ok'd 15% startup discount yr1",
+    "segments": [
+      {
+        "id": "s1",
+        "speaker": "you",
+        "label": "You",
+        "t": 12000,
+        "text": "How are you doing? Last week sounded rough with the quarter-end push."
+      },
+      {
+        "id": "s2",
+        "speaker": "them",
+        "label": "Priya",
+        "t": 20000,
+        "text": "Better, honestly. I closed Brightline on Thursday, so the pressure's off a bit. Forty-two seats, annual."
+      },
+      {
+        "id": "s3",
+        "speaker": "you",
+        "label": "You",
+        "t": 41000,
+        "text": "That's great, congrats. What made it land in the end?"
+      },
+      {
+        "id": "s4",
+        "speaker": "them",
+        "label": "Priya",
+        "t": 47000,
+        "text": "Their CTO wanted SSO before signing. Once security sent over the Okta setup guide, it moved in two days."
+      },
+      {
+        "id": "s5",
+        "speaker": "you",
+        "label": "You",
+        "t": 130000,
+        "text": "Good to know. Let's make that guide part of every security review. What's on your plate this week?"
+      },
+      {
+        "id": "s6",
+        "speaker": "them",
+        "label": "Priya",
+        "t": 142000,
+        "text": "Mostly Acme. Dana warned me their CFO will push on price at the renewal. They're growing to about a hundred and twenty seats."
+      },
+      {
+        "id": "s7",
+        "speaker": "you",
+        "label": "You",
+        "t": 185000,
+        "text": "I'm taking the renewal call with Dana next week. I'll bring two pricing options, including a two-year term."
+      },
+      {
+        "id": "s8",
+        "speaker": "them",
+        "label": "Priya",
+        "t": 194000,
+        "text": "That'll help. I'd break out viewer seats too. A lot of their managers only look at dashboards."
+      },
+      {
+        "id": "s9",
+        "speaker": "you",
+        "label": "You",
+        "t": 580000,
+        "text": "On your growth plan: you said you wanted to run a full deal cycle on your own. How do you feel about that?"
+      },
+      {
+        "id": "s10",
+        "speaker": "them",
+        "label": "Priya",
+        "t": 592000,
+        "text": "I'd like to own the Northwind expansion end to end. I'll probably still want you on the pricing call."
+      },
+      {
+        "id": "s11",
+        "speaker": "you",
+        "label": "You",
+        "t": 615000,
+        "text": "Deal. You own Northwind, and I'll only join for pricing. One piece of feedback: your demo runs long. Try to get it to twenty minutes."
+      },
+      {
+        "id": "s12",
+        "speaker": "them",
+        "label": "Priya",
+        "t": 629000,
+        "text": "Fair. I'll trim the analytics section and send you the new version by Friday."
+      },
+      {
+        "id": "s13",
+        "speaker": "you",
+        "label": "You",
+        "t": 1360000,
+        "text": "Anything you need from me?"
+      },
+      {
+        "id": "s14",
+        "speaker": "them",
+        "label": "Priya",
+        "t": 1366000,
+        "text": "Approval to offer the startup discount on Northwind if they ask. Fifteen percent, first year only."
+      },
+      {
+        "id": "s15",
+        "speaker": "you",
+        "label": "You",
+        "t": 1381000,
+        "text": "Approved, fifteen percent for year one. Let's check in on it next week."
+      }
+    ],
+    "enhanced": {
+      "title": "Weekly 1:1 with Priya",
+      "sections": [
+        {
+          "heading": "Check-in",
+          "bullets": [
+            {
+              "text": "Brightline closed: 42 seats, annual.",
+              "origin": "you",
+              "cites": [
+                "s2"
+              ]
+            },
+            {
+              "text": "Closed Thursday; Priya says the quarter-end pressure is off.",
+              "origin": "ai",
+              "cites": [
+                "s2"
+              ]
+            }
+          ]
+        },
+        {
+          "heading": "Topics",
+          "bullets": [
+            {
+              "text": "The SSO guide unblocked Brightline; add it to every security review.",
+              "origin": "you",
+              "cites": [
+                "s4",
+                "s5"
+              ]
+            },
+            {
+              "text": "Their CTO required SSO before signing; it moved in two days once security sent the Okta setup guide.",
+              "origin": "ai",
+              "cites": [
+                "s4"
+              ]
+            },
+            {
+              "text": "Acme: the CFO will push on price at renewal, about 120 seats.",
+              "origin": "you",
+              "cites": [
+                "s6"
+              ]
+            },
+            {
+              "text": "You're taking the renewal call with Dana and bringing two pricing options, including a two-year term.",
+              "origin": "ai",
+              "cites": [
+                "s7"
+              ]
+            },
+            {
+              "text": "Priya suggests breaking out viewer seats, since many of their managers only use dashboards.",
+              "origin": "ai",
+              "cites": [
+                "s8"
+              ]
+            },
+            {
+              "text": "Priya owns the Northwind expansion end to end; you join for pricing only.",
+              "origin": "you",
+              "cites": [
+                "s10",
+                "s11"
+              ]
+            }
+          ]
+        },
+        {
+          "heading": "Feedback",
+          "bullets": [
+            {
+              "text": "Demo runs long; get it to 20 minutes.",
+              "origin": "you",
+              "cites": [
+                "s11"
+              ]
+            },
+            {
+              "text": "Priya will trim the analytics section and send the new version by Friday.",
+              "origin": "ai",
+              "cites": [
+                "s12"
+              ]
+            }
+          ]
+        },
+        {
+          "heading": "Follow-ups",
+          "bullets": [
+            {
+              "text": "Approved a 15% startup discount, year one only.",
+              "origin": "you",
+              "cites": [
+                "s14",
+                "s15"
+              ]
+            },
+            {
+              "text": "It's for Northwind, only if they ask.",
+              "origin": "ai",
+              "cites": [
+                "s14"
+              ]
+            },
+            {
+              "text": "Check in on the Northwind discount next week.",
+              "origin": "ai",
+              "cites": [
+                "s15"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "key": "standup",
+    "title": "Design standup",
+    "template": "standup",
+    "daysAgo": 11,
+    "hour": 9,
+    "durationMs": 168000,
+    "notes": "- maya: onboarding screens done, now search empty states\n- leo: okta sso fix shipped, SOC2 export w/ sam\n- SOC2 type II ready, questionnaire waiting on legal (retention) ~wed\n- staging flaky, 1 in 5 builds\n- plan names final: starter / growth / enterprise\n- me: ping legal",
+    "segments": [
+      {
+        "id": "s1",
+        "speaker": "you",
+        "label": "You",
+        "t": 5000,
+        "text": "Quick one today. Maya, want to start?"
+      },
+      {
+        "id": "s2",
+        "speaker": "them",
+        "label": "Maya",
+        "t": 9000,
+        "text": "Yesterday I finished the new onboarding screens. Today I'm on the empty states for search. No blockers."
+      },
+      {
+        "id": "s3",
+        "speaker": "them",
+        "label": "Leo",
+        "t": 31000,
+        "text": "I shipped the Okta SSO fix for the enterprise tier. Today I'm pairing with Sam on the SOC 2 evidence export."
+      },
+      {
+        "id": "s4",
+        "speaker": "you",
+        "label": "You",
+        "t": 52000,
+        "text": "Can we send the SOC 2 report to customers this week? Acme is asking for it."
+      },
+      {
+        "id": "s5",
+        "speaker": "them",
+        "label": "Leo",
+        "t": 61000,
+        "text": "The Type II report is ready now. The security questionnaire needs an answer from legal on data retention, so probably Wednesday."
+      },
+      {
+        "id": "s6",
+        "speaker": "you",
+        "label": "You",
+        "t": 80000,
+        "text": "I'll ping legal right after this. Anything else blocking you?"
+      },
+      {
+        "id": "s7",
+        "speaker": "them",
+        "label": "Leo",
+        "t": 86000,
+        "text": "Staging is flaky. About one in five builds fails, and it's slowing down reviews."
+      },
+      {
+        "id": "s8",
+        "speaker": "them",
+        "label": "Maya",
+        "t": 104000,
+        "text": "I'm also blocked on copy for onboarding step three. I need the final plan names."
+      },
+      {
+        "id": "s9",
+        "speaker": "you",
+        "label": "You",
+        "t": 122000,
+        "text": "The plan names are Starter, Growth and Enterprise. They're final as of Monday."
+      },
+      {
+        "id": "s10",
+        "speaker": "them",
+        "label": "Maya",
+        "t": 130000,
+        "text": "Perfect, that unblocks me. I'll have the onboarding prototype ready for Thursday's review."
+      },
+      {
+        "id": "s11",
+        "speaker": "you",
+        "label": "You",
+        "t": 144000,
+        "text": "Leo, can you spend thirty minutes on staging with Sam today?"
+      },
+      {
+        "id": "s12",
+        "speaker": "them",
+        "label": "Leo",
+        "t": 150000,
+        "text": "Yes. I'll grab Sam after lunch and post what we find in the channel."
+      }
+    ],
+    "enhanced": {
+      "title": "Design standup",
+      "sections": [
+        {
+          "heading": "Done",
+          "bullets": [
+            {
+              "text": "Maya finished the new onboarding screens.",
+              "origin": "you",
+              "cites": [
+                "s2"
+              ]
+            },
+            {
+              "text": "Leo shipped the Okta SSO fix.",
+              "origin": "you",
+              "cites": [
+                "s3"
+              ]
+            },
+            {
+              "text": "The fix is for the enterprise tier.",
+              "origin": "ai",
+              "cites": [
+                "s3"
+              ]
+            },
+            {
+              "text": "The SOC 2 Type II report is ready.",
+              "origin": "you",
+              "cites": [
+                "s5"
+              ]
+            },
+            {
+              "text": "Plan names are final: Starter, Growth and Enterprise.",
+              "origin": "you",
+              "cites": [
+                "s9"
+              ]
+            },
+            {
+              "text": "Final as of Monday.",
+              "origin": "ai",
+              "cites": [
+                "s9"
+              ]
+            }
+          ]
+        },
+        {
+          "heading": "Doing",
+          "bullets": [
+            {
+              "text": "Maya is on the search empty states.",
+              "origin": "you",
+              "cites": [
+                "s2"
+              ]
+            },
+            {
+              "text": "Leo is on the SOC 2 evidence export with Sam.",
+              "origin": "you",
+              "cites": [
+                "s3"
+              ]
+            },
+            {
+              "text": "Maya will have the onboarding prototype ready for Thursday's review.",
+              "origin": "ai",
+              "cites": [
+                "s10"
+              ]
+            },
+            {
+              "text": "You'll ping legal.",
+              "origin": "you",
+              "cites": [
+                "s6"
+              ]
+            }
+          ]
+        },
+        {
+          "heading": "Blockers",
+          "bullets": [
+            {
+              "text": "The security questionnaire waits on legal's data-retention answer, likely Wednesday.",
+              "origin": "you",
+              "cites": [
+                "s4",
+                "s5"
+              ]
+            },
+            {
+              "text": "Acme is asking for the SOC 2 report this week.",
+              "origin": "ai",
+              "cites": [
+                "s4"
+              ]
+            },
+            {
+              "text": "Staging is flaky: about 1 in 5 builds fails.",
+              "origin": "you",
+              "cites": [
+                "s7"
+              ]
+            },
+            {
+              "text": "It's slowing down reviews.",
+              "origin": "ai",
+              "cites": [
+                "s7"
+              ]
+            },
+            {
+              "text": "Leo will look at staging with Sam after lunch and post findings in the channel.",
+              "origin": "ai",
+              "cites": [
+                "s11",
+                "s12"
+              ]
+            },
+            {
+              "text": "Maya's onboarding step three copy was blocked on plan names; now unblocked.",
+              "origin": "ai",
+              "cites": [
+                "s8",
+                "s10"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

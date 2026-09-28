@@ -52,5 +52,7 @@ export interface Meeting {
   /** "cached" when the enhancement came from the bundled sample. */
   enhancedSource?: "live" | "cached";
   isSample?: boolean;
+  /** A pre-made example meeting seeded into a first visit's history. */
+  isExample?: boolean;
   updatedAt: number;
 }

@@ -109,6 +109,7 @@ export const Sidebar = forwardRef<HTMLInputElement, Props>(function Sidebar(
                     <span className="mt-0.5 block text-[14.5px] text-ink-2/80">
                       {formatDate(m.createdAt)}
                       {m.isSample && <span className="text-muted"> · Sample</span>}
+                      {m.isExample && <span className="text-muted"> · Example</span>}
                     </span>
                     {snippet && <span className="mt-1 line-clamp-2 block text-[13px] text-muted">{snippet}</span>}
                   </button>

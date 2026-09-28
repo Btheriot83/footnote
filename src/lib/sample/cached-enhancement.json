@@ -5,7 +5,7 @@
       "heading": "Where they are",
       "bullets": [
         {
-          "text": "Acme just closed its Series B and is hiring fast.",
+          "text": "Acme had been in fundraising and recently closed Series B.",
           "origin": "you",
           "cites": [
             "s3",
@@ -13,24 +13,38 @@
           ]
         },
         {
-          "text": "The round was $32M, led by Northstar.",
+          "text": "Series B closed two weeks ago for $32M, led by Northstar.",
           "origin": "ai",
           "cites": [
             "s4"
           ]
         },
         {
-          "text": "Team size is growing from 40 to about 120 seats by March.",
+          "text": "They are hiring fast.",
+          "origin": "you",
+          "cites": [
+            "s4"
+          ]
+        },
+        {
+          "text": "Support is growing from 40 people to about 110 by March.",
           "origin": "ai",
           "cites": [
             "s6"
           ]
         },
         {
-          "text": "Their current contract ends on the 30th.",
+          "text": "With ops and success, the rollout is about 120 seats.",
           "origin": "ai",
           "cites": [
-            "s20"
+            "s6"
+          ]
+        },
+        {
+          "text": "About 20 users are managers who only need dashboards.",
+          "origin": "you",
+          "cites": [
+            "s8"
           ]
         }
       ]
@@ -39,15 +53,15 @@
       "heading": "What they need",
       "bullets": [
         {
-          "text": "Seats are growing from 40 to ~120 by March, with about 20 managers needing dashboard-only access.",
+          "text": "Managers only need viewer seats.",
           "origin": "you",
           "cites": [
-            "s6",
-            "s8"
+            "s8",
+            "s9"
           ]
         },
         {
-          "text": "A viewer seat fits the manager-only use case and is priced lower.",
+          "text": "A viewer seat is available for that use case and is priced much lower.",
           "origin": "ai",
           "cites": [
             "s9"
@@ -59,23 +73,28 @@
       "heading": "Pricing",
       "bullets": [
         {
-          "text": "Pricing is the main concern; $65/seat will draw CFO pushback, and year one needs to stay under $90K.",
+          "text": "Pricing is a major concern at $65 a seat.",
           "origin": "you",
           "cites": [
-            "s10",
+            "s10"
+          ]
+        },
+        {
+          "text": "They need year one under $90K and are open to a two-year term.",
+          "origin": "you",
+          "cites": [
             "s12"
           ]
         },
         {
-          "text": "A two-year term could work if it lowers per-seat pricing.",
+          "text": "Dana expects the CFO to push back on the larger spend.",
           "origin": "ai",
           "cites": [
-            "s11",
-            "s12"
+            "s10"
           ]
         },
         {
-          "text": "They would move to the growth tier at this volume.",
+          "text": "A multi-year term should lower the per-seat price.",
           "origin": "ai",
           "cites": [
             "s11"
@@ -87,7 +106,7 @@
       "heading": "Security & procurement",
       "bullets": [
         {
-          "text": "Security review will run with new CISO Marcus, and they need SOC 2 plus Okta SSO.",
+          "text": "Security review is required with Marcus, and they need SOC 2 and Okta SSO.",
           "origin": "you",
           "cites": [
             "s14",
@@ -95,17 +114,31 @@
           ]
         },
         {
-          "text": "Send the SOC 2 Type II report and a completed security questionnaire.",
+          "text": "Marcus is the new CISO overseeing the formal vendor review.",
+          "origin": "you",
+          "cites": [
+            "s14"
+          ]
+        },
+        {
+          "text": "You offered the SOC 2 Type II report and a completed security questionnaire.",
           "origin": "ai",
           "cites": [
             "s15"
           ]
         },
         {
-          "text": "Marcus wants a deeper security call, and he is free Tuesday afternoon.",
+          "text": "SSO through Okta is required before rollout and is included on the growth tier.",
           "origin": "ai",
           "cites": [
-            "s17",
+            "s16",
+            "s17"
+          ]
+        },
+        {
+          "text": "Marcus is available Tuesday afternoon for a security call.",
+          "origin": "ai",
+          "cites": [
             "s18"
           ]
         }
@@ -115,7 +148,7 @@
       "heading": "Next steps",
       "bullets": [
         {
-          "text": "Send two pricing options and the SOC 2 report by Thursday.",
+          "text": "Send two pricing options and the SOC 2 report by Thursday, and set up a security call Tuesday.",
           "origin": "you",
           "cites": [
             "s13",
@@ -123,23 +156,15 @@
           ]
         },
         {
-          "text": "Include annual and two-year options, with viewer seats broken out.",
+          "text": "The pricing options should include annual and two-year terms with viewer seats broken out.",
           "origin": "ai",
           "cites": [
             "s13"
           ]
         },
         {
-          "text": "Set up a security call with Marcus on Tuesday.",
-          "origin": "ai",
-          "cites": [
-            "s19",
-            "s18"
-          ]
-        },
-        {
-          "text": "Try to sign before the 30th contract end date.",
-          "origin": "ai",
+          "text": "Their contract ends on the 30th, and they want to sign before then.",
+          "origin": "you",
           "cites": [
             "s20"
           ]

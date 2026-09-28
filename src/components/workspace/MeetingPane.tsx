@@ -575,7 +575,12 @@ export function MeetingPane({
                   ))}
                 </select>
               </label>
-              {meeting.enhancedSource === "cached" && view === "enhanced" && (
+              {meeting.isExample && (
+                <span className="ml-1 rounded-full border border-rule px-2 py-0.5 text-[12px] font-medium uppercase tracking-[0.06em] text-muted">
+                  Example
+                </span>
+              )}
+              {meeting.enhancedSource === "cached" && !meeting.isExample && view === "enhanced" && (
                 <span className="ml-1 rounded-full border border-rule px-2 py-0.5 text-[12px] font-medium uppercase tracking-[0.06em] text-muted">
                   Cached demo
                 </span>
