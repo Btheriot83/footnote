@@ -37,6 +37,7 @@ import {
 } from "@/lib/client/clip-player";
 import { deleteRecordings } from "@/lib/client/local-audio";
 import { stopLive } from "@/lib/client/live-controller";
+import { useOnline } from "@/lib/client/online";
 import { takePendingFocus } from "@/lib/client/pending-focus";
 import { markSampleTyping, pauseSample, playSample, skipSampleToEnd } from "@/lib/client/sample-controller";
 import { useSession } from "@/lib/client/session";
@@ -95,6 +96,7 @@ export function MeetingPane({
   const sample = here && session.kind === "sample" ? session.sample : null;
   const liveElapsed = useTicker(live, session.startedAt);
   const clip = useClip();
+  const online = useOnline();
 
   const [partial, setPartial] = useState<EnhancedNotes | null>(null);
   const [streaming, setStreaming] = useState(false);
@@ -171,6 +173,10 @@ export function MeetingPane({
     if (session.kind === "sample" && session.meetingId === meetingId && session.sample.phase !== "done") {
       skipSampleToEnd();
       cur = getMeeting(meetingId)!;
+    }
+    if (!navigator.onLine) {
+      setError({ code: "offline", message: "You're offline. Your notes are saved on this device; Enhance works again once you're back online." });
+      return;
     }
     if (!cur.notes.replace(/^[\s\-*•]+$/gm, "").trim() && cur.segments.length === 0) {
       toast("Nothing to enhance yet. Type a few notes or record some of the meeting first.");
@@ -502,6 +508,15 @@ export function MeetingPane({
           <MenuIcon size={20} />
         </button>
         <div className="min-w-0 shrink">{status}</div>
+        {!online && (
+          <span
+            role="status"
+            title="Notes keep saving on this device. Enhance and Ask need a connection."
+            className="paper paper-blush smallcaps hidden -rotate-[2deg] rounded-[2px] px-2.5 py-1.5 text-[10px] text-ink-2 sm:inline-block"
+          >
+            Offline · notes still save
+          </span>
+        )}
         <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
           <button
             type="button"
@@ -714,7 +729,7 @@ export function MeetingPane({
                           Show the cached demo
                         </button>
                       )}
-                      {error.code !== "no_key" && (
+                      {error.code !== "no_key" && (error.code !== "offline" || online) && (
                         <button
                           type="button"
                           onClick={() => void runEnhance()}

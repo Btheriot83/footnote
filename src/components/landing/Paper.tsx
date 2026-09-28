@@ -113,7 +113,7 @@ export function Hand({
   className?: string;
 }) {
   return (
-    <span className={cx("relative inline-block align-baseline", className)}>
+    <span className={cx("hand-ink relative inline-block align-baseline", className)}>
       <span className="sr-only">{text}</span>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={src} alt="" aria-hidden width={width} height={height} className="inline-block h-full w-auto" draggable={false} />

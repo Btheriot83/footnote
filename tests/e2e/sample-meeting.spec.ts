@@ -42,6 +42,23 @@ test("landing page leads to the sample meeting", async ({ page }) => {
   await expect(page.locator("#meeting-title")).toHaveValue("Acme renewal — sales call");
 });
 
+test("the hero prints the receipt for the footnote you click", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: /Seats grow from 40 to about 120 by March\. Print its receipt/ }).first().click();
+  await expect(page.getByText("With ops and success, call it 120 seats.").first()).toBeVisible();
+  await expect(page.getByText("SOURCE 2 OF 3").first()).toBeVisible();
+});
+
+test("offline: notes keep saving and Enhance says why it can't run", async ({ page, context }) => {
+  await page.goto("/app?sample=1");
+  await page.getByRole("button", { name: /Skip to end/ }).click();
+  await context.setOffline(true);
+  await expect(page.getByText("Offline · notes still save")).toBeVisible();
+  await page.getByRole("button", { name: /Enhance notes/ }).first().click();
+  await expect(page.getByText(/You're offline/)).toBeVisible();
+  await context.setOffline(false);
+});
+
 test("sample meeting: plays, enhances with receipts, shows originals, shares", async ({ page, context }) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await mockEnhance(page);
@@ -63,11 +80,14 @@ test("sample meeting: plays, enhances with receipts, shows originals, shares", a
   const firstBullet = cached.sections[0].bullets[0];
   await expect(page.locator("[data-bullet='0:0']")).toContainText(firstBullet.text);
 
-  // Receipts: hovering a footnote highlights the cited transcript line.
+  // Receipts: hovering a footnote highlights the cited transcript line and feeds out its receipt.
   const marker = page.locator("[data-bullet='0:0'] .fn-mark").first();
   await marker.hover();
   const cited = transcript.locator(`[data-segment='${firstBullet.cites[0]}'] > div`);
   await expect(cited).toHaveAttribute("data-active", "true");
+  const citedText = (await transcript.locator(`[data-segment='${firstBullet.cites[0]}'] p`).first().textContent()) ?? "";
+  await expect(page.getByRole("tooltip")).toContainText(citedText.trim());
+  await expect(page.getByRole("tooltip").getByRole("button", { name: /Hear it/i })).toBeVisible();
 
   // Clicking a cited line shows which bullets cite it.
   await cited.click();

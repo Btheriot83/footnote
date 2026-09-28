@@ -225,6 +225,13 @@ dialog .wordmark {
   color: var(--color-ink);
 }
 
+/* Hand-lettered words are dark ink images; at night, on walnut, they're written in cream. */
+@media (prefers-color-scheme: dark) {
+  .hand-ink img {
+    filter: invert(1) sepia(0.35) saturate(0.8) brightness(0.96);
+  }
+}
+
 /* The desk lamp: a warm pool of light that drifts toward the cursor (see DeskLamp). */
 .desk-lamp {
   position: fixed;
