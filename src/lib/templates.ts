@@ -62,3 +62,12 @@ export const TEMPLATES: Template[] = [
 export function getTemplate(id: string | undefined | null): Template {
   return TEMPLATES.find((t) => t.id === id) ?? TEMPLATES[0];
 }
+
+/** "General Meeting Notes" says nothing a blank title doesn't; keep the placeholder instead. */
+export function isGenericTitle(title: string, templateId?: string | null): boolean {
+  const norm = (x: string) => x.toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
+  const t = norm(title);
+  if (!t) return true;
+  const filler = new Set(["meeting", "notes", "note", "call", "sync", "summary", "general", "untitled", "the", "and", "of", ...norm(getTemplate(templateId).name).split(" ")]);
+  return t.split(" ").every((w) => filler.has(w));
+}

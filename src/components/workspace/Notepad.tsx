@@ -18,6 +18,21 @@ export function focusNotes() {
   setTimeout(() => window.dispatchEvent(new Event(FOCUS_EVENT)), 60);
 }
 
+/**
+ * The notepad starts lines with "- " for you. People type their own marker out of habit,
+ * so "- " + "- budget" should stay "- budget", not become "- - budget".
+ */
+export function mergeTypedMarker(value: string, caret: number): { value: string; caret: number } {
+  const lineStart = value.lastIndexOf("\n", caret - 1) + 1;
+  const m = value.slice(lineStart, caret).match(/^(\s*)[-*•] ([-*•]|\d+\.) /);
+  if (!m) return { value, caret };
+  const drop = 2; // the auto-inserted "- "
+  return {
+    value: value.slice(0, lineStart) + m[1] + value.slice(lineStart + m[1].length + drop),
+    caret: caret - drop,
+  };
+}
+
 /** A plain, fast notepad. Markdown-ish: "- " bullets continue on Enter. */
 export function Notepad({ value, onChange, onUserInput, placeholder, autoFocus, readOnly }: Props) {
   const ref = useRef<HTMLTextAreaElement>(null);
@@ -79,7 +94,10 @@ export function Notepad({ value, onChange, onUserInput, placeholder, autoFocus, 
       readOnly={readOnly}
       onChange={(e) => {
         onUserInput?.();
-        onChange(e.target.value);
+        const el = e.currentTarget;
+        const fixed = mergeTypedMarker(el.value, el.selectionStart);
+        onChange(fixed.value);
+        if (fixed.caret !== el.selectionStart) requestAnimationFrame(() => el.setSelectionRange(fixed.caret, fixed.caret));
       }}
       onKeyDown={onKeyDown}
       onFocus={(e) => {

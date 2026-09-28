@@ -254,8 +254,8 @@ export function Workspace() {
         />
         <div
           className={cx(
-            "absolute inset-y-0 left-0 w-[86%] max-w-[340px] border-r border-rule shadow-lift transition-transform duration-250 ease-out",
-            drawer ? "translate-x-0" : "-translate-x-full",
+            "absolute inset-y-0 left-0 w-[86%] max-w-[340px] border-r border-rule transition-[transform,box-shadow] duration-250 ease-out",
+            drawer ? "translate-x-0 shadow-lift" : "-translate-x-full shadow-none",
           )}
           inert={!drawer}
         >

@@ -50,7 +50,7 @@ import {
   SAMPLE_SEGMENTS,
   SAMPLE_TITLE,
 } from "@/lib/sample";
-import { TEMPLATES } from "@/lib/templates";
+import { isGenericTitle, TEMPLATES } from "@/lib/templates";
 import type { EnhancedNotes, TemplateId } from "@/lib/types";
 import { AskBox } from "./AskBox";
 import { Menu } from "./Menu";
@@ -189,7 +189,11 @@ export function MeetingPane({
       const final = await streamEnhance(input, (p) => !ac.signal.aborted && setPartial(p), ac.signal);
       if (ac.signal.aborted) return;
       const latest = getMeeting(meetingId);
-      const retitle = latest && (latest.title === "Untitled meeting" || !latest.title.trim()) && final.title;
+      const retitle =
+        latest &&
+        (latest.title === "Untitled meeting" || !latest.title.trim()) &&
+        final.title &&
+        !isGenericTitle(final.title, cur.template);
       patchMeetingState(
         meetingId,
         {
@@ -736,18 +740,25 @@ export function MeetingPane({
                     </button>
                   )}
                 </div>
-                <p className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13.5px] text-muted">
-                  <span className="inline-flex items-center gap-1.5">
-                    <span className="h-[6px] w-[6px] rounded-full bg-ink" /> Your notes
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <span className="h-[6px] w-[6px] rounded-full bg-faint" /> Added from the transcript
-                    <sup className="font-semibold text-accent">1</sup>
-                  </span>
-                  <span className="hidden sm:inline">
-                    {audible ? "Hover a number to see who said it. Click to hear it." : "Hover a number to see who said it."}
-                  </span>
-                </p>
+                {(numbers.size > 0 || streaming) && (
+                  <p className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13.5px] text-muted">
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="h-[6px] w-[6px] rounded-full bg-ink" /> Your notes
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="h-[6px] w-[6px] rounded-full bg-faint" /> Added from the transcript
+                      <sup className="font-semibold text-accent">1</sup>
+                    </span>
+                    <span className="hidden sm:inline">
+                      {audible ? "Hover a number to see who said it. Click to hear it." : "Hover a number to see who said it."}
+                    </span>
+                  </p>
+                )}
+                {numbers.size === 0 && !streaming && meeting.segments.length === 0 && (
+                  <p className="mt-1.5 text-[13.5px] text-muted">
+                    Tidied from your notes. Record the meeting next time and added lines will cite the transcript.
+                  </p>
+                )}
                 <div className="mt-7">
                   {streaming && shown.sections.length === 0 ? (
                     <WritingSkeleton />
@@ -818,7 +829,7 @@ export function MeetingPane({
             numbers={numbers}
             notes={meeting.enhanced}
             receipts={receipts}
-            live={live || (!!sample && sample.phase === "playing")}
+            live={(live && !notesOnly) || (!!sample && sample.phase === "playing")}
             empty={transcriptEmpty}
             playable={audible}
             playing={playingNow}
@@ -826,7 +837,7 @@ export function MeetingPane({
             header={
               <div className="flex items-baseline justify-between px-7 pb-3 pt-7">
                 <h2 className="font-serif text-[26px] leading-none tracking-[-0.01em]">Transcript</h2>
-                {live || (sample && sample.phase === "playing") ? (
+                {(live && !notesOnly) || (sample && sample.phase === "playing") ? (
                   <span className="flex items-center gap-1.5 text-[13px] text-muted">
                     <span className="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-accent" /> Live
                   </span>

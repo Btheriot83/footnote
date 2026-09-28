@@ -48,6 +48,14 @@ export const Sidebar = forwardRef<HTMLInputElement, Props>(function Sidebar(
             type="search"
             value={query}
             onChange={(e) => onQuery(e.target.value)}
+            onKeyDown={(e) => {
+              // Enter opens the best match, like a command palette.
+              if (e.key === "Enter" && !e.nativeEvent.isComposing && filtered?.[0]) {
+                e.preventDefault();
+                onSelect(filtered[0].id);
+                e.currentTarget.blur();
+              }
+            }}
             placeholder="Search"
             className="h-11 w-full rounded-xl border border-rule bg-paper-2/70 pl-11 pr-12 text-[16px] text-ink placeholder:text-ink-2 focus:border-rule-strong focus:bg-sheet focus:outline-none"
           />
