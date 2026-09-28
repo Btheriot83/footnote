@@ -619,6 +619,16 @@ dialog .wordmark {
   to { opacity: 1; }
 }
 
+/* A note slid up onto the desk from the bottom edge. */
+.toast-in {
+  animation: toast-in 700ms var(--spring) both;
+}
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(90px) rotate(3deg); }
+  25% { opacity: 1; }
+  to { opacity: 1; transform: rotate(-0.4deg); }
+}
+
 /* A link typed onto a slip, a few characters at a time. */
 .type-in {
   animation: type-in 760ms steps(24, end) 260ms both;

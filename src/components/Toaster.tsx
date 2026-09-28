@@ -33,7 +33,7 @@ export function Toaster() {
         <div
           key={t.id}
           className={cx(
-            "paper pointer-events-auto flex max-w-[520px] animate-settle items-start gap-3 rounded-[3px] px-4 py-3 text-[16px] leading-snug text-ink shadow-lift",
+            "paper toast-in pointer-events-auto flex max-w-[520px] items-start gap-3 rounded-[3px] px-4 py-3 text-[16px] leading-snug text-ink shadow-lift",
             t.tone === "error" ? "paper-blush" : "paper-white",
           )}
         >
