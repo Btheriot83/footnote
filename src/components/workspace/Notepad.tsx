@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 
 interface Props {
   value: string;
@@ -36,6 +36,16 @@ export function mergeTypedMarker(value: string, caret: number): { value: string;
 /** A plain, fast notepad. Markdown-ish: "- " bullets continue on Enter. */
 export function Notepad({ value, onChange, onUserInput, placeholder, autoFocus, readOnly }: Props) {
   const ref = useRef<HTMLTextAreaElement>(null);
+  // Where the caret belongs after an edit we made for the user. Restored right after React
+  // writes the new value, before the next keystroke can land (a rAF is too late for fast typists).
+  const caret = useRef<number | null>(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (el && caret.current !== null) {
+      el.setSelectionRange(caret.current, caret.current);
+      caret.current = null;
+    }
+  }, [value]);
 
   useEffect(() => {
     const el = ref.current;
@@ -75,16 +85,15 @@ export function Notepad({ value, onChange, onUserInput, placeholder, autoFocus, 
     if (line.trim() === m[0].trim()) {
       // Empty bullet: end the list.
       const next = value.slice(0, lineStart) + value.slice(selectionStart);
+      caret.current = lineStart;
       onChange(next);
-      requestAnimationFrame(() => el.setSelectionRange(lineStart, lineStart));
       return;
     }
     const marker = /\d+\./.test(m[2]) ? `${parseInt(m[2], 10) + 1}.` : m[2];
     const insert = `\n${m[1]}${marker} `;
     const next = value.slice(0, selectionStart) + insert + value.slice(selectionEnd);
+    caret.current = selectionStart + insert.length;
     onChange(next);
-    const pos = selectionStart + insert.length;
-    requestAnimationFrame(() => el.setSelectionRange(pos, pos));
   }
 
   return (
@@ -96,8 +105,8 @@ export function Notepad({ value, onChange, onUserInput, placeholder, autoFocus, 
         onUserInput?.();
         const el = e.currentTarget;
         const fixed = mergeTypedMarker(el.value, el.selectionStart);
+        if (fixed.value !== el.value) caret.current = fixed.caret;
         onChange(fixed.value);
-        if (fixed.caret !== el.selectionStart) requestAnimationFrame(() => el.setSelectionRange(fixed.caret, fixed.caret));
       }}
       onKeyDown={onKeyDown}
       onFocus={(e) => {

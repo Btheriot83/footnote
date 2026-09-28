@@ -21,6 +21,19 @@ async function mockEnhance(page: import("@playwright/test").Page) {
   });
 }
 
+/** Tests don't depend on the dev server's key: by default the server offers a hosted allowance. */
+function status(hosted: boolean) {
+  return {
+    hosted,
+    userKey: false,
+    limits: { enhances: 5, asks: 15, transcribeMinutes: 10 },
+    remaining: { enhances: 5, asks: 15, transcribeMinutes: 10, transcribeSeconds: 600 },
+  };
+}
+test.beforeEach(async ({ page }) => {
+  await page.route("**/api/status", (route) => route.fulfill({ json: status(true) }));
+});
+
 test("landing page leads to the sample meeting", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Meeting notes");
@@ -87,6 +100,9 @@ test("history persists and search finds transcript text", async ({ page }) => {
   // Example meetings seeded on the first visit are searchable too.
   await page.getByPlaceholder("Search").fill("Brightline");
   await expect(nav.getByRole("button", { name: /Weekly 1:1 with Priya/ })).toBeVisible();
+  // Enter opens the top result.
+  await page.getByPlaceholder("Search").press("Enter");
+  await expect(page.locator("#meeting-title")).toHaveValue("Weekly 1:1 with Priya");
   await page.getByPlaceholder("Search").fill("zzzz-not-there");
   await expect(page.getByText(/No meetings match/)).toBeVisible();
 });
@@ -179,4 +195,62 @@ test("a live meeting keeps its audio locally, so its receipts play", async ({ pa
   await hear.click({ force: true });
   await expect(transcript.getByRole("button", { name: "Stop playback" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Listen to the call" })).toBeVisible();
+});
+
+test("no AI key anywhere: the sample still shows Enhance, recipes and Ask as cached demos", async ({ page }) => {
+  let aiCalls = 0;
+  await page.route("**/api/status", (route) => route.fulfill({ json: status(false) }));
+  await page.route(/\/api\/(enhance|ask)$/, (route) => {
+    aiCalls++;
+    return route.fulfill({ status: 503, json: { error: "no_key", message: "No key." } });
+  });
+  await page.goto("/app?sample=1");
+  const nav = page.getByRole("navigation", { name: "Meetings" });
+  await expect(nav.getByText("Add a key")).toBeVisible();
+  await page.getByRole("button", { name: /Skip to end/ }).click();
+  await page.keyboard.press("ControlOrMeta+Enter");
+  await expect(page.locator("[data-bullet='0:0']")).toContainText(cached.sections[0].bullets[0].text);
+  await expect(page.getByText("Cached demo").first()).toBeVisible();
+
+  await page.getByRole("button", { name: "List the action items" }).click();
+  await expect(page.getByText(/You: send two pricing options/)).toBeVisible();
+
+  await page.getByRole("button", { name: "Ask your meetings", exact: true }).click();
+  await page.getByRole("button", { name: "Who is blocked, and on what?" }).click();
+  await expect(page.getByText(/Maya was blocked on copy/)).toBeVisible();
+  await expect(page.getByRole("dialog").getByText("Cached demo")).toBeVisible();
+  // The client knew there was no key, so nothing was sent to a route that would fail.
+  expect(aiCalls).toBe(0);
+});
+
+test("a key OpenAI rejects is parked and the free allowance takes over", async ({ page }) => {
+  await mockEnhance(page);
+  await page.addInitScript(() => localStorage.setItem("footnote.openaiKey", "sk-test-rejected-key-000000000000"));
+  const seen: boolean[] = [];
+  await page.route("**/api/ask", (route) => {
+    const withKey = !!route.request().headers()["x-user-openai-key"];
+    seen.push(withKey);
+    if (withKey) return route.fulfill({ status: 401, json: { error: "bad_key", message: "OpenAI rejected your API key." } });
+    return route.fulfill({ json: { sentences: [{ text: "You: send two pricing options by Thursday.", cites: ["s13"], newParagraph: true }] } });
+  });
+  await page.goto("/app?sample=1");
+  await page.getByRole("button", { name: /Skip to end/ }).click();
+  await page.getByRole("button", { name: "List the action items" }).click();
+  await expect(page.getByText("You: send two pricing options by Thursday.")).toBeVisible();
+  expect(seen).toEqual([true, false]);
+  await expect(page.getByText(/OpenAI rejected your saved key/)).toBeVisible();
+  await page.getByRole("button", { name: /Settings/ }).click();
+  await expect(page.getByText("rejected by OpenAI, not in use")).toBeVisible();
+});
+
+test("the notepad keeps one bullet when you type your own", async ({ page }) => {
+  await page.goto("/app");
+  await page.getByRole("button", { name: "New meeting" }).first().click();
+  await page.getByRole("button", { name: "Just take notes" }).click();
+  const notes = page.getByLabel("Your notes");
+  await notes.click();
+  await page.keyboard.type("- budget is 50k");
+  await page.keyboard.press("Enter");
+  await page.keyboard.type("- decide by friday");
+  await expect(notes).toHaveValue("- budget is 50k\n- decide by friday");
 });
