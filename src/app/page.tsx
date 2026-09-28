@@ -126,7 +126,7 @@ export default function Landing() {
             moment it was said. Runs in your browser, keeps meetings on your device, and it&rsquo;s free with your own
             OpenAI key.
           </p>
-          <CtaStrip note="A two-minute sales call, sound on" className="arrive mt-9 [--d:240ms]" />
+          <CtaStrip note="A two-minute staged call, AI voices, sound on" className="arrive mt-9 [--d:240ms]" />
           <p className="arrive on-wood mt-5 text-[15.5px] [--d:300ms]">
             No account. No subscription.{" "}
             <Link href="/app" className="underline decoration-ink/40 underline-offset-4 hover:decoration-ink">

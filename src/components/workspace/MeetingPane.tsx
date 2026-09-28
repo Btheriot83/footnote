@@ -921,7 +921,7 @@ function SampleBanner({ blocked, tookOver, onPlay }: { blocked: boolean; tookOve
       <p>
         {tookOver
           ? "You're taking the notes now. Type anything; Enhance works from your notes and the transcript."
-          : "A staged sales call. The rough notes below are typed as if by you. Click into them to add your own."}
+          : "A staged sales call with AI-generated voices. The rough notes below are typed as if by you. Click into them to add your own."}
       </p>
     </div>
   );

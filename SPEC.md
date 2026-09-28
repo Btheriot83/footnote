@@ -7,7 +7,7 @@ It's judged in three independent categories:
 - **Most Creative**: "originality of the idea and of how it was built"
 - **Most Polished**: "design, reliability, and completeness of the shipped thing"
 
-The judges are Tony Dinh (TypingMind: bring your own key, sold as a one-time license), Dudu (Shotbase) and Andrej (TranscriptAPI). After the contest it has to be sellable: a $59 one-time license with your own key, and optionally a hosted plan later.
+After the contest it has to be sellable: free with your own key, and a paid tier with AI included.
 
 ## Visual target (dream loop)
 - `.dream-loop/target-landing.png`: the landing page.
