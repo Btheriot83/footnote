@@ -376,29 +376,62 @@ function EmptyWorkspace({
         </Link>
       </header>
       {(
-        <div className="scroll-thin flex min-h-0 flex-1 overflow-y-auto px-4 py-10 sm:px-6">
-          <div className="paper paper-cream m-auto w-full max-w-[560px] animate-settle rounded-[3px] px-7 py-10 text-center sm:px-12 sm:py-12">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/desk/icon.webp" alt="" width={240} height={240} className="mx-auto h-16 w-16" />
-            <p className="smallcaps mt-5 text-muted">{hasMeetings ? "Welcome to Footnote" : "No meetings yet"}</p>
-            <h1 className="mt-3 font-serif text-[36px] font-medium leading-[1.08] tracking-[-0.02em] sm:text-[44px]">
-              Notes with receipts start here.
-            </h1>
-            <p className="mx-auto mt-4 max-w-[430px] text-[17.5px] leading-relaxed text-ink-2">
-              Start a meeting and type rough notes while you talk. Afterwards, Footnote writes them up and links every line
-              to the moment it was said.
-            </p>
-            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <button type="button" onClick={onSample} className={cx(btn.base, btn.primary, btn.lg)}>
-                <PlayIcon size={14} /> Try a sample meeting
-              </button>
-              <button type="button" onClick={onNew} className={cx(btn.base, btn.secondary, btn.lg)}>
-                <PlusIcon size={16} /> New meeting
-              </button>
+        <div className="scroll-thin flex min-h-0 flex-1 overflow-y-auto px-4 pb-16 pt-8 sm:px-6 lg:pt-14">
+          {/* A letter left on the desk, with the receipt it talks about tucked under it and a sticky note on top. */}
+          <div className="relative m-auto w-full max-w-[600px]">
+            <div
+              aria-hidden
+              className="receipt animate-settle absolute -right-3 top-[60%] hidden w-[260px] rotate-[6deg] px-4 pb-4 pt-3 text-[11.5px] leading-[1.6] [animation-delay:260ms] sm:block lg:-right-[170px]"
+            >
+              <p className="text-center tracking-[0.22em] text-[var(--receipt-dim)]">TRANSCRIPT · ACME</p>
+              <hr className="receipt-rule my-2" />
+              <p className="flex justify-between text-[var(--receipt-dim)]">
+                <span>
+                  DANA (ACME) <span className="fn-mark !ml-1 !text-[9.5px]">1</span>
+                </span>
+                <span>00:15</span>
+              </p>
+              <p className="mt-1 text-[var(--receipt-ink)]">
+                Right, we closed our Series B two weeks ago. <span className="hl">$32 million, led by Northstar.</span>
+              </p>
             </div>
-            <p className="mt-6 inline-flex items-center gap-1.5 text-[15px] italic text-muted">
-              <MicIcon size={15} /> Works best in Chrome or Edge on a desktop.
-            </p>
+
+            <div className="paper paper-cream sheet-shadow animate-settle relative -rotate-[0.6deg] rounded-[3px] px-7 pb-10 pt-9 sm:px-12 sm:pb-12 sm:pt-11">
+              <p className="smallcaps text-muted">{hasMeetings ? "Welcome to Footnote" : "No meetings yet"}</p>
+              <h1 className="mt-3 font-serif text-[36px] font-medium leading-[1.06] tracking-[-0.025em] sm:text-[46px]">
+                Notes with receipts start here.
+              </h1>
+              <ol className="mt-6 space-y-3 text-[17.5px] leading-snug text-ink-2">
+                {[
+                  "Start a meeting and type rough notes while you talk.",
+                  "Press Enhance. Footnote writes them up from the transcript.",
+                  "Every line it adds links to the moment it was said, and you can hear it.",
+                ].map((t, i) => (
+                  <li key={i} className="flex gap-3">
+                    <span className="fn-mark !ml-0 mt-[0.3em] shrink-0 !cursor-default !align-baseline !text-[11px]">{i + 1}</span>
+                    <span>{t}</span>
+                  </li>
+                ))}
+              </ol>
+              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+                <button type="button" onClick={onSample} className={cx(btn.base, btn.primary, btn.lg)}>
+                  <PlayIcon size={14} /> Try a sample meeting
+                </button>
+                <button type="button" onClick={onNew} className={cx(btn.base, btn.secondary, btn.lg)}>
+                  <PlusIcon size={16} /> New meeting
+                </button>
+              </div>
+              <p className="mt-6 inline-flex items-center gap-1.5 text-[15px] italic text-muted">
+                <MicIcon size={15} /> Works best in Chrome or Edge on a desktop.
+              </p>
+            </div>
+
+            <div
+              aria-hidden
+              className="paper paper-butter animate-settle absolute -top-7 right-4 hidden w-[168px] rotate-[4deg] rounded-[1px] px-4 pb-4 pt-3 font-hand text-[21px] leading-[1.05] text-ink-2 [animation-delay:420ms] sm:block lg:-right-16"
+            >
+              new here? play the sample call first. sound on!
+            </div>
           </div>
         </div>
       )}
