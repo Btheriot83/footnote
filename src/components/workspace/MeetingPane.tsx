@@ -557,8 +557,13 @@ export function MeetingPane({
         </div>
       </header>
 
-      {/* Phone tabs */}
-      <div className="paper paper-stone mx-3 mb-2 flex shrink-0 rounded-full p-1 md:hidden" role="tablist" aria-label="View">
+      {/* Phone tabs: a ceramic pill slides between them. */}
+      <div className="paper paper-stone relative mx-3 mb-2 flex shrink-0 rounded-full p-1 md:hidden" role="tablist" aria-label="View">
+        <span
+          aria-hidden
+          className="pill absolute bottom-1 left-1 top-1 w-[calc(50%-4px)] transition-transform duration-500 [transition-timing-function:var(--spring)]"
+          style={{ transform: mobileTab === "transcript" ? "translateX(100%)" : "none" }}
+        />
         {(["notes", "transcript"] as const).map((t) => (
           <button
             key={t}
@@ -567,8 +572,8 @@ export function MeetingPane({
             aria-selected={mobileTab === t}
             onClick={() => setMobileTab(t)}
             className={cx(
-              "flex-1 rounded-full py-2 font-sans text-[11px] font-semibold uppercase tracking-[0.14em] transition-colors",
-              mobileTab === t ? "pill text-ink" : "text-muted hover:text-ink",
+              "relative flex-1 rounded-full py-2 font-sans text-[11px] font-semibold uppercase tracking-[0.14em] transition-colors",
+              mobileTab === t ? "text-ink" : "text-muted hover:text-ink",
             )}
           >
             {t === "notes" ? "Notes" : "Transcript"}
