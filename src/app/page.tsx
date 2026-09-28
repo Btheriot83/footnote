@@ -40,12 +40,36 @@ const STEPS = [
   },
 ];
 
+const EXTRAS = [
+  {
+    title: "One-click follow-ups",
+    body: "Draft the follow-up email, list the action items, or see what's still open. Each sentence cites the line it came from.",
+    example: "“I'll send two pricing options and our SOC 2 report by Thursday.”",
+    n: 6,
+  },
+  {
+    title: "Ask all your meetings",
+    body: "Ask a question across everything you've recorded. The answer names the meeting and the moment, and one click takes you there.",
+    example: "“Acme's CFO will push on price; year one has to stay under $90K.”",
+    n: 2,
+  },
+  {
+    title: "Receipts you can hear",
+    body: "In the sample call, click any footnote to play the exact seconds it cites. The transcript follows along when you replay the call.",
+    example: "“Right, we closed our Series B two weeks ago.”",
+    n: 1,
+  },
+];
+
 const COMPARE: { label: string; granola: string; footnote: string }[] = [
-  { label: "Price", granola: "$14 a month, every month", footnote: "$59 once, or free to self-host" },
+  { label: "Price", granola: "$14 a month, every month", footnote: "$59 once with your own key, or free to self-host" },
   { label: "Where notes live", granola: "Their cloud", footnote: "Your device (IndexedDB)" },
   { label: "AI key", granola: "Theirs, bundled into the plan", footnote: "Bring your own; pay OpenAI cents" },
   { label: "Source code", granola: "Closed", footnote: "Open source" },
-  { label: "Every AI line cites the transcript", granola: "No", footnote: "Yes, hover to see the exact words" },
+  { label: "Every AI line cites the transcript", granola: "No", footnote: "Yes: hover to see the words, click to hear them" },
+  { label: "Chat across meetings", granola: "Yes", footnote: "Yes, and every answer cites its sources" },
+  { label: "Follow-up email, action items", granola: "Yes, with recipes", footnote: "Yes, one click, with receipts" },
+  { label: "Share", granola: "Link to their cloud", footnote: "Read-only link; the note lives inside the link" },
   { label: "Install", granola: "Desktop app", footnote: "Nothing; it's a web page" },
   { label: "Hears desktop Zoom", granola: "Yes", footnote: "No; use the web client and share the tab" },
 ];
@@ -117,7 +141,7 @@ export default function Landing() {
             Granola <span className="ml-4 font-sans text-[22px] text-ink-2 line-through decoration-1 sm:text-[28px]">$14/mo</span>
           </p>
           <p className="text-[20px] sm:text-[27px]">
-            <span className="font-serif text-[26px] sm:text-[32px]">Footnote</span> — $59 once, or free to self-host
+            <span className="font-serif text-[26px] sm:text-[32px]">Footnote</span> — $59 once, with your own key
           </p>
         </div>
       </div>
@@ -156,8 +180,8 @@ export default function Landing() {
                 and every added line ends in a footnote<Sup>1</Sup>.
               </p>
               <p>
-                Hover a footnote and the transcript jumps to the exact line. Click a line in the transcript to see which notes
-                lean on it.
+                Hover a footnote and the transcript jumps to the exact line. Click it in the sample call and you hear the
+                moment itself. Click a line in the transcript to see which notes lean on it.
               </p>
               <p>
                 The model is told never to claim anything it can&rsquo;t cite, and the server checks every citation against
@@ -166,6 +190,26 @@ export default function Landing() {
             </div>
           </div>
           <ReceiptsIllustration />
+        </div>
+      </section>
+
+      {/* After the call */}
+      <section className="mx-auto max-w-[1380px] px-5 pt-24 sm:px-10 lg:px-[74px] lg:pt-32">
+        <p className="text-[14px] font-medium uppercase tracking-[0.16em] text-muted">After the call</p>
+        <h2 className="mt-3 max-w-[900px] font-serif text-[40px] leading-[1.08] tracking-[-0.02em] sm:text-[54px]">
+          Everything you&rsquo;d ask a colleague who was there.
+        </h2>
+        <div className="mt-12 grid gap-5 md:grid-cols-3">
+          {EXTRAS.map((x) => (
+            <div key={x.title} className="rounded-[22px] border border-rule bg-sheet p-7">
+              <p className="font-serif text-[24px] leading-tight">{x.title}</p>
+              <p className="mt-3 text-[16px] leading-relaxed text-ink-2">{x.body}</p>
+              <p className="mt-5 rounded-xl bg-paper px-4 py-3 font-serif text-[15.5px] italic leading-snug text-ink-2">
+                {x.example}
+                <Sup>{x.n}</Sup>
+              </p>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -218,9 +262,9 @@ export default function Landing() {
             <PriceCard
               name="Try it"
               price="Free"
-              note="No account needed"
+              note="No account, no key"
               features={[
-                "The full sample meeting",
+                "The full sample meeting, receipts and all",
                 "5 enhancements a day on our key",
                 "10 minutes of tab audio a day",
                 "Unlimited notes and mic transcript",
@@ -232,27 +276,27 @@ export default function Landing() {
               name="License"
               price="$59"
               suffix="once"
-              note="Bring your own OpenAI key"
+              note="Use Footnote here with your own OpenAI key"
               features={[
-                "Unlimited meetings and enhancements",
-                "Your key, your bill: ~10¢ per 30-min meeting",
-                "Everything stays on your device",
-                "All v1 updates included",
+                "No daily caps: enhance, ask and transcribe as much as you like",
+                "Your key, your bill: about 10¢ per 30-minute meeting",
+                "Every update, for good. No subscription",
+                "Your meetings never leave your device",
               ]}
               cta={{ label: "Open Footnote", href: "/app" }}
-              fine="Everything is unlocked while we're in the Build Games. Checkout opens after."
+              fine="Free for everyone during The Build Games. Checkout opens after."
             />
             <PriceCard
               name="Hosted"
               price="Soon"
-              note="No key to manage"
+              note="For people who'd rather not manage a key"
               features={["Our key, a fair monthly allowance", "Same local-first notes", "Same receipts on every line"]}
               cta={{ label: "Follow on GitHub", href: SITE.github, external: true }}
             />
           </div>
-          <p className="mt-6 text-[15px] text-muted">
-            Prefer to run it yourself? Footnote is open source. Deploy it to Vercel with your key in a few minutes; the README
-            has the steps.
+          <p className="mt-6 max-w-[860px] text-[15px] leading-relaxed text-muted">
+            Prefer to run it yourself? Footnote is open source (MIT): deploy it to Vercel with your key in a few minutes, free
+            forever. The license pays for the maintained app at this address, so there&rsquo;s nothing to deploy or update.
           </p>
         </div>
       </section>

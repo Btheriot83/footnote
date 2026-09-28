@@ -20,6 +20,10 @@ const ITEMS: { q: string; a: React.ReactNode }[] = [
     a: "Receipts. Every line the AI adds must cite the transcript lines it came from. The server checks every citation against the real transcript and drops bullets that can't point to a source. Hover any footnote to see the exact words.",
   },
   {
+    q: "Why pay $59 if it's open source?",
+    a: "You don't have to. Self-hosting is free, and the README shows how. The license is for people who'd rather just use it: the maintained app at this address, with your own key, no daily caps and every update, paid once instead of monthly.",
+  },
+  {
     q: "Which browsers work?",
     a: "Chrome and Edge on desktop do everything. Safari handles the mic and notes, but can't capture tab audio. On a phone, Footnote works for notes and your mic.",
   },
