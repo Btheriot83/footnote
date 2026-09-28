@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Faq } from "@/components/landing/Faq";
 import { HeroCards } from "@/components/landing/HeroCards";
 import { btn, cx } from "@/components/ui";
+import { hasServerKey } from "@/lib/server/keys";
 import { SITE } from "@/lib/site";
 
 function Wordmark({ size = "lg" }: { size?: "lg" | "sm" }) {
@@ -62,9 +63,9 @@ const EXTRAS = [
 ];
 
 const COMPARE: { label: string; granola: string; footnote: string }[] = [
-  { label: "Price", granola: "$14 a month, every month", footnote: "$59 once with your own key, or free to self-host" },
+  { label: "Price", granola: "$14 a month, every month", footnote: "Free with your own key; Pro is $59 once, AI included" },
   { label: "Where notes live", granola: "Their cloud", footnote: "Your device (IndexedDB)" },
-  { label: "AI key", granola: "Theirs, bundled into the plan", footnote: "Bring your own; pay OpenAI cents" },
+  { label: "AI key", granola: "Theirs, bundled into the plan", footnote: "Yours (about 10¢ a meeting), or included with Pro" },
   { label: "Source code", granola: "Closed", footnote: "Open source" },
   { label: "Every AI line cites the transcript", granola: "No", footnote: "Yes: hover to see the words, click to hear them" },
   { label: "Play the moment behind a note", granola: "No; audio isn't kept", footnote: "Yes; the audio stays on your device" },
@@ -76,6 +77,8 @@ const COMPARE: { label: string; granola: string; footnote: string }[] = [
 ];
 
 export default function Landing() {
+  // Only promise a free allowance on our key when this deployment actually has one.
+  const hosted = hasServerKey();
   return (
     <div className="min-h-dvh overflow-x-clip bg-paper text-ink">
       {/* Nav */}
@@ -112,7 +115,8 @@ export default function Landing() {
             style={{ animationDelay: "80ms" }}
           >
             Type rough notes during the call. Footnote turns them into clear notes where every line links to the exact
-            moment it was said. Runs in your browser. Bring your own key. Pay once.
+            moment it was said. Runs in your browser, keeps meetings on your device, and it&rsquo;s free with your own
+            OpenAI key.
           </p>
           <div className="animate-fade-up mt-9 flex flex-col gap-3 sm:flex-row" style={{ animationDelay: "160ms" }}>
             <Link href="/app?sample=1" className={cx(btn.base, btn.primary, "h-14 px-7 text-[19px] sm:h-[62px] sm:text-[21px]")}>
@@ -142,7 +146,8 @@ export default function Landing() {
             Granola <span className="ml-4 font-sans text-[22px] text-ink-2 line-through decoration-1 sm:text-[28px]">$14/mo</span>
           </p>
           <p className="text-[20px] sm:text-[27px]">
-            <span className="font-serif text-[26px] sm:text-[32px]">Footnote</span> — $59 once, with your own key
+            <span className="font-serif text-[26px] sm:text-[32px]">Footnote</span> — free with your own key, or $59 once
+            with AI included
           </p>
         </div>
       </div>
@@ -258,46 +263,54 @@ export default function Landing() {
       <section id="pricing" className="scroll-mt-8 border-t border-rule bg-paper-2/40">
         <div className="mx-auto max-w-[1380px] px-5 py-24 sm:px-10 lg:px-[74px] lg:py-32">
           <p className="text-[14px] font-medium uppercase tracking-[0.16em] text-muted">Pricing</p>
-          <h2 className="mt-3 font-serif text-[40px] leading-[1.08] tracking-[-0.02em] sm:text-[54px]">Pay once. Keep it.</h2>
+          <h2 className="mt-3 font-serif text-[40px] leading-[1.08] tracking-[-0.02em] sm:text-[54px]">
+            Free with your key. Or pay once.
+          </h2>
           <div className="mt-12 grid gap-5 md:grid-cols-3">
             <PriceCard
               name="Try it"
               price="Free"
-              note="No account, no key"
+              note="No account, no key, no setup"
               features={[
-                "The full sample meeting, receipts and all",
-                "5 enhancements a day on our key",
-                "10 minutes of tab audio a day",
-                "Unlimited notes and mic transcript",
+                "The full sample call, with receipts you can hear",
+                hosted ? "Enhance, recipes and Ask on the sample" : "Enhance and recipes on the sample (cached demo)",
+                ...(hosted ? ["A few enhancements a day on our key for your own meetings"] : []),
+                "Notes, history, search and export, on your device",
               ]}
               cta={{ label: "Try a sample meeting", href: "/app?sample=1" }}
             />
             <PriceCard
-              featured
-              name="License"
-              price="$59"
-              suffix="once"
-              note="Use Footnote here with your own OpenAI key"
+              name="Open source"
+              price="Free"
+              suffix="with your key"
+              note="Everything, with your own OpenAI key"
               features={[
-                "No daily caps: enhance, ask and transcribe as much as you like",
-                "Your key, your bill: about 10¢ per 30-minute meeting",
-                "Every update, for good. No subscription",
-                "Your meetings never leave your device",
+                "Enhance, Ask, recipes and tab transcription",
+                "No limits. You pay OpenAI directly: about 10¢ per 30-minute meeting",
+                "Your key stays in your browser; your meetings stay on your device",
+                "Use it here, or self-host it (MIT)",
               ]}
               cta={{ label: "Open Footnote", href: "/app" }}
-              fine="Free for everyone during The Build Games. Checkout opens after."
             />
             <PriceCard
-              name="Hosted"
-              price="Soon"
-              note="For people who'd rather not manage a key"
-              features={["Our key, a fair monthly allowance", "Same local-first notes", "Same receipts on every line"]}
-              cta={{ label: "Follow on GitHub", href: SITE.github, external: true }}
+              featured
+              name="Footnote Pro"
+              price="$59"
+              suffix="once"
+              note="No key, no setup: the AI is included"
+              features={[
+                "1,000 enhancements and 20 hours of transcription a year",
+                "Ask and one-click recipes included",
+                "Priority updates, for good. No subscription",
+                "Funds the open-source app everyone else uses",
+              ]}
+              cta={{ label: "Coming soon: watch on GitHub", href: SITE.github, external: true }}
+              fine="Checkout opens after The Build Games. Nothing is sold or charged today."
             />
           </div>
           <p className="mt-6 max-w-[860px] text-[15px] leading-relaxed text-muted">
-            Prefer to run it yourself? Footnote is open source (MIT): deploy it to Vercel with your key in a few minutes, free
-            forever. The license pays for the maintained app at this address, so there&rsquo;s nothing to deploy or update.
+            The free version isn&rsquo;t a trial: with your own key it does everything, forever. Pro is for people who&rsquo;d
+            rather not manage an API key, and it pays for the hosting and the work.
           </p>
         </div>
       </section>
@@ -308,7 +321,7 @@ export default function Landing() {
         <h2 className="mb-10 mt-3 font-serif text-[40px] leading-[1.08] tracking-[-0.02em] sm:text-[54px]">
           Privacy, limits and honest answers.
         </h2>
-        <Faq />
+        <Faq hosted={hosted} />
       </section>
 
       {/* Closing */}

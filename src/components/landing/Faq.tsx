@@ -1,4 +1,4 @@
-const ITEMS: { q: string; a: React.ReactNode }[] = [
+const items = (hosted: boolean): { q: string; a: React.ReactNode }[] => [
   {
     q: "Where do my meetings live?",
     a: "In your browser, on this device (IndexedDB). There's no Footnote account and no database of your meetings on our side. Export to Markdown any time, or share a read-only link that carries the note inside the link itself.",
@@ -9,7 +9,11 @@ const ITEMS: { q: string; a: React.ReactNode }[] = [
   },
   {
     q: "What's free, and what are the limits?",
-    a: "Without a key you get a small daily allowance on our key: 5 enhancements and 10 minutes of tab-audio transcription per day. With your own OpenAI key there are no limits; a 30-minute meeting costs roughly 10 cents.",
+    a: `Everything is free with your own OpenAI key, with no limits: you pay OpenAI directly, and a 30-minute meeting costs roughly 10 cents. Without a key you can play the sample call and see Enhance and the one-click recipes on it${
+      hosted
+        ? ", plus a small daily allowance on our key (5 enhancements and 10 minutes of tab audio a day) for your own meetings"
+        : " as cached demos"
+    }. Notes, history, search and export never need a key.`,
   },
   {
     q: "Can it hear the Zoom desktop app?",
@@ -20,8 +24,8 @@ const ITEMS: { q: string; a: React.ReactNode }[] = [
     a: "Receipts. Every line the AI adds must cite the transcript lines it came from. The server checks every citation against the real transcript and drops bullets that can't point to a source. Hover any footnote to see the exact words.",
   },
   {
-    q: "Why pay $59 if it's open source?",
-    a: "You don't have to. Self-hosting is free, and the README shows how. The license is for people who'd rather just use it: the maintained app at this address, with your own key, no daily caps and every update, paid once instead of monthly.",
+    q: "Why would I pay $59 if it's open source?",
+    a: "You don't have to. With your own key, Footnote does everything for free, here or self-hosted. Footnote Pro (coming soon) is for people who'd rather not deal with an API key: $59 once includes the AI, with 1,000 enhancements and 20 hours of transcription a year, plus priority updates. It's how the open-source app gets paid for.",
   },
   {
     q: "Which browsers work?",
@@ -29,10 +33,10 @@ const ITEMS: { q: string; a: React.ReactNode }[] = [
   },
 ];
 
-export function Faq() {
+export function Faq({ hosted }: { hosted: boolean }) {
   return (
     <div className="divide-y divide-rule border-y border-rule">
-      {ITEMS.map((item) => (
+      {items(hosted).map((item) => (
         <details key={item.q} className="group py-5">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-6 font-serif text-[21px] leading-snug text-ink marker:hidden sm:text-[23px] [&::-webkit-details-marker]:hidden">
             {item.q}

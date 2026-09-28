@@ -4,7 +4,8 @@ import { Dialog } from "@/components/Dialog";
 import { InfoIcon, MicIcon, TabAudioIcon } from "@/components/icons";
 import { btn, cx } from "@/components/ui";
 import { captureSupport } from "@/lib/client/capture";
-import { getFlag, setFlag } from "@/lib/client/settings";
+import { useServerStatus } from "@/lib/client/server-status";
+import { getFlag, setFlag, useKeyStatus, useUserKey } from "@/lib/client/settings";
 import { TEMPLATES } from "@/lib/templates";
 import type { TemplateId } from "@/lib/types";
 
@@ -47,6 +48,12 @@ export function NewMeetingDialog({ open, onClose, mode, initialTemplate, onStart
   }, [open, initialTemplate]);
 
   const tabAvailable = support.tab && support.recorder;
+  const server = useServerStatus();
+  const userKey = useUserKey();
+  const keyStatus = useKeyStatus();
+  // Tab audio (and the mic, without Web Speech) goes through OpenAI: say so before it fails.
+  const noAi = !!server && !server.hosted && (!userKey || keyStatus === "bad");
+  const needsAi = (tab && tabAvailable) || (mic && support.mic && !support.speech);
 
   function start(record: boolean) {
     setFlag("seenCaptureExplainer", true);
@@ -157,6 +164,13 @@ export function NewMeetingDialog({ open, onClose, mode, initialTemplate, onStart
             }
           />
         </div>
+        {noAi && needsAi && (
+          <p className="mt-2 flex items-start gap-2 text-[13px] leading-snug text-ink-2" role="status">
+            <span className="mt-[6px] h-1.5 w-1.5 shrink-0 rounded-full bg-accent" aria-hidden />
+            {tab && tabAvailable ? "Tab audio" : "Your mic, in this browser,"} is transcribed by OpenAI, and this demo server
+            has no key. Add your own in Settings first, or just take notes.
+          </p>
+        )}
       </fieldset>
 
       {support.recorder && (

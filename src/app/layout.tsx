@@ -17,10 +17,10 @@ export const metadata: Metadata = {
     template: "%s · Footnote",
   },
   description:
-    "Type rough notes during the call. Footnote turns them into clear notes where every line links to the exact moment it was said. Runs in your browser. Bring your own key. Pay once.",
+    "Type rough notes during the call. Footnote turns them into clear notes where every line links to the exact moment it was said. Runs in your browser, keeps meetings on your device, and it's free and open source with your own key.",
   openGraph: {
     title: "Footnote: meeting notes with receipts",
-    description: "AI meeting notes where every line links to the moment it was said. Local-first, bring your own key, $59 once.",
+    description: "AI meeting notes where every line links to the moment it was said, and you can hear it. Local-first, free with your own key.",
     type: "website",
   },
 };
