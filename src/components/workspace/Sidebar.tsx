@@ -112,16 +112,31 @@ export const Sidebar = forwardRef<HTMLInputElement, Props>(function Sidebar(
                         active ? "bg-[#fafbfc]" : "hover:bg-[#f4f7fa]",
                       )}
                     >
-                      {(active || live) && (
+                      {live ? (
+                        // Red means recording, and only that.
                         <span
                           aria-hidden
-                          className={cx(
-                            "absolute left-[25px] top-[19px] h-[11px] w-[11px] rounded-full shadow-[0_0_0_3px_rgba(255,255,255,0.8)]",
-                            active ? "bg-accent" : "bg-accent/70",
-                            live && "animate-pulse-dot",
-                          )}
+                          className="absolute left-[25px] top-[19px] h-[11px] w-[11px] animate-pulse-dot rounded-full bg-accent shadow-[0_0_0_3px_rgba(255,255,255,0.8)]"
                         />
-                      )}
+                      ) : active ? (
+                        // The open meeting: a pen tick in the margin, in the card's blue ink.
+                        <svg
+                          aria-hidden
+                          width="22"
+                          height="16"
+                          viewBox="0 0 22 16"
+                          fill="none"
+                          className="absolute left-[9px] top-[17px] text-pen"
+                        >
+                          <path
+                            d="M2 9.5c3.5-.6 8.4-.9 15.2-.4M13.4 4.6c1.8 1.4 3.3 2.7 4.4 4.3-1.4 1.1-2.9 2.4-4.6 3.9"
+                            stroke="currentColor"
+                            strokeWidth="1.7"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      ) : null}
                       <span className="flex items-center gap-2">
                         <span className="line-clamp-2 font-serif text-[18px] font-medium leading-snug text-ink">
                           {m.title || "Untitled meeting"}
@@ -152,9 +167,11 @@ export const Sidebar = forwardRef<HTMLInputElement, Props>(function Sidebar(
       {/* A sticky note of shortcuts in the space the list doesn't use (tall screens). */}
       <div aria-hidden className="mx-auto mt-2 hidden w-[78%] rotate-[-2.5deg] [@media(min-height:820px)]:block">
         <div className="paper paper-butter lift rounded-[1px] px-4 pb-3 pt-3 font-hand text-[19px] leading-[1.15] text-ink-2">
-          <p>{isMac ? "⌘K" : "Ctrl K"} find anything</p>
-          <p>{isMac ? "⌘↵" : "Ctrl ↵"} enhance</p>
-          <p>click a number, hear it</p>
+          <p className="hover-only">{isMac ? "⌘K" : "Ctrl K"} find anything</p>
+          <p className="hover-only">{isMac ? "⌘↵" : "Ctrl ↵"} enhance</p>
+          <p className="hover-only">click a number, hear it</p>
+          <p className="touch-only">search finds any word said</p>
+          <p className="touch-only">tap a number, hear it</p>
         </div>
       </div>
 

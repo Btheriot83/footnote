@@ -11,7 +11,6 @@ import {
   MenuIcon,
   MicIcon,
   MoreIcon,
-  NoteIcon,
   PauseIcon,
   PlayIcon,
   ShareIcon,
@@ -271,6 +270,26 @@ export function MeetingPane({
   );
   const spans = useMemo(() => (m ? spansFor(m) : []), [m]);
 
+  // A pinned receipt (the highlighted line, the "cited in your notes" card) lets go on
+  // Escape, on ⌘K, on a click anywhere that isn't a receipt, and when the view changes.
+  const clearReceipts = receipts.clear;
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" || ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k")) clearReceipts();
+    };
+    const onDown = (e: PointerEvent) => {
+      const t = e.target as Element | null;
+      if (!t?.closest?.("[data-segment], .fn-mark, [data-bullet], [role='tooltip']")) clearReceipts();
+    };
+    window.addEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onDown, true);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.removeEventListener("pointerdown", onDown, true);
+    };
+  }, [clearReceipts]);
+  useEffect(() => clearReceipts(), [view, shareOpen, mobileTab, clearReceipts]);
+
   // Arriving from "Ask your meetings": reveal the cited line.
   const clickCite = receipts.clickCite;
   useEffect(() => {
@@ -331,16 +350,10 @@ export function MeetingPane({
       hidden: !isMobile,
     },
     {
-      label: view === "enhanced" ? "Show my original notes" : "Show enhanced notes",
-      icon: <NoteIcon size={17} />,
-      onSelect: () => setView(view === "enhanced" ? "notes" : "enhanced"),
-      hidden: !meeting.enhanced,
-    },
-    {
       label: "Copy as Markdown",
       icon: <CopyIcon size={17} />,
       onSelect: () => copyText(toMarkdown(meeting), "Markdown copied, with footnotes."),
-      separatorBefore: !!meeting.enhanced,
+      separatorBefore: isMobile,
     },
     { label: "Copy for Slack", icon: <SlackIcon size={17} />, onSelect: () => copyText(toSlack(meeting), "Copied for Slack.") },
     { label: "Download .md", icon: <DownloadIcon size={17} />, onSelect: () => downloadMarkdown(meeting) },
@@ -416,9 +429,15 @@ export function MeetingPane({
     );
   } else if (meeting.status === "draft") {
     status = (
-      <button type="button" onClick={onRequestStart} className={cx(btn.base, btn.secondary, "h-10 px-5 text-[10.5px]")}>
+      <button
+        type="button"
+        onClick={onRequestStart}
+        aria-label="Start recording"
+        className={cx(btn.base, btn.secondary, "h-10 px-4 text-[10.5px] sm:px-5")}
+      >
         <span className="h-2.5 w-2.5 rounded-full bg-accent" aria-hidden />
-        Start recording
+        <span className="sm:hidden">Record</span>
+        <span className="max-sm:hidden">Start recording</span>
       </button>
     );
   } else {
@@ -522,14 +541,16 @@ export function MeetingPane({
             type="button"
             onClick={() => void runEnhance()}
             disabled={streaming || nothingYet}
-            title={nothingYet ? "Type a few notes or record first" : `${meeting.enhanced ? "Re-enhance" : "Enhance"} notes (${mod}+Enter)`}
+            title={nothingYet ? "Type a few notes or record first" : `${meeting.enhanced ? "Enhance again" : "Enhance notes"} (${mod}+Enter)`}
+            aria-label={streaming ? "Enhancing" : meeting.enhanced ? "Enhance again" : "Enhance notes"}
             className={cx(
               btn.base,
-              nudge ? btn.primary : btn.secondary,
+              btn.secondary,
               "h-10 shrink-0 px-4 text-[10.5px] sm:px-5",
-              nudge && "ring-[5px] ring-white/45",
               // Phones: while the sample plays, the header is for play/skip; the nudge offers Enhance at the end.
               samplePlaying && "max-sm:hidden",
+              // The end-of-call nudge holds the one Enhance button on the page.
+              nudge && "!hidden",
             )}
           >
             {streaming ? (
@@ -537,17 +558,17 @@ export function MeetingPane({
                 <path pathLength={1} d="M1 8c3-5 5-6 6-3s-1 5 2 4 3-7 6-6-1 6 2 6 3-4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
               </svg>
             ) : (
-              <SparkIcon size={15} className={cx(!nudge && "hidden sm:block")} />
+              <SparkIcon size={15} className={cx(!meeting.enhanced && "hidden sm:block")} />
             )}
             <span className="hidden sm:inline">
-              {streaming ? "Enhancing…" : meeting.enhanced ? "Re-enhance" : "Enhance notes"}
+              {streaming ? "Enhancing…" : meeting.enhanced ? "Enhance again" : "Enhance notes"}
             </span>
-            {!streaming && <span className="sm:hidden">{meeting.enhanced ? "Redo" : "Enhance"}</span>}
+            {!streaming && <span className="sm:hidden">Enhance</span>}
           </button>
           <button
             type="button"
             onClick={() => setShareOpen(true)}
-            className={cx(btn.base, btn.secondary, "h-10 shrink-0 px-3.5 text-[10.5px] max-sm:hidden xl:px-5")}
+            className={cx(btn.base, btn.secondary, "h-10 shrink-0 px-3.5 text-[10.5px] max-md:hidden xl:px-5")}
             aria-label="Share"
           >
             <ShareIcon size={15} />
@@ -596,6 +617,7 @@ export function MeetingPane({
           }}
         >
           <article data-sheet={meeting.id} className="paper paper-cream sheet-shadow mx-auto min-h-[calc(100%-4px)] w-full max-w-[800px] rounded-[3px] px-5 pb-24 pt-9 sm:px-12 sm:pt-12 xl:px-[72px] xl:pt-14">
+            <h1 className="sr-only">{meeting.title || "Untitled meeting"}</h1>
             <label htmlFor="meeting-title" className="sr-only">
               Meeting title
             </label>
@@ -666,8 +688,14 @@ export function MeetingPane({
                     That&rsquo;s the whole call. <strong className="font-semibold text-ink">Now hit Enhance</strong> and
                     watch every line get its receipt.
                   </p>
-                  <button type="button" onClick={() => void runEnhance()} className={cx(btn.base, btn.primary, btn.sm)}>
-                    Enhance <kbd className="font-sans text-[11px] tracking-normal opacity-70">{mod}↵</kbd>
+                  <button
+                    type="button"
+                    onClick={() => void runEnhance()}
+                    aria-label="Enhance notes"
+                    className={cx(btn.base, btn.primary, btn.md, "max-sm:w-full")}
+                  >
+                    <SparkIcon size={15} /> Enhance notes{" "}
+                    <kbd className="hover-only font-sans text-[11px] tracking-normal opacity-70">{mod}↵</kbd>
                   </button>
                 </div>
               )}
@@ -780,8 +808,11 @@ export function MeetingPane({
                       <span className="h-[6px] w-[6px] rounded-full bg-faint" /> Added from the transcript
                       <span className="fn-mark !cursor-default" aria-hidden>1</span>
                     </span>
-                    <span className="hidden italic sm:inline">
+                    <span className="hover-only hidden italic sm:inline">
                       {audible ? "Hover a number to see who said it. Click to hear it." : "Hover a number to see who said it."}
+                    </span>
+                    <span className="touch-only italic">
+                      {audible ? "Tap a number to read the line and hear it." : "Tap a number to read the line."}
                     </span>
                   </p>
                 )}
@@ -834,8 +865,11 @@ export function MeetingPane({
                 </div>
                 {!meeting.enhanced && (meeting.notes.trim() || meeting.segments.length > 0) && !sample && !nudge && (
                   <p className="mt-6 text-[13.5px] text-muted">
-                    When you&rsquo;re ready, press <kbd className="rounded border border-rule px-1 font-sans">{mod}</kbd>{" "}
-                    <kbd className="rounded border border-rule px-1 font-sans">Enter</kbd> to enhance.
+                    <span className="hover-only">
+                      When you&rsquo;re ready, press <kbd className="rounded border border-rule px-1 font-sans">{mod}</kbd>{" "}
+                      <kbd className="rounded border border-rule px-1 font-sans">Enter</kbd> to enhance.
+                    </span>
+                    <span className="touch-only">When you&rsquo;re ready, tap Enhance at the top.</span>
                   </p>
                 )}
               </div>
