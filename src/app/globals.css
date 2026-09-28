@@ -629,6 +629,24 @@ dialog .wordmark {
   to { opacity: 1; transform: rotate(-0.4deg); }
 }
 
+/* Phones: switching between Notes and Transcript slides the other paper in. */
+@media (max-width: 767px) {
+  .tab-panel-notes {
+    animation: tab-from-left 460ms var(--spring) both;
+  }
+  .tab-panel-transcript {
+    animation: tab-from-right 460ms var(--spring) both;
+  }
+}
+@keyframes tab-from-left {
+  from { opacity: 0.4; transform: translateX(-28px) rotate(-0.6deg); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes tab-from-right {
+  from { opacity: 0.4; transform: translateX(28px) rotate(0.6deg); }
+  to { opacity: 1; transform: none; }
+}
+
 /* A link typed onto a slip, a few characters at a time. */
 .type-in {
   animation: type-in 760ms steps(24, end) 260ms both;

@@ -583,7 +583,7 @@ export function MeetingPane({
         {/* Document */}
         <main
           className={cx(
-            "scroll-thin min-w-0 flex-1 overflow-y-auto px-2 pb-3 pt-1 sm:px-4 sm:pb-5 lg:pl-1",
+            "tab-panel-notes scroll-thin min-w-0 flex-1 overflow-y-auto px-2 pb-3 pt-1 sm:px-4 sm:pb-5 lg:pl-1",
             isMobile && mobileTab !== "notes" && "hidden",
           )}
           onClick={(e) => {
@@ -845,7 +845,7 @@ export function MeetingPane({
         {/* Transcript */}
         <aside
           className={cx(
-            "flex min-h-0 shrink-0 flex-col px-3 pb-4 pt-3 md:w-[340px] md:pl-1 md:pr-4 md:pt-2 xl:w-[392px] xl:pr-5",
+            "tab-panel-transcript flex min-h-0 shrink-0 flex-col px-3 pb-4 pt-3 md:w-[340px] md:pl-1 md:pr-4 md:pt-2 xl:w-[392px] xl:pr-5",
             isMobile ? (mobileTab === "transcript" ? "flex-1" : "hidden") : "",
           )}
           aria-label="Transcript"
