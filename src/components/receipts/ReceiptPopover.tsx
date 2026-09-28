@@ -85,7 +85,7 @@ export function ReceiptPopover({
               <button
                 type="button"
                 onClick={onHear}
-                className="-mx-1.5 inline-flex items-center gap-1.5 rounded-full px-1.5 py-0.5 font-mono text-[11px] tracking-[0.08em] text-[var(--receipt-ink)] hover:bg-[#efe9dc]"
+                className="-mx-1.5 inline-flex items-center gap-1.5 rounded-full px-1.5 py-0.5 font-mono text-[11px] tracking-[0.08em] text-[var(--receipt-ink)] hover:bg-black/[0.06]"
               >
                 {playing ? <PauseIcon size={12} /> : <span aria-hidden>▶</span>}
                 {playing ? "PLAYING" : "HEAR IT"}

@@ -151,7 +151,7 @@ export function TranscriptPanel({
                     data-active={active || undefined}
                     className={cx(
                       "relative overflow-hidden rounded-[3px] px-2.5 py-2.5 transition-colors duration-200",
-                      sounding && !(active || playing?.single) ? "bg-[#f3efe6]" : n ? "hover:bg-[#f6f3ec]" : "",
+                      sounding && !(active || playing?.single) ? "bg-black/[0.05]" : n ? "hover:bg-black/[0.035]" : "",
                       n && "cursor-pointer",
                     )}
                   >
@@ -187,7 +187,7 @@ export function TranscriptPanel({
                       aria-label={sounding ? "Stop playback" : `Hear this line (${formatClock(s.t)})`}
                       title={sounding ? "Stop" : "Hear this moment"}
                       className={cx(
-                        "absolute right-1 top-1.5 flex h-8 w-8 items-center justify-center rounded-full text-muted transition-opacity hover:bg-[#efeae0] hover:text-ink focus-visible:opacity-100",
+                        "absolute right-1 top-1.5 flex h-8 w-8 items-center justify-center rounded-full text-muted transition-opacity hover:bg-black/[0.06] hover:text-ink focus-visible:opacity-100",
                         sounding ? "text-accent opacity-100" : "opacity-0 group-hover/line:opacity-100 [@media(hover:none)]:opacity-60",
                       )}
                     >
@@ -206,7 +206,7 @@ export function TranscriptPanel({
                               <button
                                 type="button"
                                 onClick={() => receipts.selectBullet(b.key)}
-                                className="w-full rounded-sm px-2 py-1.5 text-left text-[15.5px] leading-snug text-ink-2 hover:bg-white/70"
+                                className="w-full rounded-sm px-2 py-1.5 text-left text-[15.5px] leading-snug text-ink-2 hover:bg-wash"
                               >
                                 <span className="block text-[13px] italic text-muted">{b.heading}</span>
                                 {b.text}

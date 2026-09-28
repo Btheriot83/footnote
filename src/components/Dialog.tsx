@@ -18,7 +18,7 @@ interface Props {
 /** Native <dialog>: focus trapping, Escape and inert background for free. */
 const STOCK = {
   sheet: "paper paper-cream",
-  index: "paper paper-index [--rule-gap:34px] [--rule-top:0px] [--color-index-line:rgba(150,178,206,0.26)]",
+  index: "paper paper-index [--rule-gap:34px] [--rule-top:0px] [--color-index-line:rgba(150,178,206,0.26)] dark:[--color-index-line:rgba(150,178,206,0.13)]",
   slip: "paper paper-white",
 };
 

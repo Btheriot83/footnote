@@ -139,7 +139,7 @@ function Check({
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="mt-0.5 h-4 w-4 accent-[#1b1915]"
+        className="mt-0.5 h-4 w-4 accent-[var(--color-ink)]"
       />
       <span>
         {label}

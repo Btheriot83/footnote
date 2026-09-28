@@ -178,7 +178,7 @@ function ReceiptSlip({
             type="button"
             tabIndex={leaving ? -1 : 0}
             onClick={() => void clip.play(k, b.from, b.to)}
-            className="-mr-2 inline-flex items-center gap-1.5 rounded-full px-2 py-1 font-mono text-[11px] tracking-[0.08em] text-[var(--receipt-ink)] transition-colors hover:bg-[#efe9dc]"
+            className="-mr-2 inline-flex items-center gap-1.5 rounded-full px-2 py-1 font-mono text-[11px] tracking-[0.08em] text-[var(--receipt-ink)] transition-colors hover:bg-black/[0.06]"
             aria-label={playing ? "Stop" : `Hear ${b.who} say it (${b.at})`}
           >
             {playing ? <span className="h-2 w-2 rounded-[1px] bg-accent" aria-hidden /> : <span aria-hidden>▶</span>}

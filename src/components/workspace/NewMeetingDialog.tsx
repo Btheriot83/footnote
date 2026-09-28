@@ -116,7 +116,7 @@ export function NewMeetingDialog({ open, onClose, mode, initialTemplate, onStart
                     "relative cursor-pointer rounded-[3px] border px-3.5 py-3 transition-[background-color,border-color,box-shadow,rotate] duration-300 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ink",
                     template === t.id
                       ? "paper paper-white -rotate-[0.8deg] border-ink/70"
-                      : "border-ink/10 bg-white/30 hover:border-ink/25 hover:bg-white/60",
+                      : "border-ink/10 bg-wash/50 hover:border-ink/25 hover:bg-wash",
                   )}
                 >
                   <input
@@ -181,7 +181,7 @@ export function NewMeetingDialog({ open, onClose, mode, initialTemplate, onStart
             type="checkbox"
             checked={keepAudio}
             onChange={(e) => setKeepAudio(e.target.checked)}
-            className="mt-[3px] h-4 w-4 shrink-0 accent-[#1b1915]"
+            className="mt-[3px] h-4 w-4 shrink-0 accent-[var(--color-ink)]"
           />
           <span>
             <span className="font-medium text-ink">Keep the audio on this device</span>
@@ -251,7 +251,7 @@ function SourceToggle({
     <label
       className={cx(
         "flex cursor-pointer items-start gap-3 rounded-[3px] border px-3.5 py-3 transition-[background-color,border-color,box-shadow] duration-300 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ink",
-        checked ? "paper paper-white border-ink/70" : "border-ink/10 bg-white/30 hover:border-ink/25 hover:bg-white/60",
+        checked ? "paper paper-white border-ink/70" : "border-ink/10 bg-wash/50 hover:border-ink/25 hover:bg-wash",
         disabled && "cursor-not-allowed opacity-60",
       )}
     >

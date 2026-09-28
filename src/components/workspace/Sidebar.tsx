@@ -57,7 +57,7 @@ export const Sidebar = forwardRef<HTMLInputElement, Props>(function Sidebar(
               }
             }}
             placeholder="Search"
-            className="h-11 w-full rounded-[3px] bg-transparent pl-10 pr-12 font-serif text-[17px] italic text-ink placeholder:text-muted focus:bg-white/60 focus:not-italic focus:shadow-[inset_0_0_0_1px_var(--color-rule-strong)] focus:outline-none [&:not(:placeholder-shown)]:not-italic"
+            className="h-11 w-full rounded-[3px] bg-transparent pl-10 pr-12 font-serif text-[17px] italic text-ink placeholder:text-muted focus:bg-wash focus:not-italic focus:shadow-[inset_0_0_0_1px_var(--color-rule-strong)] focus:outline-none [&:not(:placeholder-shown)]:not-italic"
           />
           {!query && (
             <kbd className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 font-sans text-[10.5px] font-semibold tracking-[0.1em] text-faint [@media(hover:hover)]:block">
@@ -81,7 +81,7 @@ export const Sidebar = forwardRef<HTMLInputElement, Props>(function Sidebar(
             <button
               type="button"
               onClick={() => onAskAll(query.trim())}
-              className="flex w-full items-start gap-2 border-b border-index-line bg-index py-2.5 pl-[44px] pr-4 text-left text-[15px] text-ink-2 hover:bg-[#f4f7fa]"
+              className="flex w-full items-start gap-2 border-b border-index-line bg-index py-2.5 pl-[44px] pr-4 text-left text-[15px] text-ink-2 hover:bg-wash"
             >
               <AskIcon size={15} className="mt-[3px] shrink-0 text-pen" />
               <span>
@@ -92,7 +92,7 @@ export const Sidebar = forwardRef<HTMLInputElement, Props>(function Sidebar(
           {meetings === undefined ? (
             <div className="space-y-3 py-3 pl-[44px] pr-4" aria-hidden>
               {[0, 1, 2].map((i) => (
-                <div key={i} className="h-10 animate-pulse rounded-sm bg-white/50" />
+                <div key={i} className="h-10 animate-pulse rounded-sm bg-wash" />
               ))}
             </div>
           ) : filtered && filtered.length > 0 ? (
@@ -109,14 +109,14 @@ export const Sidebar = forwardRef<HTMLInputElement, Props>(function Sidebar(
                       aria-current={active ? "page" : undefined}
                       className={cx(
                         "relative block w-full py-3 pl-[44px] pr-4 text-left transition-colors",
-                        active ? "bg-[#fafbfc]" : "hover:bg-[#f4f7fa]",
+                        active ? "bg-index-hi" : "hover:bg-wash",
                       )}
                     >
                       {live ? (
                         // Red means recording, and only that.
                         <span
                           aria-hidden
-                          className="absolute left-[25px] top-[19px] h-[11px] w-[11px] animate-pulse-dot rounded-full bg-accent shadow-[0_0_0_3px_rgba(255,255,255,0.8)]"
+                          className="absolute left-[25px] top-[19px] h-[11px] w-[11px] animate-pulse-dot rounded-full bg-accent shadow-[0_0_0_3px_var(--color-index-hi)]"
                         />
                       ) : active ? (
                         // The open meeting: a pen tick in the margin, in the card's blue ink.
@@ -179,21 +179,21 @@ export const Sidebar = forwardRef<HTMLInputElement, Props>(function Sidebar(
         <button
           type="button"
           onClick={() => onAskAll()}
-          className="flex w-full items-center gap-2.5 rounded-sm px-3 py-2 text-left text-[15.5px] text-ink-2 hover:bg-white/60"
+          className="flex w-full items-center gap-2.5 rounded-sm px-3 py-2 text-left text-[15.5px] text-ink-2 hover:bg-wash"
         >
           <AskIcon size={16} className="text-muted" /> Ask your meetings
         </button>
         <button
           type="button"
           onClick={onSample}
-          className="flex w-full items-center gap-2.5 rounded-sm px-3 py-2 text-left text-[15.5px] text-ink-2 hover:bg-white/60"
+          className="flex w-full items-center gap-2.5 rounded-sm px-3 py-2 text-left text-[15.5px] text-ink-2 hover:bg-wash"
         >
           <PlayIcon size={14} className="text-muted" /> Try the sample call
         </button>
         <button
           type="button"
           onClick={onSettings}
-          className="flex w-full items-center gap-2.5 rounded-sm px-3 py-2 text-left text-[15.5px] text-ink-2 hover:bg-white/60"
+          className="flex w-full items-center gap-2.5 rounded-sm px-3 py-2 text-left text-[15.5px] text-ink-2 hover:bg-wash"
         >
           <KeyIcon size={16} className="text-muted" /> Settings
           {aiLabel && <span className="smallcaps ml-auto text-[9.5px] text-muted">{aiLabel}</span>}

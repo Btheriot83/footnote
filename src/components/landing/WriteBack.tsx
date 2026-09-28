@@ -176,7 +176,7 @@ export function WriteBack() {
                     <button
                       type="button"
                       onClick={() => void clip.play("writeback", QUOTE.from, QUOTE.to)}
-                      className="-mr-2 inline-flex items-center gap-1.5 rounded-full px-2 py-1 font-mono tracking-[0.08em] text-[var(--receipt-ink)] hover:bg-[#efe9dc]"
+                      className="-mr-2 inline-flex items-center gap-1.5 rounded-full px-2 py-1 font-mono tracking-[0.08em] text-[var(--receipt-ink)] hover:bg-black/[0.06]"
                       aria-label={clip.playing ? "Stop" : "Hear Dana say it (00:26)"}
                     >
                       {clip.playing ? <span className="h-2 w-2 rounded-[1px] bg-accent" aria-hidden /> : <span aria-hidden>▶</span>}
