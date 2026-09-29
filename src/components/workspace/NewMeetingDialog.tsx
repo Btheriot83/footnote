@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Dialog } from "@/components/Dialog";
-import { InfoIcon, MicIcon, TabAudioIcon, UploadIcon } from "@/components/icons";
+import { InfoIcon, MicIcon, SpeakerIcon, TabAudioIcon, UploadIcon } from "@/components/icons";
 import { btn, cx } from "@/components/ui";
 import { captureSupport } from "@/lib/client/capture";
 import { audioDuration, MAX_IMPORT_BYTES, MAX_IMPORT_MINUTES } from "@/lib/client/import-audio";
@@ -56,6 +56,9 @@ export function NewMeetingDialog({ open, onClose, mode, initialTemplate, onStart
   const [me, setMe] = useState<string>("");
   const [fileError, setFileError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
+  // Until you flip it yourself, the meeting tab follows what this browser can do.
+  const [tabTouched, setTabTouched] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -64,7 +67,9 @@ export function NewMeetingDialog({ open, onClose, mode, initialTemplate, onStart
     setMe("");
     setFileError(null);
     setSupport(captureSupport());
-    setShowExplainer(!getFlag("seenCaptureExplainer"));
+    setShowExplainer(false);
+    setShowTemplates(false);
+    setTabTouched(false);
     setKeepAudio(!getFlag("discardAudio"));
     setTitle("");
     setTemplate(initialTemplate ?? "general");
@@ -76,7 +81,14 @@ export function NewMeetingDialog({ open, onClose, mode, initialTemplate, onStart
   const keyStatus = useKeyStatus();
   // Tab audio (and the mic, without Web Speech) goes through OpenAI: say so before it fails.
   const noAi = !!server && !server.hosted && (!userKey || keyStatus === "bad");
+  // The other side of the call is the half that matters: on by default wherever a tab's
+  // sound can actually be shared (Chrome and Edge on a desktop) and there's AI to hear it.
+  const tabByDefault = tabAvailable && chromiumDesktop() && !noAi;
+  useEffect(() => {
+    if (open && !tabTouched) setTab(tabByDefault);
+  }, [open, tabTouched, tabByDefault]);
   const needsAi = (tab && tabAvailable) || (mic && support.mic && !support.speech);
+  const templateName = TEMPLATES.find((t) => t.id === template)?.name ?? "General";
 
   async function pick(file: File | undefined | null) {
     setFileError(null);
@@ -134,10 +146,10 @@ export function NewMeetingDialog({ open, onClose, mode, initialTemplate, onStart
         mode === "new"
           ? via === "import"
             ? "Bring in a meeting you already had. Speakers and times come with it, so the notes still get receipts."
-            : "Pick a template, choose what Footnote should listen to, and start."
+            : undefined
           : "Choose what Footnote should listen to."
       }
-      className="max-w-[640px]"
+      className="max-w-[700px]"
       footer={
         via === "import" ? (
           <>
@@ -156,17 +168,24 @@ export function NewMeetingDialog({ open, onClose, mode, initialTemplate, onStart
           </>
         ) : (
         <>
-          {liveElsewhere && (
-            <span className="mr-auto text-[14.5px] italic text-muted">This stops the recording in progress.</span>
+          {mode === "new" && (
+            <button
+              type="button"
+              className={cx(btn.base, btn.secondary, btn.md, "mr-auto max-sm:order-2 max-sm:mr-0 max-sm:flex-1")}
+              onClick={() => setVia("import")}
+              title="Import a recording, or a Zoom, Meet or Teams transcript"
+            >
+              <UploadIcon size={15} /> Import a file
+            </button>
           )}
           {mode === "new" && (
-            <button type="button" className={cx(btn.base, btn.secondary, btn.md)} onClick={() => start(false)}>
+            <button type="button" className={cx(btn.base, btn.ghost, btn.md, "max-sm:order-3 max-sm:flex-1")} onClick={() => start(false)}>
               Just take notes
             </button>
           )}
           <button
             type="button"
-            className={cx(btn.base, btn.primary, btn.md)}
+            className={cx(btn.base, btn.primary, btn.md, "max-sm:order-1 max-sm:h-12 max-sm:w-full")}
             onClick={() => start(true)}
             disabled={!mic && !tab}
           >
@@ -178,45 +197,22 @@ export function NewMeetingDialog({ open, onClose, mode, initialTemplate, onStart
       }
     >
       {mode === "new" && (
-        <>
-          <label className="block">
-            <span className="smallcaps text-[10.5px] text-muted">Title</span>
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Untitled meeting"
-              className="paper paper-white mt-2 h-12 w-full rounded-[3px] px-4 font-serif text-[19px] placeholder:italic placeholder:text-faint focus:shadow-[0_0_0_1.5px_var(--color-ink-2),var(--shadow-card)] focus:outline-none"
-            />
-          </label>
-
-          <fieldset className="mt-5">
-            <legend className="smallcaps text-[10.5px] text-muted">Template</legend>
-            <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {TEMPLATES.map((t) => (
-                <label
-                  key={t.id}
-                  className={cx(
-                    "relative cursor-pointer rounded-[3px] border px-3.5 py-3 transition-[background-color,border-color,box-shadow,rotate] duration-300 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ink",
-                    template === t.id
-                      ? "paper paper-white -rotate-[0.8deg] border-ink/70"
-                      : "border-ink/10 bg-wash/50 hover:border-ink/25 hover:bg-wash",
-                  )}
-                >
-                  <input
-                    type="radio"
-                    name="template"
-                    value={t.id}
-                    checked={template === t.id}
-                    onChange={() => setTemplate(t.id)}
-                    className="sr-only"
-                  />
-                  <span className="block font-serif text-[18px] font-medium leading-tight">{t.name}</span>
-                  <span className="mt-1 block text-[14px] leading-snug text-muted">{t.blurb}</span>
-                </label>
-              ))}
-            </div>
-          </fieldset>
-        </>
+        <label className="block">
+          <span className="sr-only">Title</span>
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Untitled meeting"
+            aria-label="Title"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.nativeEvent.isComposing && via === "record" && (mic || tab)) {
+                e.preventDefault();
+                start(true);
+              }
+            }}
+            className="paper paper-white h-14 w-full rounded-[3px] px-4 font-serif text-[23px] tracking-[-0.01em] placeholder:italic placeholder:text-faint focus:shadow-[0_0_0_1.5px_var(--color-ink-2),var(--shadow-card)] focus:outline-none"
+          />
+        </label>
       )}
 
       {via === "import" ? (
@@ -231,163 +227,200 @@ export function NewMeetingDialog({ open, onClose, mode, initialTemplate, onStart
           noAi={noAi}
         />
       ) : (
-      <>
-      <fieldset className={mode === "new" ? "mt-5" : ""}>
-        <legend className="smallcaps text-[10.5px] text-muted">Listen to</legend>
-        <div className="mt-2 grid gap-2 sm:grid-cols-2">
-          <SourceToggle
-            checked={mic}
-            onChange={setMic}
-            disabled={!support.mic}
-            icon={<MicIcon />}
-            title="Your microphone"
-            detail={
-              !support.mic
-                ? "Not available in this browser."
-                : support.speech
-                  ? "Labeled “You”. Transcribed free, in the browser."
-                  : "Labeled “You”. Transcribed with OpenAI."
-            }
-          />
-          <SourceToggle
-            checked={tab && tabAvailable}
-            onChange={setTab}
-            disabled={!tabAvailable}
-            icon={<TabAudioIcon />}
-            title="Meeting tab audio"
-            detail={
-              tabAvailable
-                ? "Labeled “Them”. Google Meet, Zoom or Teams in a browser tab."
-                : "Needs Chrome or Edge on a desktop."
-            }
-          />
-        </div>
-        {noAi && needsAi && (
-          <p className="mt-2 flex items-start gap-2 text-[14.5px] leading-snug text-ink-2" role="status">
-            <span className="mt-[6px] h-1.5 w-1.5 shrink-0 rounded-full bg-accent" aria-hidden />
-            {tab && tabAvailable ? "Tab audio" : "Your mic, in this browser,"} is transcribed by OpenAI, and this demo server
-            has no key. Add your own in Settings first, or just take notes.
-          </p>
-        )}
-      </fieldset>
+        <>
+          {/* Everything else is a row of chips you can change in place. */}
+          <div className={cx("flex flex-wrap gap-2", mode === "new" && "mt-4")} role="group" aria-label="Meeting settings">
+            {mode === "new" && (
+              <button
+                type="button"
+                onClick={() => setShowTemplates((v) => !v)}
+                aria-expanded={showTemplates}
+                aria-controls="template-grid"
+                className={chip(true)}
+              >
+                <span className="text-muted">Template</span> {templateName}
+                <svg width="11" height="11" viewBox="0 0 12 12" aria-hidden className={cx("text-muted transition-transform duration-300", showTemplates && "rotate-180")}>
+                  <path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            )}
+            <Chip
+              checked={mic && support.mic}
+              onChange={setMic}
+              disabled={!support.mic}
+              icon={<MicIcon size={16} />}
+              label="Mic"
+              aria={`Your microphone. ${!support.mic ? "Not available in this browser." : support.speech ? "Labeled You, transcribed free in the browser." : "Labeled You, transcribed with OpenAI."}`}
+            />
+            <Chip
+              checked={tab && tabAvailable}
+              onChange={(v) => {
+                setTabTouched(true);
+                setTab(v);
+              }}
+              disabled={!tabAvailable}
+              icon={<TabAudioIcon size={16} />}
+              label="Meeting tab"
+              aria={`Meeting tab audio: the other side of the call. ${tabAvailable ? "Labeled Them. Google Meet, Zoom or Teams in a browser tab." : "Needs Chrome or Edge on a desktop."}`}
+            />
+            {support.recorder && (
+              <Chip
+                checked={keepAudio}
+                onChange={setKeepAudio}
+                icon={<SpeakerIcon size={15} />}
+                label="Keep audio"
+                aria="Keep the audio on this device, so clicking a footnote plays the exact moment. Stored in this browser only, never uploaded."
+              />
+            )}
+          </div>
 
-      {support.recorder && (
-        <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-sm px-1 text-[15.5px] leading-snug">
-          <input
-            type="checkbox"
-            checked={keepAudio}
-            onChange={(e) => setKeepAudio(e.target.checked)}
-            className="mt-[3px] h-4 w-4 shrink-0 accent-[var(--color-ink)]"
-          />
-          <span>
-            <span className="font-medium text-ink">Keep the audio on this device</span>
-            <span className="block text-[14px] text-muted">
-              So clicking a footnote plays the exact moment. Stored in this browser only, never uploaded. Delete it any time.
-            </span>
-          </span>
-        </label>
-      )}
+          {mode === "new" && showTemplates && (
+            <fieldset id="template-grid" className="animate-fade-up mt-3">
+              <legend className="sr-only">Template</legend>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {TEMPLATES.map((t) => (
+                  <label
+                    key={t.id}
+                    className={cx(
+                      "relative cursor-pointer rounded-[3px] border px-3.5 py-3 transition-[background-color,border-color,box-shadow,rotate] duration-300 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ink",
+                      template === t.id
+                        ? "paper paper-white -rotate-[0.8deg] border-ink/70"
+                        : "border-ink/10 bg-wash/50 hover:border-ink/25 hover:bg-wash",
+                    )}
+                  >
+                    <input
+                      type="radio"
+                      name="template"
+                      value={t.id}
+                      checked={template === t.id}
+                      onChange={() => {
+                        setTemplate(t.id);
+                        setShowTemplates(false);
+                      }}
+                      className="sr-only"
+                    />
+                    <span className="block font-serif text-[18px] font-medium leading-tight">{t.name}</span>
+                    <span className="mt-1 block text-[14px] leading-snug text-muted">{t.blurb}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          )}
 
-      {showExplainer ? (
-        <div className="paper paper-sky mt-5 rotate-[0.3deg] rounded-[2px] px-5 py-4 text-[15.5px] leading-relaxed text-ink-2">
-          <p className="flex items-center gap-2 font-medium text-ink">
-            <InfoIcon size={16} /> How a browser hears your meeting
+          {/* One line on what happens next, in plain words. */}
+          <p className="mt-4 text-[15px] leading-relaxed text-ink-2">
+            {tab && tabAvailable ? (
+              <>
+                Chrome will ask what to share: pick the tab with your call and switch on{" "}
+                <strong className="font-medium text-ink">Share tab audio</strong>.
+              </>
+            ) : mic && support.mic ? (
+              <>Footnote hears your side through the mic. {tabAvailable ? "Add the meeting tab to hear the other side too." : "The other side needs Chrome or Edge on a desktop."}</>
+            ) : (
+              <>Pick something to listen to, or just take notes.</>
+            )}{" "}
+            {!showExplainer && (
+              <button
+                type="button"
+                onClick={() => setShowExplainer(true)}
+                className="whitespace-nowrap italic text-muted underline decoration-current/30 underline-offset-4 hover:text-ink"
+              >
+                What can a browser hear?
+              </button>
+            )}
           </p>
-          <ul className="mt-2 list-disc space-y-1 pl-5 marker:text-faint">
-            <li>
-              A web page can&rsquo;t hear the <strong>Zoom desktop app</strong>. Join from the web client (Meet, Zoom web,
-              Teams web) in another tab.
-            </li>
-            <li>
-              When Chrome asks what to share, pick that tab and switch on <strong>&ldquo;Share tab audio&rdquo;</strong>.
-            </li>
-            <li>Wear headphones so your mic only hears you, not the other side twice.</li>
-            <li>Footnote never stores audio on a server. If you keep it, it stays in this browser, next to the notes.</li>
-          </ul>
-          <button
-            type="button"
-            onClick={() => {
-              setFlag("seenCaptureExplainer", true);
-              setShowExplainer(false);
-            }}
-            className="smallcaps mt-2 text-[10.5px] text-ink underline underline-offset-4"
-          >
-            Got it
-          </button>
-        </div>
-      ) : (
-        <button
-          type="button"
-          onClick={() => setShowExplainer(true)}
-          className="mt-4 inline-flex items-center gap-1.5 text-[15px] italic text-muted hover:text-ink"
-        >
-          <InfoIcon size={15} /> What can a browser hear?
-        </button>
-      )}
-      {mode === "new" && (
-        <button
-          type="button"
-          onClick={() => setVia("import")}
-          className="mt-5 flex w-full items-center gap-3 rounded-[3px] border border-dashed border-rule-strong px-4 py-3 text-left text-[15.5px] text-ink-2 transition-colors hover:border-ink/40 hover:bg-wash"
-        >
-          <UploadIcon size={18} className="shrink-0 text-muted" />
-          <span className="flex-1">
-            <span className="font-medium text-ink">Already had the meeting?</span> Import a recording or a Zoom, Meet or
-            Teams transcript.
-          </span>
-          <span aria-hidden className="text-muted">&rarr;</span>
-        </button>
-      )}
-      </>
+          {liveElsewhere && <p className="mt-2 text-[14.5px] italic text-muted">Starting this stops the recording in progress.</p>}
+          {noAi && needsAi && (
+            <p className="mt-2 flex items-start gap-2 text-[14.5px] leading-snug text-ink-2" role="status">
+              <span className="mt-[6px] h-1.5 w-1.5 shrink-0 rounded-full bg-accent" aria-hidden />
+              {tab && tabAvailable ? "Tab audio" : "Your mic, in this browser,"} is transcribed by OpenAI, and this demo server
+              has no key. Add your own in Settings first, or just take notes.
+            </p>
+          )}
+
+          {showExplainer && (
+            <div className="paper paper-sky animate-fade-up mt-4 rotate-[0.3deg] rounded-[2px] px-5 py-4 text-[15.5px] leading-relaxed text-ink-2">
+              <p className="flex items-center gap-2 font-medium text-ink">
+                <InfoIcon size={16} /> How a browser hears your meeting
+              </p>
+              <ul className="mt-2 list-disc space-y-1 pl-5 marker:text-faint">
+                <li>
+                  A web page can&rsquo;t hear the <strong>Zoom desktop app</strong>. Join from the web client (Meet, Zoom web,
+                  Teams web) in another tab.
+                </li>
+                <li>
+                  When Chrome asks what to share, pick that tab and switch on <strong>&ldquo;Share tab audio&rdquo;</strong>.
+                </li>
+                <li>Wear headphones so your mic only hears you, not the other side twice.</li>
+                <li>Footnote never stores audio on a server. If you keep it, it stays in this browser, next to the notes.</li>
+              </ul>
+              <button
+                type="button"
+                onClick={() => {
+                  setFlag("seenCaptureExplainer", true);
+                  setShowExplainer(false);
+                }}
+                className="smallcaps mt-2 text-[10.5px] text-ink underline underline-offset-4"
+              >
+                Got it
+              </button>
+            </div>
+          )}
+        </>
       )}
     </Dialog>
   );
 }
 
-function SourceToggle({
+/** Chrome and Edge on a desktop: the browsers that can share a tab's sound. */
+function chromiumDesktop() {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent;
+  return /Chrome\/|Edg\//.test(ua) && !/Mobile|Android|CriOS|EdgiOS/.test(ua);
+}
+
+const chip = (on: boolean) =>
+  cx(
+    "inline-flex h-10 items-center gap-2 rounded-full border px-3.5 font-serif text-[15.5px] transition-[background-color,border-color,color,box-shadow] duration-300 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent",
+    on ? "paper paper-white border-ink/60 text-ink" : "border-ink/15 bg-wash/40 text-muted hover:border-ink/30 hover:bg-wash",
+  );
+
+function Chip({
   checked,
   onChange,
   disabled,
   icon,
-  title,
-  detail,
+  label,
+  aria,
 }: {
   checked: boolean;
   onChange: (v: boolean) => void;
   disabled?: boolean;
   icon: React.ReactNode;
-  title: string;
-  detail: string;
+  label: string;
+  aria: string;
 }) {
   return (
-    <label
-      className={cx(
-        "flex cursor-pointer items-start gap-3 rounded-[3px] border px-3.5 py-3 transition-[background-color,border-color,box-shadow] duration-300 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ink",
-        checked ? "paper paper-white border-ink/70" : "border-ink/10 bg-wash/50 hover:border-ink/25 hover:bg-wash",
-        disabled && "cursor-not-allowed opacity-60",
-      )}
-    >
+    <label className={cx(chip(checked), "cursor-pointer select-none", disabled && "cursor-not-allowed opacity-55")} title={aria}>
       <input
         type="checkbox"
         className="sr-only"
         checked={checked}
         disabled={disabled}
+        aria-label={aria}
         onChange={(e) => onChange(e.target.checked)}
       />
-      <span className={cx("mt-0.5", checked ? "text-ink" : "text-muted")}>{icon}</span>
-      <span className="flex-1">
-        <span className="block text-[17px] font-medium">{title}</span>
-        <span className="mt-0.5 block text-[14px] leading-snug text-muted">{detail}</span>
-      </span>
+      <span className={checked ? "text-ink" : "text-faint"}>{icon}</span>
+      <span className={cx(!checked && "line-through decoration-faint/70")}>{label}</span>
       <span
         aria-hidden
         className={cx(
-          "mt-1 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border",
-          checked ? "border-ink bg-ink text-paper" : "border-rule-strong bg-sheet",
+          "flex h-[16px] w-[16px] items-center justify-center rounded-full transition-colors",
+          checked ? "bg-ink text-paper" : "border border-rule-strong",
         )}
       >
         {checked && (
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.4">
             <path d="m5 12.5 4.5 4.5L19 7.5" />
           </svg>
         )}

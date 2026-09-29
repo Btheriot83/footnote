@@ -206,6 +206,10 @@ test("a live meeting keeps its audio locally, so its receipts play", async ({ pa
   await page.goto("/app");
   await page.getByRole("button", { name: /New meeting/ }).first().click();
   await expect(page.getByLabel(/Keep the audio on this device/)).toBeChecked();
+  // The meeting tab is on by default in Chrome; this test has no tab to share.
+  const tabChip = page.getByLabel(/Meeting tab audio/);
+  if (await tabChip.isChecked()) await page.getByRole("group", { name: "Meeting settings" }).getByText("Meeting tab", { exact: true }).click();
+  await expect(tabChip).not.toBeChecked();
   await page.getByRole("button", { name: "Start recording" }).last().click();
 
   const transcript = page.getByRole("complementary", { name: "Transcript" });
@@ -287,7 +291,7 @@ test("unknown addresses land on the desk with ways back", async ({ page }) => {
 test("a Zoom transcript imports with its speakers and times, and meetings back up and restore", async ({ page }) => {
   await page.goto("/app");
   await page.getByRole("button", { name: "New meeting" }).first().click();
-  await page.getByRole("button", { name: /Already had the meeting/ }).click();
+  await page.getByRole("button", { name: /Import a file/ }).click();
   const vtt = [
     "WEBVTT",
     "",
