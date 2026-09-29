@@ -6,12 +6,17 @@ import { Receipt, ReceiptRule } from "./Paper";
 import { useSampleClip } from "./useSampleClip";
 
 const TYPED = "40 → 120 seats by march";
+const LINES = [
+  { text: "Series B closed: $32M", origin: "you", n: 1 },
+  { text: "Led by Northstar, two weeks ago", origin: "ai", n: 1 },
+  { text: "Seats grow from 40 to about 120 by March", origin: "you", n: 2 },
+] as const;
 const QUOTE = { who: "DANA (ACME)", at: "00:26", before: "Support goes from 40 people to about 110 by March.", quote: "With ops and success, call it 120 seats.", from: 26500, to: 34700 };
 
 /*
  * Phases of the little film:
- * 0 waiting · 1 typing · 2 Enhance pressed · 3 the line inks in · 4 its footnote
- * stamps · 5 the receipt prints · 6 done (highlight sweeps).
+ * 0 waiting · 1 typing · 2 Enhance pressed · 3 the lines ink in · 4 their footnotes
+ * stamp · 5 the receipt prints · 6 done (highlight sweeps).
  */
 type Phase = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -50,9 +55,9 @@ export function WriteBack() {
     const typedAt = 250 + TYPED.length * perChar + 300;
     at(typedAt, () => setPhase(2));
     at(typedAt + 420, () => setPhase(3));
-    at(typedAt + 1320, () => setPhase(4));
-    at(typedAt + 1900, () => setPhase(5));
-    at(typedAt + 3100, () => setPhase(6));
+    at(typedAt + 1700, () => setPhase(4));
+    at(typedAt + 2300, () => setPhase(5));
+    at(typedAt + 3500, () => setPhase(6));
   }, []);
 
   useEffect(() => {
@@ -128,31 +133,45 @@ export function WriteBack() {
         <div className="relative mx-auto w-full max-w-[520px]">
           <div className="paper paper-cream sheet-shadow relative z-[2] rotate-[1deg] rounded-[2px] px-7 pb-7 pt-6 sm:px-9">
             <p className="smallcaps text-muted">Enhanced notes</p>
-            <h3 className="mt-2 font-serif text-[25px] font-medium leading-tight tracking-[-0.01em]">What they need</h3>
+            <h3 className="mt-2 font-serif text-[25px] font-medium leading-tight tracking-[-0.01em]">Where they are</h3>
+            {/* Every note line comes back written up; what the call adds is its own gray line. */}
             <ul className="mt-3 space-y-2 font-serif text-[18.5px] leading-snug">
-              <li className="flex gap-2.5 text-ink">
-                <span className="mt-[0.5em] h-[6px] w-[6px] shrink-0 rounded-full bg-ink" />
-                <span>Renewal with Dana from ops</span>
-              </li>
-              <li className="flex min-h-[1.4em] gap-2.5 text-muted">
-                {phase >= 3 && (
-                  <>
-                    <span className="mt-[0.5em] h-[6px] w-[6px] shrink-0 rounded-full bg-faint" />
-                    <span key={`ink-${run}`} className="ink-in">
-                      Seats grow from 40 to about 120 by{" "}
-                      <span className="whitespace-nowrap">
-                        March
-                        {phase >= 4 && (
-                          <span key={`fn-${run}`} className="fn-mark stamp" data-active={phase === 4 || phase === 5}>
-                            2
-                          </span>
-                        )}
+              {LINES.map((l, i) => (
+                <li key={i} className={cx("flex min-h-[1.4em] gap-2.5", l.origin === "you" ? "text-ink" : "text-muted")}>
+                  {phase >= 3 ? (
+                    <>
+                      <span className={cx("mt-[0.5em] h-[6px] w-[6px] shrink-0 rounded-full", l.origin === "you" ? "bg-ink" : "bg-faint")} />
+                      <span key={`ink-${run}`} className="ink-in" style={{ ["--ink-delay" as string]: `${i * 260}ms` }}>
+                        {l.text.slice(0, l.text.lastIndexOf(" ") + 1)}
+                        <span className="whitespace-nowrap">
+                          {l.text.slice(l.text.lastIndexOf(" ") + 1)}
+                          {phase >= 4 && (
+                            <span
+                              key={`fn-${run}`}
+                              className="fn-mark stamp"
+                              style={{ ["--stamp-delay" as string]: `${i * 120}ms` }}
+                              data-active={l.n === 2 && (phase === 4 || phase === 5)}
+                            >
+                              {l.n}
+                            </span>
+                          )}
+                        </span>
                       </span>
-                    </span>
-                  </>
-                )}
-              </li>
+                    </>
+                  ) : (
+                    <span aria-hidden className="ghost-line mt-[0.45em] block h-3 rounded-full" style={{ width: `${[58, 66, 82][i]}%` }} />
+                  )}
+                </li>
+              ))}
             </ul>
+            <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 font-sans text-[11.5px] text-muted">
+              <span className="inline-flex items-center gap-1.5">
+                <span className="h-[5px] w-[5px] rounded-full bg-ink/80" /> from your notes
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="h-[5px] w-[5px] rounded-full bg-faint" /> added from the call
+              </span>
+            </p>
           </div>
           <div className="relative z-[1] mx-auto -mt-1 w-[88%] [clip-path:inset(0_-60px_-80px_-60px)]">
             {phase >= 5 ? (
@@ -201,7 +220,8 @@ export function WriteBack() {
         </div>
       </div>
       <p className="sr-only">
-        A rough note, “40 → 120 seats by march”, becomes the line “Seats grow from 40 to about 120 by March”, footnote 2,
+        Rough notes, “series B closed?? 32M” and “40 → 120 seats by march”, become “Series B closed: $32M” (footnote 1), an
+        added line “Led by Northstar, two weeks ago” (footnote 1), and “Seats grow from 40 to about 120 by March”, footnote 2,
         which cites Dana at 00:26: “Support goes from 40 people to about 110 by March. With ops and success, call it 120 seats.”
       </p>
     </div>
