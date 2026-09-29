@@ -6,7 +6,7 @@ import type { Status } from "@/lib/client/api";
 import { refreshServerStatus } from "@/lib/client/server-status";
 import { getUserKey, maskKey, setKeyStatus, setUserKey, useKeyStatus, useUserKey } from "@/lib/client/settings";
 import { downloadBlob, makeBackup, restoreBackup } from "@/lib/client/backup";
-import { toast } from "@/lib/client/toast";
+import { dismissToastKey, toast } from "@/lib/client/toast";
 
 export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const saved = useUserKey();
@@ -229,12 +229,20 @@ function BackupSection() {
     setBusy("restore");
     try {
       const r = await restoreBackup(file);
-      const parts = [r.added && `${r.added} added`, r.updated && `${r.updated} updated`, r.skipped && `${r.skipped} already here`].filter(Boolean);
-      const text = parts.length ? `Restored: ${parts.join(", ")}.` : "Nothing to restore in that file.";
+      const plural = (n: number) => (n === 1 ? "meeting" : "meetings");
+      const changed = [r.added && `${r.added} added`, r.updated && `${r.updated} updated`].filter(Boolean);
+      const text = changed.length
+        ? `Restored: ${changed.join(", ")}.${r.skipped ? ` ${r.skipped} already here.` : ""}`
+        : r.skipped
+          ? `Nothing new: ${r.skipped === 1 ? "that meeting is" : `all ${r.skipped} ${plural(r.skipped)} are`} already here.`
+          : "Nothing to restore in that file.";
       setNote({ ok: true, text });
-      toast(text, { tone: "success" });
+      toast(text, { tone: changed.length ? "success" : "neutral", key: "restore" });
     } catch (e) {
-      setNote({ ok: false, text: (e as Error).message || "Couldn't read that backup." });
+      const text = (e as Error).message || "Couldn't read that backup.";
+      setNote({ ok: false, text });
+      // The last restore's toast is old news now.
+      dismissToastKey("restore");
     } finally {
       setBusy(null);
       if (input.current) input.current.value = "";

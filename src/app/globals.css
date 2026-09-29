@@ -815,6 +815,17 @@ button.fn-mark::before {
   25% { opacity: 1; }
   to { opacity: 1; transform: rotate(-0.4deg); }
 }
+/* Under the header on smaller screens, the note drops in from above instead. */
+@media (max-width: 1023px) {
+  .toast-in {
+    animation-name: toast-drop;
+  }
+}
+@keyframes toast-drop {
+  from { opacity: 0; transform: translateY(-50px) rotate(-2deg); }
+  25% { opacity: 1; }
+  to { opacity: 1; transform: rotate(0.3deg); }
+}
 
 /* Phones: switching between Notes and Transcript slides the other paper in. */
 @media (max-width: 767px) {
