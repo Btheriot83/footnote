@@ -281,7 +281,28 @@ dialog .wordmark {
   }
 }
 
-/* The desk lamp: a warm pool of light that drifts toward the cursor (see DeskLamp). */
+/* The desk lamp, drawn by a shader at a quarter of the resolution and stretched soft. */
+.desk-lamp-gl {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 70;
+  mix-blend-mode: soft-light;
+  opacity: 0;
+  transition: opacity 1400ms ease;
+}
+.desk-lamp-gl.is-on {
+  opacity: 0.9;
+}
+@media (prefers-color-scheme: dark) {
+  .desk-lamp-gl.is-on {
+    opacity: 1;
+  }
+}
+
+/* Without WebGL: a CSS pool of light that drifts toward the cursor (see DeskLamp). */
 .desk-lamp {
   position: fixed;
   left: 0;
@@ -933,7 +954,7 @@ button.fn-mark::before {
   @media (prefers-reduced-motion: reduce) {
     .reveal, .arrive { opacity: 1; transform: none; }
     .ink-in { -webkit-mask-image: none; mask-image: none; }
-    .desk-lamp { display: none; }
+    .desk-lamp, .desk-lamp-gl { display: none; }
   }
 }
 
