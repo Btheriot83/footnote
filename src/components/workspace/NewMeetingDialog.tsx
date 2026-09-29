@@ -47,7 +47,6 @@ export function NewMeetingDialog({ open, onClose, mode, initialTemplate, onStart
   const [title, setTitle] = useState("");
   const [template, setTemplate] = useState<TemplateId>(initialTemplate ?? "general");
   const [mic, setMic] = useState(true);
-  const [tab, setTab] = useState(false);
   const [support, setSupport] = useState({ speech: true, mic: true, tab: true, recorder: true });
   const [showExplainer, setShowExplainer] = useState(false);
   const [keepAudio, setKeepAudio] = useState(true);
@@ -57,8 +56,8 @@ export function NewMeetingDialog({ open, onClose, mode, initialTemplate, onStart
   const [fileError, setFileError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
-  // Until you flip it yourself, the meeting tab follows what this browser can do.
-  const [tabTouched, setTabTouched] = useState(false);
+  // Until you flip it yourself (null), the meeting tab follows what this browser can do.
+  const [tabChoice, setTabChoice] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -69,7 +68,7 @@ export function NewMeetingDialog({ open, onClose, mode, initialTemplate, onStart
     setSupport(captureSupport());
     setShowExplainer(false);
     setShowTemplates(false);
-    setTabTouched(false);
+    setTabChoice(null);
     setKeepAudio(!getFlag("discardAudio"));
     setTitle("");
     setTemplate(initialTemplate ?? "general");
@@ -84,9 +83,7 @@ export function NewMeetingDialog({ open, onClose, mode, initialTemplate, onStart
   // The other side of the call is the half that matters: on by default wherever a tab's
   // sound can actually be shared (Chrome and Edge on a desktop) and there's AI to hear it.
   const tabByDefault = tabAvailable && chromiumDesktop() && !noAi;
-  useEffect(() => {
-    if (open && !tabTouched) setTab(tabByDefault);
-  }, [open, tabTouched, tabByDefault]);
+  const tab = tabChoice ?? tabByDefault;
   const needsAi = (tab && tabAvailable) || (mic && support.mic && !support.speech);
   const templateName = TEMPLATES.find((t) => t.id === template)?.name ?? "General";
 
@@ -255,8 +252,7 @@ export function NewMeetingDialog({ open, onClose, mode, initialTemplate, onStart
             <Chip
               checked={tab && tabAvailable}
               onChange={(v) => {
-                setTabTouched(true);
-                setTab(v);
+                setTabChoice(v);
               }}
               disabled={!tabAvailable}
               icon={<TabAudioIcon size={16} />}
