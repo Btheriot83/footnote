@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { validateEnhanced } from "@/lib/citations";
-import { dropEchoes, contentTokens, dedupeBullets, reconcileOrigins, restatesNote, noteLines } from "@/lib/reconcile";
+import { dropEchoes, contentTokens, dedupeBullets, reconcileOrigins, restatesNote, noteLines, splitAdditions } from "@/lib/reconcile";
 import cached from "@/lib/sample/cached-enhancement.json";
 import { SAMPLE_DEFAULT_NOTES, SAMPLE_SEGMENTS } from "@/lib/sample";
 import type { EnhancedNotes } from "@/lib/types";
@@ -27,6 +27,43 @@ describe("reconcileOrigins", () => {
   it("keeps bullets that add real detail gray", () => {
     const lines = noteLines(notes);
     expect(restatesNote("The round was $32M, led by Northstar, and they plan to double support by spring.", lines)).toBe(false);
+  });
+
+  it("shows the user's point in ink when the model folded it into an added line", () => {
+    const out = reconcileOrigins(
+      {
+        sections: [
+          {
+            heading: "Where they are",
+            bullets: [
+              { text: "They closed a $32 million Series B two weeks ago, led by Northstar.", origin: "ai", cites: ["s4"] },
+              { text: "They are hiring fast.", origin: "you", cites: ["s4"] },
+              { text: "Northstar also led their seed round.", origin: "ai", cites: ["s4"] },
+            ],
+          },
+        ],
+      },
+      notes,
+    );
+    expect(out.sections[0].bullets.map((b) => b.origin)).toEqual(["you", "you", "ai"]);
+  });
+
+  it("leaves added lines gray when the user's line is already written up", () => {
+    const out = reconcileOrigins(
+      {
+        sections: [
+          {
+            heading: "Where they are",
+            bullets: [
+              { text: "Series B closed at $32M; they are hiring fast.", origin: "you", cites: ["s4"] },
+              { text: "Led by Northstar, two weeks ago.", origin: "ai", cites: ["s4"] },
+            ],
+          },
+        ],
+      },
+      notes,
+    );
+    expect(out.sections[0].bullets.map((b) => b.origin)).toEqual(["you", "ai"]);
   });
 
   it("moves a 'you' bullet that matches none of the user's lines to gray", () => {
@@ -142,5 +179,23 @@ describe("dropEchoes", () => {
       ctx,
     );
     expect(out.sections[0].bullets).toHaveLength(1);
+  });
+});
+
+describe("splitAdditions", () => {
+  it("moves a trailing clause the user never wrote into its own gray bullet", () => {
+    const out = splitAdditions(
+      { sections: [{ heading: "A", bullets: [{ text: "Series B closed at $32M, led by Northstar.", origin: "you", cites: ["s4"] }] }] },
+      notes,
+    );
+    expect(out.sections[0].bullets).toEqual([
+      { text: "Series B closed at $32M.", origin: "you", cites: ["s4"] },
+      { text: "Led by Northstar.", origin: "ai", cites: ["s4"] },
+    ]);
+  });
+
+  it("leaves a clause that comes from the notes alone", () => {
+    const b = { text: "Series B closed at $32M, and they are hiring fast.", origin: "you" as const, cites: ["s4"] };
+    expect(splitAdditions({ sections: [{ heading: "A", bullets: [b] }] }, notes).sections[0].bullets).toEqual([b]);
   });
 });

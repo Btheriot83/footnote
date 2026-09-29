@@ -31,6 +31,12 @@ const SYNONYMS: Record<string, string> = {
   tue: "tuesday",
   wed: "wednesday",
   approx: "about",
+  one: "1",
+  two: "2",
+  three: "3",
+  four: "4",
+  five: "5",
+  first: "1",
 };
 
 export function contentTokens(text: string): Set<string> {
@@ -43,6 +49,8 @@ export function contentTokens(text: string): Set<string> {
     .replace(/\b(soc|type|tier|q|v)\s?(\d|ii|iii)\b/g, (_, a: string, n: string) => a + (n === "ii" ? "2" : n === "iii" ? "3" : n))
     // "$32M", "32 million" -> "32m"; "$90K", "90 thousand" -> "90k"
     .replace(/(\d+(?:\.\d+)?)\s*(m|mil|million|k|thousand)\b/g, (_, n: string, u: string) => n + (u[0] === "k" || u[0] === "t" ? "k" : "m"))
+    // "2yr", "2-year", "two-year" -> "2 year"
+    .replace(/\b(\d+|one|two|three|four|five)[-\s]?(yr|yrs|year|years)\b/g, "$1 year")
     .split(/[^a-z0-9.]+/)
     .map((w) => w.replace(/^\.+|\.+$/g, ""))
     .filter(Boolean);
@@ -109,7 +117,26 @@ export function restatesNote(bullet: string, lines: Set<string>[]): boolean {
   for (const line of lines) {
     if (line.size < 2) continue;
     const inter = overlap(line, b);
-    if (inter / line.size >= 0.7 && b.size - inter <= line.size + 2) return true;
+    // A two-word note ("viewer seats") restated is at most one word longer; longer
+    // bullets that happen to contain it ("Viewer seats are priced much lower") add detail.
+    const room = line.size >= 3 ? line.size + 2 : 1;
+    if (inter / line.size >= 0.7 && b.size - inter <= room) return true;
+  }
+  return false;
+}
+
+/**
+ * An added bullet that carries one of the user's note lines nothing else wrote up, figures
+ * and all ("They closed a $32M Series B two weeks ago, led by Northstar" for "series B
+ * closed, $32M"): it's their point, told with a little more, so it's shown as theirs.
+ */
+function carriesOrphan(bullet: string, orphan: Set<Set<string>>): boolean {
+  if (!orphan.size) return false;
+  const b = contentTokens(bullet);
+  for (const line of orphan) {
+    const inter = overlap(line, b);
+    const figures = [...line].filter((t) => /\d/.test(t));
+    if (inter / line.size >= 0.7 && figures.every((f) => b.has(f)) && b.size - inter <= line.size + 5) return true;
   }
   return false;
 }
@@ -158,12 +185,15 @@ export function reconcileOrigins<T extends EnhancedNotes>(notes: T, userNotes: s
       })),
     };
   }
+  // Note lines the model didn't write up as one of the user's bullets.
+  const youTokens = notes.sections.flatMap((s) => s.bullets.filter((b) => b.origin === "you").map((b) => contentTokens(b.text)));
+  const orphan = new Set(lines.filter((line) => line.size >= 2 && !youTokens.some((y) => overlap(line, y) / line.size >= 0.5)));
   return {
     ...notes,
     sections: notes.sections.map((s) => ({
       ...s,
       bullets: s.bullets.map((b) => {
-        if (b.origin === "ai" && restatesNote(b.text, lines)) {
+        if (b.origin === "ai" && (restatesNote(b.text, lines) || carriesOrphan(b.text, orphan))) {
           if (report) report.toYou++;
           return { ...b, origin: "you" as const };
         }
@@ -256,4 +286,44 @@ export function dropEchoes<T extends EnhancedNotes>(notes: T, ctx: EchoContext, 
     return { ...s, bullets: out };
   });
   return { ...notes, sections: sections.filter((s) => s.bullets.length > 0) };
+}
+
+/**
+ * Keeps the user's lines to what the user wrote. When a bullet in ink ends with a clause
+ * that shares nothing with any of their note lines ("Series B closed at $32M, led by
+ * Northstar"), that clause is Footnote's addition: it becomes its own gray bullet right
+ * after, with the same receipts.
+ */
+export function splitAdditions<T extends EnhancedNotes>(notes: T, userNotes: string, report?: ReconcileReport): T {
+  const lines = noteLines(userNotes);
+  if (!lines.length) return notes;
+  const all = new Set<string>();
+  for (const l of lines) for (const t of l) all.add(t);
+  const words = (s: string) => s.split(/\s+/).filter(Boolean).length;
+  return {
+    ...notes,
+    sections: notes.sections.map((s) => ({
+      ...s,
+      bullets: s.bullets.flatMap((b) => {
+        if (b.origin !== "you") return [b];
+        const m = [...b.text.matchAll(/(?:,|;|\s[—–])\s+/g)].pop();
+        if (!m || m.index === undefined) return [b];
+        const head = b.text.slice(0, m.index).trim();
+        const tail = b.text
+          .slice(m.index + m[0].length)
+          .replace(/^(?:and|but|plus|with)\s+/i, "")
+          .replace(/[.\s]+$/, "")
+          .trim();
+        const tailTokens = contentTokens(tail);
+        if (words(head) < 3 || !tailTokens.size || (words(tail) < 3 && tailTokens.size < 2)) return [b];
+        if ([...tailTokens].some((t) => all.has(t))) return [b];
+        if (noteCoverage(head, lines) < Math.max(0.5, noteCoverage(b.text, lines))) return [b];
+        if (report) report.toAi++;
+        return [
+          { ...b, text: `${head.replace(/[,;:\s]+$/, "")}.` },
+          { ...b, origin: "ai" as const, text: `${tail[0].toUpperCase()}${tail.slice(1)}.` },
+        ];
+      }),
+    })),
+  };
 }

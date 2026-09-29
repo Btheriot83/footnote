@@ -5,7 +5,14 @@
       "heading": "Where they are",
       "bullets": [
         {
-          "text": "They closed a $32 million Series B two weeks ago, led by Northstar.",
+          "text": "Series B closed two weeks ago for $32M.",
+          "origin": "you",
+          "cites": [
+            "s4"
+          ]
+        },
+        {
+          "text": "Led by Northstar.",
           "origin": "ai",
           "cites": [
             "s4"
@@ -19,7 +26,7 @@
           ]
         },
         {
-          "text": "Support is growing from 40 to about 110 by March, or 120 seats with ops and success.",
+          "text": "Seats grow from 40 to about 120 by March.",
           "origin": "you",
           "cites": [
             "s6"
@@ -31,10 +38,17 @@
       "heading": "What they need",
       "bullets": [
         {
-          "text": "About 20 managers only need dashboard access, so they want viewer seats.",
+          "text": "About 20 are managers, dashboards only, so viewer seats.",
           "origin": "you",
           "cites": [
-            "s8",
+            "s6",
+            "s8"
+          ]
+        },
+        {
+          "text": "Viewer seats are priced much lower.",
+          "origin": "ai",
+          "cites": [
             "s9"
           ]
         }
@@ -44,30 +58,32 @@
       "heading": "Pricing",
       "bullets": [
         {
-          "text": "Pricing is the main concern, with pushback at $65 per seat.",
+          "text": "Pricing pushback at $65 per seat, with CFO concern.",
           "origin": "you",
           "cites": [
             "s10"
           ]
         },
         {
-          "text": "The CFO will push back on the 120-seat jump.",
-          "origin": "ai",
+          "text": "Year one must stay under $90K.",
+          "origin": "you",
           "cites": [
-            "s10"
+            "s10",
+            "s12"
           ]
         },
         {
-          "text": "They need year one under $90K.",
+          "text": "Open to a two-year term.",
           "origin": "you",
           "cites": [
             "s12"
           ]
         },
         {
-          "text": "A two-year term could work.",
-          "origin": "you",
+          "text": "A multi-year term should lower the per-seat price.",
+          "origin": "ai",
           "cites": [
+            "s11",
             "s12"
           ]
         }
@@ -77,25 +93,33 @@
       "heading": "Security & procurement",
       "bullets": [
         {
-          "text": "Every vendor now goes through a formal security review with CISO Marcus.",
+          "text": "Security review with CISO Marcus, plus SOC 2 and Okta SSO.",
           "origin": "you",
+          "cites": [
+            "s14",
+            "s16"
+          ]
+        },
+        {
+          "text": "Every vendor goes through a formal review.",
+          "origin": "ai",
           "cites": [
             "s14"
           ]
         },
         {
-          "text": "They want SOC 2 Type II and a completed security questionnaire.",
+          "text": "Send the SOC 2 Type II report and a completed security questionnaire.",
           "origin": "ai",
           "cites": [
             "s15"
           ]
         },
         {
-          "text": "They need SSO through Okta before rollout.",
-          "origin": "you",
+          "text": "Set up a security call with Marcus on Tuesday afternoon.",
+          "origin": "ai",
           "cites": [
-            "s16",
-            "s17"
+            "s17",
+            "s18"
           ]
         }
       ]
@@ -104,30 +128,30 @@
       "heading": "Next steps",
       "bullets": [
         {
-          "text": "Send two pricing options, annual and two-year, with viewer seats broken out.",
+          "text": "Send two pricing options and SOC 2 by Thursday.",
           "origin": "you",
+          "cites": [
+            "s13",
+            "s19"
+          ]
+        },
+        {
+          "text": "Include annual and two-year options, with viewer seats broken out.",
+          "origin": "ai",
           "cites": [
             "s13"
           ]
         },
         {
-          "text": "Send the SOC 2 report by Thursday.",
+          "text": "Contract ends on the 30th.",
           "origin": "you",
           "cites": [
-            "s19"
+            "s20"
           ]
         },
         {
-          "text": "Set up a security call with Marcus on Tuesday afternoon.",
+          "text": "They want to sign before then.",
           "origin": "ai",
-          "cites": [
-            "s18",
-            "s19"
-          ]
-        },
-        {
-          "text": "They want to sign before the 30th.",
-          "origin": "you",
           "cites": [
             "s20"
           ]

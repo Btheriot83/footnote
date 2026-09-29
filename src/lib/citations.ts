@@ -1,4 +1,4 @@
-import { dedupeBullets, dropEchoes, reconcileOrigins, type EchoContext } from "./reconcile";
+import { dedupeBullets, dropEchoes, reconcileOrigins, splitAdditions, type EchoContext } from "./reconcile";
 import type { EnhancedBullet, EnhancedNotes, EnhancedSection, Origin } from "./types";
 
 type Loose<T> = { [K in keyof T]?: unknown };
@@ -80,7 +80,7 @@ export function validateEnhanced(
   let notes: EnhancedNotes = { ...(title ? { title } : {}), sections };
   if (opts?.userNotes !== undefined) {
     const r = { toYou: 0, toAi: 0, merged: 0 };
-    notes = dedupeBullets(reconcileOrigins(notes, opts.userNotes, r), r);
+    notes = dedupeBullets(splitAdditions(reconcileOrigins(notes, opts.userNotes, r), opts.userNotes, r), r);
     notes = dropEchoes(notes, { title: opts.title, speakers: opts.speakers }, r);
     report.reOriginated = r.toYou + r.toAi;
     report.merged = r.merged;
@@ -113,7 +113,7 @@ export function sanitizePartial(partial: unknown, validIds: Set<string>, userNot
   const title = typeof input.title === "string" ? input.title : undefined;
   const notes = { ...(title ? { title } : {}), sections };
   // Correct ink/gray while streaming too, so colors don't flip when the final arrives.
-  const inked = userNotes !== undefined ? reconcileOrigins(notes, userNotes) : notes;
+  const inked = userNotes !== undefined ? splitAdditions(reconcileOrigins(notes, userNotes), userNotes) : notes;
   // Drop title echoes while streaming too, so a line doesn't appear and then vanish.
   return echo ? dropEchoes(inked, echo) : inked;
 }
