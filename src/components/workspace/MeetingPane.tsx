@@ -480,12 +480,15 @@ export function MeetingPane({
             <span className="hidden sm:inline">{listening ? "Stop" : "Listen"}</span>
           </button>
         )}
-        {!meeting.isSample && (
+        {/* Pick a recorded meeting back up; examples and imported files have nothing to resume. */}
+        {!meeting.isSample && !meeting.isExample && !meeting.imported && (
           <button
             type="button"
             onClick={onRequestStart}
-            className={cx(btn.base, btn.ghost, "on-wood-2 h-10 px-3 text-[10.5px] max-sm:hidden")}
+            aria-label="Resume recording"
+            className={cx(btn.base, btn.secondary, "h-10 shrink-0 px-4 text-[10.5px] max-sm:hidden")}
           >
+            <span className="h-2 w-2 rounded-full bg-accent" aria-hidden />
             Resume
           </button>
         )}

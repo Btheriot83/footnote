@@ -210,7 +210,7 @@ export function Workspace() {
     if (imp?.kind === "transcript") {
       patchMeetingState(
         id,
-        { segments: imp.parsed.segments, durationMs: imp.parsed.durationMs, status: "ended" },
+        { segments: imp.parsed.segments, durationMs: imp.parsed.durationMs, status: "ended", imported: true },
         { immediate: true },
       );
       toast(`Imported ${imp.parsed.segments.length} lines from ${imp.fileName}. Add notes if you like, then Enhance.`, {
@@ -221,7 +221,7 @@ export function Workspace() {
     }
     if (imp?.kind === "audio") {
       await keepRecording(id, imp.file);
-      patchMeetingState(id, { status: "ended", durationMs: imp.durationMs, hasAudio: true }, { immediate: true });
+      patchMeetingState(id, { status: "ended", durationMs: imp.durationMs, hasAudio: true, imported: true }, { immediate: true });
       void importRecording(id, imp.file);
       return;
     }
