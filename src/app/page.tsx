@@ -213,7 +213,7 @@ export default function Landing() {
           The same job, without the subscription.
         </DeskHeading>
         <div className="reveal mx-auto mt-12 max-w-[920px] lg:mt-14">
-          <div className="paper paper-cream rotate-[0.3deg] rounded-[2px] px-3 py-3 sm:px-6 sm:py-5">
+          <div className="paper paper-cream rounded-[2px] px-3 py-3 sm:px-6 sm:py-5">
             <table className="hidden w-full border-collapse text-left sm:table">
               <caption className="sr-only">Comparison of Granola and Footnote</caption>
               <thead>
@@ -280,7 +280,7 @@ export default function Landing() {
               "Your key stays in your browser, your meetings on your device",
               "Use it here or self-host it (MIT)",
             ]}
-            cta={{ label: "Try a sample meeting", href: "/app?sample=1" }}
+            cta={{ label: "Try a sample meeting", href: "/app?sample=1", primary: true }}
           />
           <PriceCard
             featured
@@ -295,7 +295,7 @@ export default function Landing() {
               "Ask and one-click recipes included",
               "Priority updates, for good. No subscription",
             ]}
-            cta={{ label: "Coming soon: watch on GitHub", href: SITE.github, external: true }}
+            cta={{ label: "Watch for it on GitHub", href: SITE.github, external: true, quiet: true }}
             fine="Checkout opens after The Build Games. Nothing is sold or charged today."
           />
         </div>
@@ -363,13 +363,16 @@ function PriceCard({
   suffix?: string;
   note: string;
   features: string[];
-  cta: { label: string; href: string; external?: boolean };
+  /** The one working next step is inked; a plan you can't buy yet is a quiet link. */
+  cta: { label: string; href: string; external?: boolean; primary?: boolean; quiet?: boolean };
   featured?: boolean;
   fine?: string;
   className?: string;
   delay?: number;
 }) {
-  const cls = cx("pill mt-8 h-12 w-full px-4 text-[11px]", featured && "pill-ink");
+  const cls = cta.quiet
+    ? "mt-8 inline-flex items-center gap-1.5 rounded-sm font-serif text-[17px] italic text-ink-2 underline decoration-current/35 underline-offset-4 hover:text-ink hover:decoration-current"
+    : cx("pill mt-8 h-12 w-full px-4 text-[11.5px]", cta.primary && "pill-ink");
   return (
     <div className="reveal" style={{ ["--d" as string]: `${delay}ms` }}>
       <div className={cx(className, "lift relative flex flex-col rounded-[2px] px-7 pb-7 pt-6 sm:px-8")}>
@@ -399,9 +402,10 @@ function PriceCard({
           {cta.external ? (
             <a href={cta.href} target="_blank" rel="noreferrer" className={cls}>
               {cta.label}
+              {cta.quiet && <span aria-hidden>&rarr;</span>}
             </a>
           ) : (
-            <Link href={cta.href} className={cls}>
+            <Link href={cta.href} data-page-turn className={cls}>
               {cta.label}
             </Link>
           )}

@@ -28,7 +28,7 @@ const items = (hosted: boolean): { q: string; a: string }[] => [
 ];
 
 const STOCK = ["paper-sky", "paper-butter", "paper-blush", "paper-sage", "paper-lavender", "paper-stone"];
-const TILT = ["-rotate-[1deg]", "rotate-[0.8deg]", "-rotate-[0.4deg]", "rotate-[1.2deg]", "-rotate-[0.9deg]", "rotate-[0.5deg]"];
+const TILT = ["-rotate-[0.3deg]", "rotate-[0.25deg]", "-rotate-[0.15deg]", "rotate-[0.3deg]", "-rotate-[0.2deg]", "rotate-[0.15deg]"];
 const NUDGE = ["", "md:mt-6", "md:mt-2", "", "md:mt-4", "md:-mt-2"];
 
 /** A scatter of pastel sticky notes, every answer in view. */
