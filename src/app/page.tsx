@@ -87,7 +87,7 @@ export default function Landing() {
           <div className="absolute -left-6 top-3 w-[150px] -rotate-[8deg] sm:left-2 sm:w-[190px]">
             <PrintPhoto src="/desk/photo-call.webp" caption="acme, tues" className="arrive" eager />
           </div>
-          <div className="absolute right-4 top-1 hidden w-[240px] rotate-[5deg] sm:block">
+          <div className="absolute right-6 top-10 hidden w-[240px] rotate-[5deg] sm:block">
             <div className="paper paper-index arrive rounded-[2px] pb-4 pl-[50px] pr-4 pt-[12px] [--d:120ms] [--rule-gap:28px] [--rule-top:38px]">
               <p className="smallcaps h-[26px] pt-[7px] text-[9.5px] text-pen/80">Your notes</p>
               <p className="translate-y-[5px] font-hand text-[20px] leading-[28px] text-pen">series B closed?? 32M</p>

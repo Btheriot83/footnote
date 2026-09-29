@@ -6,7 +6,7 @@ import { useSampleClip } from "./useSampleClip";
 
 const BULLETS = [
   {
-    text: "Series B closed: $32M, led by Northstar",
+    text: "Series B closed: $32M",
     origin: "you",
     who: "Dana (Acme)",
     at: "00:15",
@@ -17,7 +17,7 @@ const BULLETS = [
   },
   {
     text: "Seats grow from 40 to about 120 by March",
-    origin: "ai",
+    origin: "you",
     who: "Dana (Acme)",
     at: "00:26",
     from: 26500,
@@ -27,7 +27,7 @@ const BULLETS = [
   },
   {
     text: "Needs year one under $90K, open to two years",
-    origin: "you",
+    origin: "ai",
     who: "Dana (Acme)",
     at: "01:11",
     from: 70950,
@@ -75,6 +75,17 @@ function usePrinter() {
     const id = setInterval(() => print((active + 1) % BULLETS.length), 5600);
     return () => clearInterval(id);
   }, [touched, visible, active, print]);
+
+  // The strip's play button reached a line on this card: print its receipt, in sync.
+  useEffect(() => {
+    const on = (e: Event) => {
+      const i = (e as CustomEvent<number>).detail;
+      setTouched(true);
+      print(i);
+    };
+    window.addEventListener("footnote:hear", on);
+    return () => window.removeEventListener("footnote:hear", on);
+  }, [print]);
 
   return {
     slips,

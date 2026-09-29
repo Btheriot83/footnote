@@ -1,10 +1,13 @@
 "use client";
+import { useEffect, useRef } from "react";
 import { cx } from "@/components/ui";
 import { useSampleClip } from "./useSampleClip";
 
 /** The first exchange that matters: "how are things at Acme?" and the Series B answer. */
 const FROM = 8529;
 const TO = 22324;
+/** Where Dana starts on the Series B: the hero's first receipt. */
+const SERIES_B = 15760;
 
 /**
  * The round play button on the call-to-action strip: plays about fourteen seconds of the
@@ -14,6 +17,19 @@ const TO = 22324;
 export function TeaserButton({ className }: { className?: string }) {
   const clip = useSampleClip();
   const playing = clip.playing === "teaser";
+  // When the preview reaches the Series B line, the hero's printer feeds that receipt.
+  const fed = useRef(false);
+  const pos = FROM + (TO - FROM) * clip.progress;
+  useEffect(() => {
+    if (!playing) {
+      fed.current = false;
+      return;
+    }
+    if (!fed.current && pos >= SERIES_B) {
+      fed.current = true;
+      window.dispatchEvent(new CustomEvent("footnote:hear", { detail: 0 }));
+    }
+  }, [playing, pos]);
   const r = 16.5;
   const c = 2 * Math.PI * r;
   return (

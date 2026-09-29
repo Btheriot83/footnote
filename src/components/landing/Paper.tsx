@@ -75,7 +75,7 @@ export function DeskHeading({
 }
 
 /** The paper strip that holds the call to action: a label for what you'll hear, and the button. */
-export function CtaStrip({ className, label = "A two-minute sales call" }: { className?: string; label?: string }) {
+export function CtaStrip({ className, label = "Hear 14s of the call" }: { className?: string; label?: string }) {
   return (
     <div className={cx("mx-auto w-full max-w-[540px]", className)}>
       <div className="paper paper-cream flex flex-col items-stretch gap-3 rounded-[3px] p-3 sm:flex-row sm:items-center sm:gap-4 sm:py-3 sm:pl-5 sm:pr-3">
@@ -83,7 +83,7 @@ export function CtaStrip({ className, label = "A two-minute sales call" }: { cla
           <TeaserButton className="-my-1 -ml-1" />
           <span className="leading-tight">
             <span className="block font-serif text-[17.5px] text-ink">{label}</span>
-            <span className="smallcaps block text-[9.5px] tracking-[0.18em] text-muted">Sound on · AI voices · 2:20</span>
+            <span className="smallcaps block text-[9.5px] tracking-[0.18em] text-muted">Sound on · AI voices</span>
           </span>
         </div>
         <Link href="/app?sample=1" data-page-turn className="pill h-[52px] px-7 text-[12.5px] sm:h-12">
