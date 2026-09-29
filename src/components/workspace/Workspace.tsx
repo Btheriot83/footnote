@@ -398,12 +398,12 @@ function EmptyWorkspace({
         </Link>
       </header>
       {(
-        <div className="scroll-thin flex min-h-0 flex-1 overflow-y-auto px-4 pb-16 pt-8 sm:px-6 lg:pt-14">
-          {/* A letter left on the desk, with the receipt it talks about tucked under it and a sticky note on top. */}
+        <div className="scroll-thin flex min-h-0 flex-1 overflow-y-auto px-4 pb-16 pt-8 sm:px-6 sm:pb-36 lg:pt-14">
+          {/* A letter left on the desk, the receipt it talks about tucked under its foot (its quote showing), and a sticky note on top. */}
           <div className="relative m-auto w-full max-w-[600px]">
             <div
               aria-hidden
-              className="receipt animate-settle absolute -right-3 top-[60%] hidden w-[260px] rotate-[6deg] px-4 pb-4 pt-3 text-[11.5px] leading-[1.6] [animation-delay:260ms] sm:block lg:-right-[170px]"
+              className="receipt animate-settle absolute -bottom-[104px] right-6 hidden w-[272px] rotate-[4deg] px-4 pb-4 pt-3 text-[11.5px] leading-[1.6] [animation-delay:260ms] sm:block lg:-right-10"
             >
               <p className="text-center tracking-[0.22em] text-[var(--receipt-dim)]">TRANSCRIPT · ACME</p>
               <hr className="receipt-rule my-2" />
