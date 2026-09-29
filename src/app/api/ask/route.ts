@@ -3,6 +3,7 @@ import { generateObject } from "ai";
 import { z } from "zod";
 import { answerSchema, ASK_SYSTEM, askContext, getRecipe, validateAnswer } from "@/lib/ask";
 import { segmentInputSchema } from "@/lib/enhance-schema";
+import { budgetExhaustedResponse, chatReserveCents, release, reserve, settle, tokenCostCents } from "@/lib/server/budget";
 import { allowanceCookie, limitResponse, readAllowance, remaining } from "@/lib/server/allowance";
 import { friendlyUpstreamError, logUpstreamError, modelSettings, MODELS, noKeyResponse, resolveKey } from "@/lib/server/keys";
 
@@ -40,13 +41,6 @@ export async function POST(req: Request) {
   if (!key) return noKeyResponse();
 
   const headers = new Headers({ "Cache-Control": "no-store" });
-  if (key.mode === "hosted") {
-    const a = readAllowance(req);
-    if (remaining(a).asks <= 0) return limitResponse("asks");
-    a.asks += 1;
-    headers.append("Set-Cookie", allowanceCookie(a));
-  }
-
   const recipe = getRecipe(recipeId);
   const valid = new Set(transcriptSegments.map((s) => s.id));
   const context = askContext({
@@ -61,22 +55,53 @@ export async function POST(req: Request) {
       ? `Question (answer across these meetings; name the meeting when it helps, and start a new paragraph for each meeting you draw on): ${question}`
       : `Question: ${question}`;
 
+  const prompt = `${context}\n\n${task}`;
+  const maxOutputTokens = recipe ? 1600 : 900;
+  const estCents = chatReserveCents("ask", MODELS.enhance, ASK_SYSTEM.length + prompt.length, maxOutputTokens);
+
+  // Hard global cap on the hosted key: reserve worst case before calling OpenAI.
+  let budgetId: string | null = null;
+  if (key.mode === "hosted") {
+    const a = readAllowance(req);
+    if (remaining(a).asks <= 0) return limitResponse("asks");
+    const r = await reserve("ask", estCents);
+    if (!r.ok) return budgetExhaustedResponse();
+    budgetId = r.id;
+    a.asks += 1;
+    headers.append("Set-Cookie", allowanceCookie(a));
+  }
+
   try {
     const openai = createOpenAI({ apiKey: key.apiKey });
-    const { object } = await generateObject({
+    const { object, usage } = await generateObject({
       model: openai(MODELS.enhance),
       schema: answerSchema,
       schemaName: "answer",
       system: ASK_SYSTEM,
-      prompt: `${context}\n\n${task}`,
+      prompt,
       ...modelSettings(MODELS.enhance, 0.2),
-      maxOutputTokens: recipe ? 1600 : 900,
+      maxOutputTokens,
       maxRetries: 1,
     });
+    if (budgetId) {
+      const known = usage && (usage.inputTokens || usage.outputTokens);
+      await settle(budgetId, known ? tokenCostCents(MODELS.enhance, usage.inputTokens ?? 0, usage.outputTokens ?? 0) : estCents);
+      budgetId = null;
+    }
     const { sentences } = validateAnswer(object, valid);
     return Response.json({ sentences }, { headers });
   } catch (err) {
     logUpstreamError("ask", err);
+    if (budgetId) {
+      // OpenAI rejected the request (HTTP error): nothing billed. Anything else may have used tokens.
+      const e = err as { statusCode?: number; usage?: { inputTokens?: number; outputTokens?: number } };
+      if (e?.statusCode && !e.usage) await release(budgetId);
+      else
+        await settle(
+          budgetId,
+          e?.usage ? tokenCostCents(MODELS.enhance, e.usage.inputTokens ?? 0, e.usage.outputTokens ?? 0) : estCents,
+        );
+    }
     const f = friendlyUpstreamError((err as { statusCode?: number })?.statusCode, key.mode);
     return Response.json({ error: f.code, message: f.message }, { status: f.status });
   }

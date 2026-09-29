@@ -1,3 +1,4 @@
+import { audioMinutes, budgetExhaustedResponse, release, reserve, settle, TRANSCRIBE_CENTS_PER_MIN, transcribeReserveCents } from "@/lib/server/budget";
 import { allowanceCookie, limitResponse, readAllowance, remaining } from "@/lib/server/allowance";
 import { friendlyUpstreamError, MODELS, noKeyResponse, resolveKey } from "@/lib/server/keys";
 
@@ -27,9 +28,15 @@ export async function POST(req: Request) {
   const durationSec = Math.min(20, Math.max(1, Number(form.get("durationMs") || 9000) / 1000));
 
   const headers = new Headers({ "Cache-Control": "no-store" });
+  const minutes = audioMinutes(durationSec, file.size);
+  let budgetId: string | null = null;
   if (key.mode === "hosted") {
     const a = readAllowance(req);
     if (remaining(a).transcribeSeconds <= 0) return limitResponse("transcribe");
+    // Hard global cap on the hosted key. Bill by what the bytes could hold, not just the reported duration.
+    const r = await reserve("transcribe", transcribeReserveCents(minutes));
+    if (!r.ok) return budgetExhaustedResponse();
+    budgetId = r.id;
     a.transcribeSeconds += durationSec;
     headers.append("Set-Cookie", allowanceCookie(a));
   }
@@ -51,7 +58,13 @@ export async function POST(req: Request) {
       body: upstream,
     });
   } catch {
+    // Unknown whether OpenAI did the work: charge it.
+    if (budgetId) await settle(budgetId, minutes * TRANSCRIBE_CENTS_PER_MIN);
     return Response.json({ error: "upstream", message: "Couldn't reach the transcription service." }, { status: 502 });
+  }
+  if (budgetId) {
+    if (res.ok) await settle(budgetId, minutes * TRANSCRIBE_CENTS_PER_MIN);
+    else await release(budgetId);
   }
   if (!res.ok) {
     const f = friendlyUpstreamError(res.status, key.mode);

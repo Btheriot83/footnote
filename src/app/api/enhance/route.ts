@@ -3,6 +3,7 @@ import { streamObject } from "ai";
 import { sanitizePartial, validateEnhanced } from "@/lib/citations";
 import { enhancedSchema, enhanceRequestSchema } from "@/lib/enhance-schema";
 import { ENHANCE_SYSTEM, enhancePrompt } from "@/lib/prompt";
+import { budgetExhaustedResponse, chatReserveCents, release, reserve, settle, tokenCostCents } from "@/lib/server/budget";
 import { allowanceCookie, limitResponse, readAllowance, remaining } from "@/lib/server/allowance";
 import { friendlyUpstreamError, logUpstreamError, modelSettings, MODELS, noKeyResponse, resolveKey } from "@/lib/server/keys";
 
@@ -42,9 +43,24 @@ export async function POST(req: Request) {
     "Cache-Control": "no-store",
     "X-Footnote-Key-Mode": key.mode,
   });
+  const prompt = enhancePrompt({
+    template,
+    title,
+    userNotes,
+    segments: transcriptSegments,
+    maxChars: key.mode === "hosted" ? 40000 : 120000,
+  });
+  const maxOutputTokens = key.mode === "hosted" ? 3000 : 6000;
+  const reservedEst = chatReserveCents("enhance", MODELS.enhance, ENHANCE_SYSTEM.length + prompt.length, maxOutputTokens);
+
+  // Hard global cap on the hosted key: reserve worst case before calling OpenAI.
+  let budgetId: string | null = null;
   if (key.mode === "hosted") {
     const a = readAllowance(req);
     if (remaining(a).enhances <= 0) return limitResponse("enhances");
+    const r = await reserve("enhance", reservedEst);
+    if (!r.ok) return budgetExhaustedResponse();
+    budgetId = r.id;
     a.enhances += 1;
     headers.append("Set-Cookie", allowanceCookie(a));
     headers.set("X-Footnote-Remaining", String(remaining(a).enhances));
@@ -60,15 +76,9 @@ export async function POST(req: Request) {
     schema: enhancedSchema,
     schemaName: "enhanced_notes",
     system: ENHANCE_SYSTEM,
-    prompt: enhancePrompt({
-      template,
-      title,
-      userNotes,
-      segments: transcriptSegments,
-      maxChars: key.mode === "hosted" ? 40000 : 120000,
-    }),
+    prompt,
     ...modelSettings(MODELS.enhance, 0.2),
-    maxOutputTokens: key.mode === "hosted" ? 3000 : 6000,
+    maxOutputTokens,
     maxRetries: 1,
     onError: ({ error }) => {
       const e = error as { statusCode?: number };
@@ -76,10 +86,27 @@ export async function POST(req: Request) {
     },
   });
 
+  const usageOf = async () => {
+    try {
+      // If the client left mid-stream, usage may never resolve: don't wait forever.
+      const u = await Promise.race([result.usage, new Promise<null>((r) => setTimeout(() => r(null), 8000))]);
+      if (u && (u.inputTokens || u.outputTokens)) return { inputTokens: u.inputTokens ?? 0, outputTokens: u.outputTokens ?? 0 };
+    } catch {
+      // No usage available.
+    }
+    return null;
+  };
+
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
-      const send = (obj: unknown) => controller.enqueue(encoder.encode(JSON.stringify(obj) + "\n"));
+      const send = (obj: unknown) => {
+        try {
+          controller.enqueue(encoder.encode(JSON.stringify(obj) + "\n"));
+        } catch {
+          // The client went away; keep consuming so usage is known and billed.
+        }
+      };
       let last = 0;
       let pending: unknown = null;
       try {
@@ -99,10 +126,24 @@ export async function POST(req: Request) {
       } catch (err) {
         logUpstreamError("enhance", err);
         const status = upstreamStatus ?? (err as { statusCode?: number })?.statusCode;
+        // OpenAI rejected the request outright: nothing was billed. Otherwise settle below from usage.
+        if (budgetId && status && !(await usageOf())) {
+          await release(budgetId);
+          budgetId = null;
+        }
         const friendly = friendlyUpstreamError(status, key.mode);
         send({ type: "error", code: friendly.code, message: friendly.message });
       } finally {
-        controller.close();
+        if (budgetId) {
+          const u = await usageOf();
+          // Unknown usage: charge the full reservation (conservative).
+          await settle(budgetId, u ? tokenCostCents(MODELS.enhance, u.inputTokens, u.outputTokens) : reservedEst);
+        }
+        try {
+          controller.close();
+        } catch {
+          // The client went away.
+        }
       }
     },
   });
