@@ -24,7 +24,8 @@ export function PageTurnLinks() {
       void turnPage({
         onCovered: () => router.push(href),
         ready: async () => {
-          await waitFor(`[data-page="${url.pathname === "/" ? "landing" : url.pathname.slice(1).split("/")[0]}"][data-ready]`);
+          // The real page, not its loading shell: the sheet lifts off the app itself.
+          await waitFor(`[data-page="${url.pathname === "/" ? "landing" : url.pathname.slice(1).split("/")[0]}"][data-ready="true"]`);
         },
       });
     };

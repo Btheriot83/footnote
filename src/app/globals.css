@@ -970,3 +970,41 @@ button.fn-mark::before {
     scroll-behavior: auto !important;
   }
 }
+
+/* Page turn without WebGL (a View Transition): the old page is picked up off the desk,
+   the new one is already lying underneath, and the enhanced-notes card flies into place
+   as the meeting's page. */
+html[data-turn="sheet"] [data-vt-sheet] {
+  view-transition-name: fn-sheet;
+}
+html[data-turn="sheet"]::view-transition-old(root) {
+  animation: vt-sheet-lift 620ms cubic-bezier(0.45, 0, 0.55, 1) both;
+  transform-origin: 90% 100%;
+  mix-blend-mode: normal;
+  z-index: 1;
+}
+html[data-turn="sheet"]::view-transition-new(root) {
+  animation: vt-sheet-under 760ms var(--spring-soft) both;
+  mix-blend-mode: normal;
+}
+html[data-turn="sheet"]::view-transition-group(fn-sheet) {
+  animation-duration: 720ms;
+  animation-timing-function: var(--spring);
+}
+html[data-turn="sheet"]::view-transition-old(fn-sheet),
+html[data-turn="sheet"]::view-transition-new(fn-sheet) {
+  animation-duration: 420ms;
+}
+@keyframes vt-sheet-lift {
+  to {
+    transform: translate(-14%, -6%) rotate(-7deg) scale(1.03);
+    opacity: 0;
+    filter: drop-shadow(0 30px 40px rgba(40, 26, 10, 0.35));
+  }
+}
+@keyframes vt-sheet-under {
+  from {
+    transform: scale(0.985);
+    filter: brightness(0.9);
+  }
+}

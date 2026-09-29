@@ -178,6 +178,33 @@ export function canTurnPages() {
   return typeof window !== "undefined" && !reducedMotion() && !lowPower();
 }
 
+/**
+ * Without WebGL, a whole-page turn becomes a View Transition: the old page lifts off the
+ * desk like a sheet picked up, and anything both pages mark as the sheet (the hero's
+ * enhanced-notes card, the meeting's page) flies into place. Instant when unsupported.
+ */
+async function viewTransition(onCovered: () => void | Promise<void>, ready?: () => Promise<void>) {
+  const doc = document as Document & {
+    startViewTransition?: (cb: () => Promise<void>) => { finished: Promise<void> };
+  };
+  if (!doc.startViewTransition) {
+    await onCovered();
+    return;
+  }
+  const root = document.documentElement;
+  root.dataset.turn = "sheet";
+  try {
+    const t = doc.startViewTransition(async () => {
+      await onCovered();
+      // The browser holds the old frame while we wait; keep that short.
+      if (ready) await Promise.race([ready(), new Promise<void>((r) => setTimeout(r, 1400))]);
+    });
+    await t.finished.catch(() => {});
+  } finally {
+    delete root.dataset.turn;
+  }
+}
+
 export async function turnPage({ rect, onCovered, ready, duration = 1150 }: TurnOptions) {
   if (busy || !canTurnPages()) {
     await onCovered();
@@ -185,7 +212,8 @@ export async function turnPage({ rect, onCovered, ready, duration = 1150 }: Turn
   }
   const g = init();
   if (!g) {
-    await onCovered();
+    if (rect) await onCovered();
+    else await viewTransition(onCovered, ready);
     return;
   }
   busy = true;

@@ -108,7 +108,8 @@ export function Workspace() {
     const m = reusable ?? (await createMeeting({ title: SAMPLE_TITLE, template: SAMPLE_TEMPLATE, isSample: true }));
     await loadMeeting(m.id);
     select(m.id);
-    await startSample(m.id);
+    // The call starts playing in the background; the desk is ready as soon as its page is.
+    void startSample(m.id);
   }, [select]);
 
   // Boot: sample link, deep link, or last opened meeting.
@@ -242,7 +243,7 @@ export function Workspace() {
   const sidebar = (
     <Sidebar
       ref={searchRef}
-      meetings={meetings as Meeting[] | undefined}
+      meetings={ready ? (meetings as Meeting[] | undefined) : undefined}
       activeId={activeId}
       query={query}
       onQuery={setQuery}

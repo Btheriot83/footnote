@@ -90,9 +90,13 @@ export const Sidebar = forwardRef<HTMLInputElement, Props>(function Sidebar(
             </button>
           )}
           {meetings === undefined ? (
-            <div className="space-y-3 py-3 pl-[44px] pr-4" aria-hidden>
-              {[0, 1, 2].map((i) => (
-                <div key={i} className="h-10 animate-pulse rounded-sm bg-wash" />
+            // Still opening the drawer: pencil lines where the meetings will be, never "no meetings".
+            <div aria-busy aria-label="Loading meetings">
+              {["70%", "82%", "58%"].map((w, i) => (
+                <div key={i} className="border-b border-index-line py-3.5 pl-[44px] pr-6" aria-hidden>
+                  <span className="ghost-line block h-3.5 rounded-full" style={{ width: w }} />
+                  <span className="ghost-line mt-2.5 block h-2.5 w-[44%] rounded-full" />
+                </div>
               ))}
             </div>
           ) : filtered && filtered.length > 0 ? (

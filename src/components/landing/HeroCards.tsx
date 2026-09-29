@@ -92,6 +92,7 @@ function NoteCard({ active, onPick, className }: { active: number; onPick: (i: n
   return (
     <div
       className={cx("paper paper-white relative z-[2] rounded-[2px] px-6 pb-6 pt-6 sm:px-7", className)}
+      data-vt-sheet
       role="group"
       aria-label="Example: enhanced notes where each line links to what was said"
     >

@@ -419,7 +419,13 @@ export function MeetingPane({
     const waiting = sample.blocked || sample.phase === "ready";
     status = (
       <div className="flex items-center gap-2">
-        <RecordingPill label={playing ? "Sample call" : "Paused"} elapsedMs={elapsed} live={playing} dot={playing ? "accent" : "muted"} />
+        {/* Still loading the audio reads as the call about to start, not as paused. */}
+        <RecordingPill
+          label={playing || sample.phase === "loading" ? "Sample call" : "Paused"}
+          elapsedMs={elapsed}
+          live={playing}
+          dot={playing || sample.phase === "loading" ? "accent" : "muted"}
+        />
         {!waiting && (
           <button
             type="button"
@@ -635,7 +641,7 @@ export function MeetingPane({
             if (!(e.target as HTMLElement).closest("button, [data-bullet], a, input, textarea")) receipts.clear();
           }}
         >
-          <article data-sheet={meeting.id} className="paper paper-cream sheet-shadow mx-auto min-h-[calc(100%-4px)] w-full max-w-[800px] rounded-[3px] px-5 pb-24 pt-9 sm:px-12 sm:pt-12 xl:px-[72px] xl:pt-14">
+          <article data-sheet={meeting.id} data-vt-sheet className="paper paper-cream sheet-shadow mx-auto min-h-[calc(100%-4px)] w-full max-w-[800px] rounded-[3px] px-5 pb-24 pt-9 sm:px-12 sm:pt-12 xl:px-[72px] xl:pt-14">
             <h1 className="sr-only">{meeting.title || "Untitled meeting"}</h1>
             <label htmlFor="meeting-title" className="sr-only">
               Meeting title
@@ -994,6 +1000,8 @@ export function MeetingPane({
                     </span>
                   ) : meeting.segments.length > 0 ? (
                     <span>{meeting.segments.length} lines</span>
+                  ) : sample ? (
+                    <span>Starting</span>
                   ) : (
                     <span>No lines yet</span>
                   )}
