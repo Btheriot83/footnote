@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { EnhancedView } from "@/components/receipts/EnhancedView";
 import { Pen } from "@/components/receipts/Pen";
+import { RoughDraft, roughLines } from "@/components/receipts/RoughDraft";
 import { TranscriptPanel } from "@/components/receipts/TranscriptPanel";
 import { useReceipts } from "@/components/receipts/useReceipts";
 import {
@@ -110,6 +111,18 @@ export function MeetingPane({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [dismissedIssues, setDismissedIssues] = useState<string[]>([]);
   const [flash, setFlash] = useState<{ id: string; nonce: number } | null>(null);
+  // After a write-up lands, the rough draft beneath it folds away rather than vanishing.
+  const [draftLeaving, setDraftLeaving] = useState(false);
+  const [wasStreaming, setWasStreaming] = useState(false);
+  if (wasStreaming !== streaming) {
+    setWasStreaming(streaming);
+    if (!streaming) setDraftLeaving(true);
+  }
+  useEffect(() => {
+    if (!draftLeaving) return;
+    const t = setTimeout(() => setDraftLeaving(false), 900);
+    return () => clearTimeout(t);
+  }, [draftLeaving]);
   const onLand = useCallback((id: string) => setFlash((f) => ({ id, nonce: (f?.nonce ?? 0) + 1 })), []);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -878,7 +891,7 @@ export function MeetingPane({
                 )}
                 <div className="mt-7">
                   {streaming && shown.sections.length === 0 ? (
-                    <Pen label="Reading the transcript…" className="py-2" />
+                    <Pen label={roughLines(meeting.notes).length ? "Reading your notes and the transcript…" : "Reading the transcript…"} className="py-2" />
                   ) : (
                     <EnhancedView
                       notes={shown}
@@ -893,6 +906,8 @@ export function MeetingPane({
                       onLand={onLand}
                     />
                   )}
+                  {/* The rough notes stay in view while they're rewritten, then fold away. */}
+                  {(streaming || draftLeaving) && <RoughDraft notes={meeting.notes} written={streaming ? shown : meeting.enhanced} done={!streaming} />}
                 </div>
               </div>
             ) : (

@@ -843,6 +843,18 @@ button.fn-mark::before {
   to { background-position: -20% 0; }
 }
 
+/* Rough notes crossed off in pencil as Enhance writes a clean bullet from each. */
+.strike path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  color: var(--color-accent);
+  opacity: 0.75;
+  transition: stroke-dashoffset 520ms cubic-bezier(0.5, 0.1, 0.3, 1);
+}
+.strike.is-on path {
+  stroke-dashoffset: 0;
+}
+
 /* A pen writing while the model reads: an endless loop of ink. */
 .pen-line path {
   stroke-dasharray: 1;
