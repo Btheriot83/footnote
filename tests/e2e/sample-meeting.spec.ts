@@ -43,11 +43,77 @@ test("landing page leads to the sample meeting", async ({ page }) => {
   await expect(page.locator("#meeting-title")).toHaveValue("Acme renewal — sales call");
 });
 
-test("the hero prints the receipt for the footnote you click", async ({ page }) => {
+/** Records every play() on audio elements: where it started and whether playback began. */
+async function watchAudio(page: import("@playwright/test").Page) {
+  await page.addInitScript(() => {
+    const w = window as unknown as { __plays: { at: number; ok: boolean }[]; __paused: number };
+    w.__plays = [];
+    w.__paused = 0;
+    const play = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function (this: HTMLMediaElement) {
+      const entry = { at: this.currentTime, ok: false };
+      w.__plays.push(entry);
+      const p = play.call(this);
+      p.then(() => (entry.ok = !this.paused)).catch(() => {});
+      return p;
+    };
+    const pause = HTMLMediaElement.prototype.pause;
+    HTMLMediaElement.prototype.pause = function (this: HTMLMediaElement) {
+      w.__paused++;
+      return pause.call(this);
+    };
+  });
+}
+const plays = (page: import("@playwright/test").Page) =>
+  page.evaluate(() => (window as unknown as { __plays: { at: number; ok: boolean }[] }).__plays);
+
+test("a landing footnote prints its receipt and plays the moment it cites; again stops", async ({ page }) => {
+  await watchAudio(page);
   await page.goto("/");
-  await page.getByRole("button", { name: /Seats grow from 40 to about 120 by March\. Print its receipt/ }).first().click();
+  const fn = page.getByRole("button", { name: /^Footnote 2: hear Dana at 0:26/ }).first();
+  await fn.click();
+  // The receipt for that footnote is out, with the cited words.
   await expect(page.getByText("With ops and success, call it 120 seats.").first()).toBeVisible();
   await expect(page.getByText("SOURCE 2 OF 3").first()).toBeVisible();
+  // The cited seconds of the sample call are playing.
+  await expect.poll(async () => (await plays(page)).at(-1)).toMatchObject({ ok: true });
+  expect((await plays(page)).at(-1)!.at).toBeCloseTo(26.5, 0);
+  const on = page.getByRole("button", { name: /^Footnote 2: stop playing Dana at 0:26/ }).first();
+  await expect(on).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByText("PLAYING").first()).toBeVisible();
+  // Clicking again stops it.
+  await on.click();
+  await expect(page.getByRole("button", { name: /^Footnote 2: hear Dana at 0:26/ }).first()).toHaveAttribute("aria-pressed", "false");
+});
+
+test("the write-up demo's footnotes play from the keyboard, and reduced motion still plays", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await watchAudio(page);
+  await page.goto("/");
+  const card = page.locator("[data-demo='write-up']");
+  const demo = card.locator("button.fn-mark[data-footnote='1']").first();
+  // The demo writes itself up once it's on screen (instantly under reduced motion).
+  await card.evaluate((el) => el.scrollIntoView({ block: "center" }));
+  await expect(demo).toBeVisible();
+  await expect(demo).toHaveAccessibleName(/^Footnote 1: hear Dana at 0:15/);
+  await demo.focus();
+  await page.keyboard.press("Enter");
+  // Its receipt swaps to footnote 1's words (the demo opens on footnote 2's).
+  await expect(card.getByText("$32 million, led by Northstar.")).toBeVisible();
+  await expect.poll(async () => (await plays(page)).at(-1)).toMatchObject({ ok: true });
+  expect((await plays(page)).at(-1)!.at).toBeCloseTo(15.8, 0);
+  await expect(demo).toHaveAttribute("aria-pressed", "true");
+  await page.keyboard.press("Space");
+  await expect(demo).toHaveAttribute("aria-pressed", "false");
+
+  // The "Receipts you can hear" card's footnote plays too.
+  const audio = page.locator("button.fn-mark[data-footnote='1']").last();
+  await audio.scrollIntoViewIfNeeded();
+  await expect(audio).toHaveAccessibleName(/^Footnote 1: hear Dana at 0:15/);
+  const before = (await plays(page)).length;
+  await audio.click();
+  await expect.poll(async () => (await plays(page)).length).toBeGreaterThan(before);
+  await expect(audio).toHaveAttribute("aria-pressed", "true");
 });
 
 test("offline: notes keep saving and Enhance says why it can't run", async ({ page, context }) => {
