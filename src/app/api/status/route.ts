@@ -7,8 +7,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 function isAdmin(req: Request): boolean {
-  const secret = process.env.FOOTNOTE_SECRET;
-  const given = req.headers.get("x-footnote-admin");
+  // Trimmed: the stored secret carries a trailing newline.
+  const secret = process.env.FOOTNOTE_SECRET?.trim();
+  const given = req.headers.get("x-footnote-admin")?.trim();
   if (!secret || !given) return false;
   const a = Buffer.from(given);
   const b = Buffer.from(secret);
