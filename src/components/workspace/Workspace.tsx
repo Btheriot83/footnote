@@ -118,9 +118,12 @@ export function Workspace() {
     booted.current = true;
     preloadSample();
     // First visit: seed two finished example meetings (once; deleting them sticks).
+    let seeding: Promise<unknown> = Promise.resolve();
+    let seeded: Meeting[] = [];
     if (!getFlag("seededExamples")) {
       setFlag("seededExamples", true);
-      void db.meetings.bulkPut(exampleMeetings().filter((e) => !meetings.some((m) => m.id === e.id)));
+      seeded = exampleMeetings().filter((e) => !meetings.some((m) => m.id === e.id));
+      seeding = db.meetings.bulkPut(seeded);
     }
     // Any meeting marked live from a previous visit has ended.
     meetings
@@ -138,14 +141,18 @@ export function Workspace() {
       void runSample().finally(() => setReady(true));
       return;
     }
-    const pick = [deep, last].find((id) => id && meetings.some((m) => m.id === id)) ?? meetings[0]?.id ?? null;
+    // A link to an example works on a first visit too, once the examples are on the desk.
+    const known = [...meetings, ...seeded];
+    const pick = [deep, last].find((id) => id && known.some((m) => m.id === id)) ?? meetings[0]?.id ?? null;
     // Ready once the meeting is on the desk, so the welcome card never flashes up first.
     if (pick)
-      void loadMeeting(pick).then(() => {
-        select(pick);
-        setReady(true);
-      });
-    else setReady(true);
+      void seeding
+        .then(() => loadMeeting(pick))
+        .then(() => {
+          select(pick);
+          setReady(true);
+        });
+    else void seeding.then(() => setReady(true));
   }, [meetings, params, runSample, select]);
 
   // Keep the selection valid when meetings are deleted.
