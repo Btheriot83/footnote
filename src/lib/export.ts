@@ -40,7 +40,10 @@ export function toMarkdown(m: ExportableMeeting): string {
   for (const section of m.enhanced.sections) {
     lines.push(`## ${section.heading}`, "");
     for (const b of section.bullets) {
-      const marks = b.cites.map((c) => `[^${numbers.get(c)}]`).join("");
+      const marks = [...b.cites]
+        .sort((a, z) => (numbers.get(a) ?? 0) - (numbers.get(z) ?? 0))
+        .map((c) => `[^${numbers.get(c)}]`)
+        .join("");
       // AI additions are set in italics, the way the app sets them in gray.
       lines.push(`- ${b.origin === "ai" ? `_${b.text}_` : b.text}${marks}`);
     }

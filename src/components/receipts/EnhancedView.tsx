@@ -202,7 +202,7 @@ export function EnhancedView({
                   {inlineQuotes && quoteOpen && (
                     <div className="feed mb-3 mt-3" style={{ ["--feed-dur" as string]: "480ms", ["--feed-steps" as string]: "7" }}>
                       <div className="receipt space-y-2 px-4 py-3">
-                        {b.cites.map((c) => {
+                        {sortedCites(b.cites, numbers).map((c) => {
                           const seg = segmentsById.get(c);
                           if (!seg) return null;
                           return (

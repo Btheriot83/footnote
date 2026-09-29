@@ -30,7 +30,7 @@ export function toBlocks(sentences: AskSentence[]): AskSentence[][] {
 
 /**
  * One compact set of receipts per paragraph (or list item) instead of a chip after every
- * sentence: the unique cited lines, in the order they were said.
+ * sentence: the unique cited lines, in the order given (their footnote numbers).
  */
 export function blockCites(block: AskSentence[], order: (id: string) => number): string[] {
   return [...new Set(block.flatMap((s) => s.cites))].sort((a, b) => order(a) - order(b));
@@ -152,7 +152,8 @@ export function AskBox({
   // Each sentence carries its own receipts, right after it; a long run folds behind "+n".
   const block = (b: AskSentence[], bi: number) =>
     b.map((s, si) => {
-      const cites = blockCites([s], order);
+      // In the order of their numbers, so a group reads "12 13", never "13 12".
+      const cites = blockCites([s], (id) => answerNumbers.get(id) ?? 1e9 + order(id));
       const key = bi * 1000 + si;
       const open = expanded.has(key) || cites.length <= VISIBLE_CITES;
       const shownCites = open ? cites : cites.slice(0, VISIBLE_CITES - 1);
