@@ -168,6 +168,27 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* The 30-second tour */}
+      <section id="tour" className="relative scroll-mt-6 px-5 pb-24 pt-16 sm:px-8 lg:pb-28 xl:pt-6" aria-labelledby="tour-heading">
+        <DeskHeading id="tour-heading" lede="Rough notes in, clean notes out, and every line proves itself.">
+          See it in 30 seconds.
+        </DeskHeading>
+        <div className="reveal mx-auto mt-10 max-w-[1040px] lg:mt-12">
+          <div className="paper lift rounded-[2px] p-2 sm:p-3">
+            <video
+              className="block aspect-video w-full rounded-[1px] bg-[#EFE9DE]"
+              src="/tour.mp4"
+              poster="/tour-poster.jpg"
+              controls
+              playsInline
+              preload="metadata"
+              aria-label="A 30-second tour of Footnote: a sample sales call, enhanced notes, and a footnote that plays the moment it came from"
+            />
+          </div>
+          <p className="on-wood-2 mt-3 text-center text-[14px]">Sound on. The sample call uses AI-generated voices.</p>
+        </div>
+      </section>
+
       {/* How it works, shown rather than told */}
       <section id="how" className="relative scroll-mt-6 px-5 pb-28 pt-16 sm:px-8 lg:pb-32 xl:pt-4" aria-labelledby="how-heading">
         <DeskHeading id="how-heading" lede="Nothing to install. No bot joins the call.">
