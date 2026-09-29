@@ -31,10 +31,12 @@ void main(){
   d = mat2(0.94, 0.34, -0.34, 0.94) * d;
   d.x *= 0.86;
   float r = length(d) / uR;
-  float core = exp(-r * r * 2.6);
-  float pool = exp(-r * r * 0.9);
+  // At night the lamp is the only light: a tighter pool with a real edge, so the walnut
+  // grain reads inside the light and falls off into the dark around it.
+  float core = exp(-r * r * mix(2.6, 3.4, uNight));
+  float pool = exp(-r * r * mix(0.9, 1.9, uNight));
   // A faint warm rim where the shade's edge cuts the light.
-  float rim = smoothstep(0.62, 0.8, r) * (1.0 - smoothstep(0.8, 1.05, r)) * 0.18;
+  float rim = smoothstep(0.62, 0.8, r) * (1.0 - smoothstep(0.8, 1.05, r)) * mix(0.18, 0.1, uNight);
   float light = core * 0.55 + pool * 0.45 + rim;
 
   // Dust in the beam: sparse specks on a slow drifting grid, only inside the pool.
@@ -55,9 +57,9 @@ void main(){
   }
 
   vec3 warmDay = vec3(1.0, 0.93, 0.8);
-  vec3 warmNight = vec3(1.0, 0.76, 0.46);
+  vec3 warmNight = vec3(1.0, 0.86, 0.64);
   vec3 col = mix(warmDay, warmNight, uNight);
-  float a = clamp(light * mix(0.42, 0.62, uNight) + dust * 0.32, 0.0, 1.0);
+  float a = clamp(light * mix(0.42, 0.5, uNight) + dust * 0.32, 0.0, 1.0);
   gl_FragColor = vec4(col * a, a);
 }
 `;

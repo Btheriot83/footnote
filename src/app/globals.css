@@ -87,6 +87,7 @@
   --on-wood-2: var(--color-ink-2);
   --on-wood-shadow: 0 1px 0 rgba(255, 250, 238, 0.35);
   --wood-multiply: #d6c4a4;
+  --wood-image: url("/desk/wood.webp");
   --wood-blend: normal;
   --desk-glow: rgba(255, 248, 232, 0.36);
   --desk-edge: rgba(96, 70, 38, 0.13);
@@ -134,10 +135,13 @@
     --on-wood: #f4ead7;
     --on-wood-2: #e2d6bf;
     --on-wood-shadow: 0 1px 2px rgba(20, 12, 4, 0.45);
-    --wood-multiply: #6e5337;
-    --wood-blend: multiply;
-    --desk-glow: rgba(255, 196, 120, 0.2);
-    --desk-edge: rgba(12, 7, 2, 0.42);
+    /* Walnut with its grain kept: its own texture instead of the maple multiplied dark
+       (which flattened to a brown gradient). The lamp does the lighting. */
+    --wood-multiply: #3b2819;
+    --wood-image: url("/desk/wood-night.webp");
+    --wood-blend: normal;
+    --desk-glow: rgba(255, 200, 140, 0.05);
+    --desk-edge: rgba(10, 5, 1, 0.5);
     --backdrop: rgba(14, 8, 2, 0.5);
     --paper-sheen: rgba(255, 214, 160, 0.075);
     --paper-grain: 0.11;
@@ -236,7 +240,7 @@ select:focus-visible {
   background-image:
     radial-gradient(ellipse 70% 55% at 38% 22%, var(--desk-glow), transparent 70%),
     radial-gradient(ellipse 120% 90% at 50% 40%, transparent 50%, var(--desk-edge) 100%),
-    url("/desk/wood.webp");
+    var(--wood-image);
   background-size: 100% 100%, 100% 100%, max(100%, 1200px) auto;
   background-position: center, center, center top;
   background-blend-mode: normal, normal, var(--wood-blend);
@@ -249,7 +253,7 @@ select:focus-visible {
   background-image:
     radial-gradient(ellipse 75% 1100px at 40% 0, var(--desk-glow), transparent 72%),
     linear-gradient(90deg, var(--desk-edge), transparent 16%, transparent 84%, var(--desk-edge)),
-    url("/desk/wood.webp");
+    var(--wood-image);
   background-size: 100% 1500px, 100% 100%, max(100%, 1200px) auto;
   background-repeat: no-repeat, no-repeat, repeat-y;
   background-position: top center, center, top center;
