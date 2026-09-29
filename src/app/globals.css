@@ -1047,3 +1047,22 @@ html[data-turn="sheet"]::view-transition-new(fn-sheet) {
     filter: brightness(0.9);
   }
 }
+
+/* Who wrote a line: a solid ink dot for yours, a vermilion ring for what Footnote added
+   from the call (the same red as the receipts that back it). Both read in full ink. */
+.dot-you,
+.dot-ai {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+}
+.dot-you {
+  background: var(--color-ink);
+}
+.dot-ai {
+  width: 7px;
+  height: 7px;
+  box-shadow: inset 0 0 0 1.6px var(--color-accent);
+}

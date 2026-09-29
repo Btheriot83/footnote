@@ -119,10 +119,10 @@ function NoteCard({ active, onPick, className }: { active: number; onPick: (i: n
               aria-pressed={active === i}
               className={cx(
                 "group/b -mx-2 flex w-[calc(100%+16px)] items-baseline gap-2.5 rounded-[3px] px-2 py-0.5 text-left font-serif text-[17.5px] leading-snug transition-colors hover:bg-accent-softer/70",
-                x.origin === "you" ? "text-ink" : "text-muted",
+                x.origin === "you" ? "text-ink" : "text-ink-2",
               )}
             >
-              <span className={cx("mt-[0.5em] h-[6px] w-[6px] shrink-0 rounded-full", x.origin === "you" ? "bg-ink/80" : "bg-faint")} />
+              <span className={cx("mt-[0.5em]", x.origin === "you" ? "dot-you" : "dot-ai")} />
               <span>
                 {x.text.slice(0, x.text.lastIndexOf(" ") + 1)}
                 <span className="whitespace-nowrap">
@@ -138,10 +138,10 @@ function NoteCard({ active, onPick, className }: { active: number; onPick: (i: n
       </ul>
       <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 font-sans text-[11.5px] text-muted">
         <span className="inline-flex items-center gap-1.5">
-          <span className="h-[5px] w-[5px] rounded-full bg-ink/80" /> from your notes
+          <span className="dot-you" /> from your notes
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="h-[5px] w-[5px] rounded-full bg-faint" /> added by Footnote
+          <span className="dot-ai" /> added from the call
         </span>
         <span className="inline-flex items-center gap-1">
           <span className="fn-mark !ml-0 !cursor-default !text-[9px]" aria-hidden>

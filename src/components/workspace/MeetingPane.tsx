@@ -880,10 +880,10 @@ export function MeetingPane({
                 {(numbers.size > 0 || streaming) && (
                   <p className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[14.5px] text-muted">
                     <span className="inline-flex items-center gap-1.5">
-                      <span className="h-[6px] w-[6px] rounded-full bg-ink" /> Your notes
+                      <span className="dot-you" /> Your notes
                     </span>
                     <span className="inline-flex items-center gap-1.5">
-                      <span className="h-[6px] w-[6px] rounded-full bg-faint" /> Added from the transcript
+                      <span className="dot-ai" /> Added from the transcript
                       <span className="fn-mark !cursor-default" aria-hidden>1</span>
                     </span>
                     <span className="hover-only hidden italic sm:inline">

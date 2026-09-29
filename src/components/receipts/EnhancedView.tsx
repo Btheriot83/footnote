@@ -115,7 +115,7 @@ export function EnhancedView({
               const highlighted = receipts.highlightedBullets.has(key);
               const quoteOpen = openQuote === key;
               const [head, last] = splitLastWord(b.text);
-              const tone = b.origin === "you" ? "text-ink" : "text-muted";
+              const tone = b.origin === "you" ? "text-ink" : "text-ink-2";
               return (
                 <li
                   key={bi}
@@ -130,7 +130,7 @@ export function EnhancedView({
                 >
                   <span
                     aria-hidden
-                    className={cx("absolute left-2.5 top-[0.72em] h-[6px] w-[6px] rounded-full", b.origin === "you" ? "bg-ink" : "bg-faint")}
+                    className={cx("absolute left-2.5 top-[0.72em]", b.origin === "you" ? "dot-you" : "dot-ai -ml-px")}
                   />
                   <span className={tone}>{head}</span>
                   {/* The last word and its footnote numbers never wrap apart. */}

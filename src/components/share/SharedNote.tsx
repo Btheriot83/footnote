@@ -125,10 +125,10 @@ export function SharedNote() {
                   <h2 className="font-serif text-[29px] font-medium leading-tight tracking-[-0.015em] sm:text-[32px]">Enhanced notes</h2>
                   <p className="mt-1.5 flex flex-wrap items-center gap-x-4 text-[14.5px] text-muted">
                     <span className="inline-flex items-center gap-1.5">
-                      <span className="h-[6px] w-[6px] rounded-full bg-ink" /> Written by the note-taker
+                      <span className="dot-you" /> Written by the note-taker
                     </span>
                     <span className="inline-flex items-center gap-1.5">
-                      <span className="h-[6px] w-[6px] rounded-full bg-faint" /> Added from the transcript
+                      <span className="dot-ai" /> Added from the transcript
                       <span className="fn-mark !cursor-default" aria-hidden>1</span>
                     </span>
                     {audible && <span className="hidden italic sm:inline">Click a number to hear the moment.</span>}

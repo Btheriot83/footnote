@@ -22,7 +22,7 @@ type Phase = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
 /**
  * Shows a receipt being earned instead of explaining it: a rough note is typed, Enhance
- * is pressed, a gray line inks onto the page, its footnote stamps in, and a receipt
+ * is pressed, the lines ink onto the page (what the call added marked with a red ring), its footnote stamps in, and a receipt
  * slides out with the words highlighted. Plays when scrolled into view; replays on hover.
  */
 export function WriteBack() {
@@ -134,13 +134,13 @@ export function WriteBack() {
           <div className="paper paper-cream sheet-shadow relative z-[2] rotate-[1deg] rounded-[2px] px-7 pb-7 pt-6 sm:px-9">
             <p className="smallcaps text-muted">Enhanced notes</p>
             <h3 className="mt-2 font-serif text-[25px] font-medium leading-tight tracking-[-0.01em]">Where they are</h3>
-            {/* Every note line comes back written up; what the call adds is its own gray line. */}
+            {/* Every note line comes back written up; what the call adds is its own line, ringed in red. */}
             <ul className="mt-3 space-y-2 font-serif text-[18.5px] leading-snug">
               {LINES.map((l, i) => (
-                <li key={i} className={cx("flex min-h-[1.4em] gap-2.5", l.origin === "you" ? "text-ink" : "text-muted")}>
+                <li key={i} className={cx("flex min-h-[1.4em] gap-2.5", l.origin === "you" ? "text-ink" : "text-ink-2")}>
                   {phase >= 3 ? (
                     <>
-                      <span className={cx("mt-[0.5em] h-[6px] w-[6px] shrink-0 rounded-full", l.origin === "you" ? "bg-ink" : "bg-faint")} />
+                      <span className={cx("mt-[0.5em]", l.origin === "you" ? "dot-you" : "dot-ai")} />
                       <span key={`ink-${run}`} className="ink-in" style={{ ["--ink-delay" as string]: `${i * 260}ms` }}>
                         {l.text.slice(0, l.text.lastIndexOf(" ") + 1)}
                         <span className="whitespace-nowrap">
@@ -166,10 +166,10 @@ export function WriteBack() {
             </ul>
             <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 font-sans text-[11.5px] text-muted">
               <span className="inline-flex items-center gap-1.5">
-                <span className="h-[5px] w-[5px] rounded-full bg-ink/80" /> from your notes
+                <span className="dot-you" /> from your notes
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <span className="h-[5px] w-[5px] rounded-full bg-faint" /> added from the call
+                <span className="dot-ai" /> added from the call
               </span>
             </p>
           </div>
