@@ -18,7 +18,7 @@ interface Props {
 /** Native <dialog>: focus trapping, Escape and inert background for free. */
 const STOCK = {
   sheet: "paper paper-cream",
-  index: "paper paper-index [--rule-gap:34px] [--rule-top:0px] [--color-index-line:rgba(150,178,206,0.26)] dark:[--color-index-line:rgba(150,178,206,0.13)]",
+  index: "paper paper-index head-rule [--margin-x:24px] sm:[--margin-x:38px]",
   slip: "paper paper-white",
 };
 
@@ -42,6 +42,24 @@ export function Dialog({ open, onClose, title, description, children, footer, cl
     setPrevOpen(open);
     setLinger(!open);
   }
+
+  // Fade whichever edge has more to scroll to.
+  const body = useRef<HTMLDivElement>(null);
+  const edges = () => {
+    const el = body.current;
+    if (!el) return;
+    const f = [el.scrollTop > 2 && "top", el.scrollTop + el.clientHeight < el.scrollHeight - 2 && "bottom"].filter(Boolean).join(" ");
+    if (el.dataset.fade !== f) el.dataset.fade = f;
+  };
+  useEffect(() => {
+    const el = body.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(edges);
+    ro.observe(el);
+    if (el.firstElementChild) ro.observe(el.firstElementChild);
+    edges();
+    return () => ro.disconnect();
+  });
 
   useEffect(() => {
     const d = ref.current;
@@ -76,13 +94,18 @@ export function Dialog({ open, onClose, title, description, children, footer, cl
       className={cx(
         STOCK[stock],
         "desk-dialog fixed m-auto w-[calc(100%-24px)] max-w-[560px] rounded-[4px] p-0 text-ink shadow-lift",
-        stock === "index" && "[&_.dialog-inner]:pl-[54px] sm:[&_.dialog-inner]:pl-[62px]",
+        stock === "index" && "[&_.dialog-inner]:pl-[26px] sm:[&_.dialog-inner]:pl-[62px]",
         className,
       )}
     >
       {(open || linger) && (
         <div className="dialog-inner flex max-h-[min(88vh,820px)] flex-col">
-          <header className="flex items-start justify-between gap-4 px-6 pb-2 pt-6 sm:px-8 sm:pt-7">
+          <header
+            className={cx(
+              "flex items-start justify-between gap-4 px-6 pb-2 pt-6 sm:px-8 sm:pt-7",
+              stock === "index" && "mb-1 border-b border-index-line pb-4",
+            )}
+          >
             <div>
               <h2 id="dialog-title" className="font-serif text-[29px] font-medium leading-tight tracking-[-0.02em]">
                 {title}
@@ -93,7 +116,9 @@ export function Dialog({ open, onClose, title, description, children, footer, cl
               <CloseIcon size={17} />
             </button>
           </header>
-          <div className="scroll-thin min-h-0 flex-1 overflow-y-auto px-6 py-4 sm:px-8">{children}</div>
+          <div ref={body} onScroll={edges} className="scroll-thin scroll-fade min-h-0 flex-1 overflow-y-auto px-6 py-4 sm:px-8">
+            {children}
+          </div>
           {footer && (
             <footer className="flex flex-wrap items-center justify-end gap-2.5 border-t border-dashed border-rule-strong px-6 py-4 sm:px-8">
               {footer}
