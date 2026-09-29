@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.119",
+    "@vercel/blob": "^2.8.0",
     "ai": "^6.0.293",
     "dexie": "^4.4.6",
     "dexie-react-hooks": "^4.4.0",
