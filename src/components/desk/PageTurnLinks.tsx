@@ -29,8 +29,18 @@ export function PageTurnLinks() {
         },
       });
     };
+    // Reaching for a link warms everything the turn will need: the shader, the route, and
+    // for the app its workspace code, so the sheet lifts sooner once it lands.
+    const warmed = new Set<string>();
     const onOver = (e: PointerEvent) => {
-      if ((e.target as Element | null)?.closest?.("a[data-page-turn]")) warmPageTurn();
+      const a = (e.target as Element | null)?.closest?.("a[data-page-turn]") as HTMLAnchorElement | null;
+      if (!a) return;
+      warmPageTurn();
+      const url = new URL(a.href, location.href);
+      if (url.origin !== location.origin || warmed.has(url.pathname)) return;
+      warmed.add(url.pathname);
+      router.prefetch(url.pathname + url.search);
+      if (url.pathname === "/app") void import("@/components/workspace/Workspace");
     };
     document.addEventListener("click", onClick, true);
     document.addEventListener("pointerover", onOver, { passive: true });
