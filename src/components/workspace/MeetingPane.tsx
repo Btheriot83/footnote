@@ -545,11 +545,11 @@ export function MeetingPane({
   return (
     <div className="flex h-full min-w-0 flex-col">
       {/* Top bar, on the desk */}
-      <header className="flex h-[64px] shrink-0 items-center gap-2 px-3 sm:h-[72px] sm:gap-3 sm:px-5 lg:pl-1">
+      <header className="flex h-[64px] shrink-0 items-center gap-2 px-3 sm:h-[72px] sm:gap-3 sm:px-5 desk:pl-1">
         <button
           type="button"
           onClick={onOpenSidebar}
-          className="pill h-10 w-10 shrink-0 p-0 tracking-normal lg:hidden"
+          className="pill h-10 w-10 shrink-0 p-0 tracking-normal desk:hidden"
           aria-label="Open meetings"
         >
           <MenuIcon size={20} />
@@ -637,7 +637,7 @@ export function MeetingPane({
         {/* Document */}
         <main
           className={cx(
-            "tab-panel-notes scroll-thin min-w-0 flex-1 overflow-y-auto px-2 pb-3 pt-1 sm:px-4 sm:pb-5 lg:pl-1",
+            "tab-panel-notes scroll-thin min-w-0 flex-1 overflow-y-auto px-2 pb-3 pt-1 sm:px-4 sm:pb-5 desk:pl-1",
             isMobile && mobileTab !== "notes" && "hidden",
           )}
           onClick={(e) => {
@@ -667,14 +667,15 @@ export function MeetingPane({
             />
             <div className="mt-2.5 flex flex-wrap items-center gap-x-2 text-[16.5px] italic text-muted sm:text-[18px]">
               <span>{formatDate(meeting.createdAt)}</span>
+              {/* Each separator travels with the item after it, so a wrap never leaves one dangling. */}
               {meeting.durationMs > 0 && (
-                <>
-                  <span aria-hidden>•</span>
-                  <span>{formatDuration(meeting.durationMs)}</span>
-                </>
+                <span className="whitespace-nowrap">
+                  <span aria-hidden className="mr-2">•</span>
+                  {formatDuration(meeting.durationMs)}
+                </span>
               )}
-              <span aria-hidden>·</span>
-              <label className="relative inline-flex items-center">
+              <label className="relative inline-flex items-center whitespace-nowrap">
+                <span aria-hidden className="mr-2">·</span>
                 <span className="sr-only">Template</span>
                 <select
                   value={meeting.template}
@@ -1055,16 +1056,19 @@ function SourceList({ sources }: { sources: ReturnType<typeof useSession>["sourc
 function SampleBanner({ blocked, tookOver, onPlay }: { blocked: boolean; tookOver: boolean; onPlay: () => void }) {
   if (blocked) {
     return (
-      <div className="paper paper-sky animate-settle flex -rotate-[0.4deg] flex-col items-start gap-4 rounded-[2px] px-5 py-4 sm:flex-row sm:items-center">
-        <div className="min-w-0 flex-1">
-          <p className="font-serif text-[20px] font-medium text-ink">A 2-minute renewal call with Dana from Acme</p>
-          <p className="mt-0.5 text-[15px] text-ink-2">
-            Press play: the transcript and your rough notes appear as if you were on the call. Sound on.
-          </p>
+      // Side by side only when the sheet is wide enough for both, whatever the window.
+      <div className="@container">
+        <div className="paper paper-sky animate-settle flex -rotate-[0.4deg] flex-col items-start gap-4 rounded-[2px] px-5 py-4 @xl:flex-row @xl:items-center">
+          <div className="min-w-0 flex-1">
+            <p className="font-serif text-[20px] font-medium text-ink">A 2-minute renewal call with Dana from Acme</p>
+            <p className="mt-0.5 text-[15px] text-ink-2">
+              Press play: the transcript and your rough notes appear as if you were on the call. Sound on.
+            </p>
+          </div>
+          <button type="button" onClick={onPlay} className={cx(btn.base, btn.primary, btn.md, "w-full shrink-0 @xl:w-auto")}>
+            <PlayIcon size={15} /> Play the sample call
+          </button>
         </div>
-        <button type="button" onClick={onPlay} className={cx(btn.base, btn.primary, btn.md, "w-full shrink-0 sm:w-auto")}>
-          <PlayIcon size={15} /> Play the sample call
-        </button>
       </div>
     );
   }

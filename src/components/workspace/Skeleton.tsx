@@ -14,8 +14,8 @@ function Ghost({ w, className }: { w: string; className?: string }) {
 export function PaneSkeleton() {
   return (
     <div className="flex h-full min-w-0 flex-col" aria-busy aria-label="Loading the meeting">
-      <header className="flex h-[64px] shrink-0 items-center gap-2 px-3 sm:h-[72px] sm:gap-3 sm:px-5 lg:pl-1">
-        <span className="pill h-10 w-10 shrink-0 lg:hidden" aria-hidden />
+      <header className="flex h-[64px] shrink-0 items-center gap-2 px-3 sm:h-[72px] sm:gap-3 sm:px-5 desk:pl-1">
+        <span className="pill h-10 w-10 shrink-0 desk:hidden" aria-hidden />
         <span className="paper paper-white h-10 w-[150px] rounded-full sm:w-[210px]" aria-hidden />
         <span className="ml-auto flex items-center gap-2" aria-hidden>
           <span className="pill h-10 w-[104px] sm:w-[150px]" />
@@ -24,7 +24,7 @@ export function PaneSkeleton() {
         </span>
       </header>
       <div className="flex min-h-0 flex-1">
-        <main className="min-w-0 flex-1 overflow-hidden px-2 pb-3 pt-1 sm:px-4 sm:pb-5 lg:pl-1">
+        <main className="min-w-0 flex-1 overflow-hidden px-2 pb-3 pt-1 sm:px-4 sm:pb-5 desk:pl-1">
           <div className="paper paper-cream sheet-shadow mx-auto h-[calc(100%-4px)] w-full max-w-[800px] rounded-[3px] px-5 pt-9 sm:px-12 sm:pt-12 xl:px-[72px] xl:pt-14">
             <Ghost w="62%" className="h-[30px] sm:h-[38px]" />
             <Ghost w="38%" className="mt-4 h-3.5" />
@@ -67,7 +67,7 @@ export function PaneSkeleton() {
 export function AppShellSkeleton() {
   return (
     <div className="desk flex h-dvh overflow-hidden text-ink" data-page="app" data-ready="shell">
-      <aside className="hidden w-[292px] shrink-0 lg:block xl:w-[330px]" aria-hidden>
+      <aside className="hidden w-[292px] shrink-0 desk:block xl:w-[330px]" aria-hidden>
         <div className="flex h-full flex-col gap-4 px-4 pb-4 pt-5 sm:px-5">
           <div className="px-1.5 pt-1">
             <Wordmark size={29} />

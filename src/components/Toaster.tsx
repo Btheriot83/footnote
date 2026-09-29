@@ -27,7 +27,7 @@ export function Toaster() {
       popover="manual"
       // Out of the reading column: under the header on phones and tablets, and on a desktop
       // slid onto the desk over the sidebar's foot, where nothing you're reading or typing sits.
-      className="toaster pointer-events-none fixed inset-x-0 bottom-auto top-[70px] z-50 m-0 flex h-auto w-full max-w-none flex-col items-center gap-2 overflow-visible border-0 bg-transparent p-0 px-4 lg:bottom-5 lg:left-4 lg:right-auto lg:top-auto lg:w-[260px] lg:items-stretch lg:px-0 xl:left-5 xl:w-[290px] [&:not(:popover-open)]:hidden"
+      className="toaster pointer-events-none fixed inset-x-0 bottom-auto top-[70px] z-50 m-0 flex h-auto w-full max-w-none flex-col items-center gap-2 overflow-visible border-0 bg-transparent p-0 px-4 desk:bottom-5 desk:left-4 desk:right-auto desk:top-auto desk:w-[260px] desk:items-stretch desk:px-0 xl:left-5 xl:w-[290px] [&:not(:popover-open)]:hidden"
       role="status"
       aria-live="polite"
     >

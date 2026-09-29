@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
 @theme {
+  /* The sidebar sits on the desk from here up; below, it's a drawer. */
+  --breakpoint-desk: 1180px;
   /* The desk and its papers. */
   --color-wood: #d9c9ac;
   --color-paper: #f4efe4;
@@ -838,7 +840,7 @@ button.fn-mark::before {
   to { opacity: 1; transform: rotate(-0.4deg); }
 }
 /* Under the header on smaller screens, the note drops in from above instead. */
-@media (max-width: 1023px) {
+@media (max-width: 1179px) {
   .toast-in {
     animation-name: toast-drop;
   }

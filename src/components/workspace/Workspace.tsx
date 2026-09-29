@@ -71,7 +71,7 @@ export function Workspace() {
   const searchRef = useRef<HTMLInputElement>(null);
   const booted = useRef(false);
   const isMobile = useIsMobile();
-  const isDesktop = useMedia("(min-width: 1024px)");
+  const isDesktop = useMedia("(min-width: 1180px)");
   const userKey = useUserKey();
   const keyStatus = useKeyStatus();
   const server = useServerStatus();
@@ -165,7 +165,7 @@ export function Workspace() {
         enhanceRef.current?.();
       } else if (mod && (e.key === "k" || e.key === "K")) {
         e.preventDefault();
-        if (window.matchMedia("(max-width: 1023px)").matches) setDrawer(true);
+        if (window.matchMedia("(max-width: 1179px)").matches) setDrawer(true);
         requestAnimationFrame(() => {
           searchRef.current?.focus();
           searchRef.current?.select();
@@ -293,11 +293,11 @@ export function Workspace() {
   return (
     <div className="desk flex h-dvh overflow-hidden text-ink" data-page="app" data-ready={ready || undefined}>
       {/* Desktop sidebar */}
-      <aside className="hidden w-[292px] shrink-0 lg:block xl:w-[330px]">{isDesktop && sidebar}</aside>
+      <aside className="hidden w-[292px] shrink-0 desk:block xl:w-[330px]">{isDesktop && sidebar}</aside>
 
       {/* Drawer */}
       <div
-        className={cx("fixed inset-0 z-40 lg:hidden", drawer ? "pointer-events-auto" : "pointer-events-none")}
+        className={cx("fixed inset-0 z-40 desk:hidden", drawer ? "pointer-events-auto" : "pointer-events-none")}
         aria-hidden={!drawer}
       >
         <div
@@ -384,7 +384,7 @@ function EmptyWorkspace({
   if (loading) return <PaneSkeleton />;
   return (
     <div className="flex h-full flex-col">
-      <header className="flex h-[68px] shrink-0 items-center gap-3 px-3 sm:px-6 lg:hidden">
+      <header className="flex h-[68px] shrink-0 items-center gap-3 px-3 sm:px-6 desk:hidden">
         <button
           type="button"
           onClick={onMenu}
