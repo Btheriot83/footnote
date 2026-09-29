@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Faq } from "@/components/landing/Faq";
 import { HeroCards } from "@/components/landing/HeroCards";
-import { CtaStrip, DeskHeading, Hand, PrintPhoto, Sup } from "@/components/landing/Paper";
+import { HearMark } from "@/components/landing/HearMark";
+import { CtaStrip, DeskHeading, Hand, PrintPhoto } from "@/components/landing/Paper";
 import { Reveal } from "@/components/landing/Reveal";
 import { WriteBack } from "@/components/landing/WriteBack";
 import { cx } from "@/components/ui";
@@ -16,7 +17,7 @@ const EXTRAS = [
     title: "One-click follow-ups",
     body: "The follow-up email, the action items, what's still open. Each sentence cites its line.",
     example: "“I'll send two pricing options and our SOC 2 report by Thursday.”",
-    n: 6,
+    cites: [{ n: 6, who: "you", at: "1:58", from: 118218, to: 128265 }],
     stock: "paper paper-white",
     tilt: "-rotate-[1.2deg]",
   },
@@ -25,7 +26,10 @@ const EXTRAS = [
     title: "Ask all your meetings",
     body: "Ask across everything you've recorded. The answer names the meeting and the moment.",
     example: "“Acme's CFO will push on price; year one has to stay under $90K.”",
-    n: 2,
+    cites: [
+      { n: 2, who: "Dana", at: "0:50", from: 50722, to: 61065 },
+      { n: 3, who: "Dana", at: "1:11", from: 71110, to: 76264 },
+    ],
     stock: "paper paper-sky",
     tilt: "rotate-[0.8deg] md:mt-10",
   },
@@ -34,7 +38,7 @@ const EXTRAS = [
     title: "Receipts you can hear",
     body: "Click a footnote to hear the exact seconds it cites. The audio never leaves your device.",
     example: "“Right, we closed our Series B two weeks ago.”",
-    n: 1,
+    cites: [{ n: 1, who: "Dana", at: "0:15", from: 15760, to: 22324 }],
     stock: "paper paper-blush",
     tilt: "-rotate-[0.6deg] md:mt-3",
   },
@@ -199,7 +203,9 @@ export default function Landing() {
                 <p className="mt-2 text-[16.5px] leading-[1.5] text-ink-2">{x.body}</p>
                 <p className="mt-5 border-t border-ink/10 pt-4 font-serif text-[16px] italic leading-snug text-ink-2">
                   {x.example}
-                  <Sup>{x.n}</Sup>
+                  {x.cites.map((c) => (
+                    <HearMark key={c.n} {...c} />
+                  ))}
                 </p>
               </div>
             </div>

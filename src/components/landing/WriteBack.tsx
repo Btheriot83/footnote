@@ -11,7 +11,12 @@ const LINES = [
   { text: "Led by Northstar, two weeks ago", origin: "ai", n: 1 },
   { text: "Seats grow from 40 to about 120 by March", origin: "you", n: 2 },
 ] as const;
-const QUOTE = { who: "DANA (ACME)", at: "00:26", before: "Support goes from 40 people to about 110 by March.", quote: "With ops and success, call it 120 seats.", from: 26500, to: 34700 };
+/** Each footnote's receipt: the words it cites and the seconds of the sample call they were said in. */
+const QUOTES = {
+  1: { who: "DANA (ACME)", at: "00:15", before: "Right, we closed our Series B two weeks ago.", quote: "$32 million, led by Northstar.", from: 15760, to: 22500 },
+  2: { who: "DANA (ACME)", at: "00:26", before: "Support goes from 40 people to about 110 by March.", quote: "With ops and success, call it 120 seats.", from: 26500, to: 34700 },
+} as const;
+type Fn = keyof typeof QUOTES;
 
 /*
  * Phases of the little film:
@@ -23,7 +28,7 @@ type Phase = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 /**
  * Shows a receipt being earned instead of explaining it: a rough note is typed, Enhance
  * is pressed, the lines ink onto the page (what the call added marked with a red ring), its footnote stamps in, and a receipt
- * slides out with the words highlighted. Plays when scrolled into view; replays on hover.
+ * slides out with the words highlighted. Plays when scrolled into view; a footnote plays what it cites.
  */
 export function WriteBack() {
   const [phase, setPhase] = useState<Phase>(0);
@@ -31,8 +36,12 @@ export function WriteBack() {
   const [run, setRun] = useState(0);
   const root = useRef<HTMLDivElement>(null);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
-  const left = useRef(false);
   const clip = useSampleClip();
+  /** Which footnote's receipt is out, and a counter that re-feeds (slip) or re-swipes (hl) it. */
+  const [shown, setShown] = useState<Fn>(2);
+  const [slip, setSlip] = useState(0);
+  const [swipe, setSwipe] = useState(0);
+  const playingFn = clip.playing?.startsWith("wb-") ? (Number(clip.playing.slice(3)) as Fn) : null;
 
   const clear = () => {
     timers.current.forEach(clearTimeout);
@@ -47,6 +56,8 @@ export function WriteBack() {
       return;
     }
     setRun((r) => r + 1);
+    setShown(2);
+    setSwipe(0);
     setPhase(1);
     setTyped(0);
     const at = (ms: number, fn: () => void) => timers.current.push(setTimeout(fn, ms));
@@ -84,17 +95,32 @@ export function WriteBack() {
   }, [play]);
 
   const done = phase === 6;
+
+  /** A footnote on the page: its receipt prints (or re-highlights if it's already out) and the cited seconds play. Again stops. */
+  const hear = (n: Fn) => {
+    if (playingFn === n) {
+      clip.stop();
+      return;
+    }
+    // Clicking settles the little film where it is: no timer yanks the page back mid-listen.
+    clear();
+    setTyped(TYPED.length);
+    setPhase(6);
+    if (phase >= 5 && shown === n) setSwipe((k) => k + 1);
+    else {
+      setShown(n);
+      setSwipe(0);
+      setSlip((k) => k + 1);
+    }
+    const q = QUOTES[n];
+    void clip.play(`wb-${n}`, q.from, q.to);
+  };
+  const q = QUOTES[shown];
   return (
     <div
       ref={root}
       className="relative mx-auto mt-14 max-w-[1120px] lg:mt-16"
-      onMouseLeave={() => (left.current = true)}
-      onMouseEnter={() => {
-        if (done && left.current) {
-          left.current = false;
-          play();
-        }
-      }}
+      data-demo="write-up"
     >
       <div className="grid items-center gap-8 lg:grid-cols-[340px_140px_1fr] lg:gap-6">
         {/* 1. Rough notes on an index card */}
@@ -146,14 +172,24 @@ export function WriteBack() {
                         <span className="whitespace-nowrap">
                           {l.text.slice(l.text.lastIndexOf(" ") + 1)}
                           {phase >= 4 && (
-                            <span
+                            <button
+                              type="button"
                               key={`fn-${run}`}
+                              onClick={() => hear(l.n)}
                               className="fn-mark stamp"
                               style={{ ["--stamp-delay" as string]: `${i * 120}ms` }}
-                              data-active={l.n === 2 && (phase === 4 || phase === 5)}
+                              data-active={l.n === shown && phase >= 4}
+                              data-playing={playingFn === l.n || undefined}
+                              data-footnote={l.n}
+                              aria-pressed={playingFn === l.n}
+                              aria-label={
+                                playingFn === l.n
+                                  ? `Footnote ${l.n}: stop playing Dana at ${QUOTES[l.n].at.replace(/^0/, "")}`
+                                  : `Footnote ${l.n}: hear Dana at ${QUOTES[l.n].at.replace(/^0/, "")}`
+                              }
                             >
                               {l.n}
-                            </span>
+                            </button>
                           )}
                         </span>
                       </span>
@@ -175,18 +211,22 @@ export function WriteBack() {
           </div>
           <div className="relative z-[1] mx-auto -mt-1 w-[88%] [clip-path:inset(0_-60px_-80px_-60px)]">
             {phase >= 5 ? (
-              <div key={`slip-${run}`} className="feed" style={{ ["--feed-dur" as string]: "1100ms" }}>
+              <div key={`slip-${run}-${slip}`} className="feed" style={{ ["--feed-dur" as string]: "1100ms" }}>
                 <Receipt className="-rotate-[1.2deg] px-5 pb-4 pt-4">
                   <p className="flex justify-between text-[11.5px] text-[#5d584f]">
                     <span>
-                      {QUOTE.who} <span className="fn-mark !text-[10px]">2</span>
+                      {q.who} <span className="fn-mark !text-[10px]">{shown}</span>
                     </span>
-                    <span className="tabular-nums">{QUOTE.at}</span>
+                    <span className="tabular-nums">{q.at}</span>
                   </p>
                   <p className="mt-1 text-[13px] leading-[1.6] text-[var(--receipt-ink)]">
-                    {QUOTE.before}{" "}
-                    <mark className="hl hl-swipe bg-transparent text-inherit" style={{ ["--hl-delay" as string]: "1150ms" }}>
-                      {QUOTE.quote}
+                    {q.before}{" "}
+                    <mark
+                      key={swipe}
+                      className="hl hl-swipe bg-transparent text-inherit"
+                      style={{ ["--hl-delay" as string]: swipe ? "0ms" : "1150ms" }}
+                    >
+                      {q.quote}
                     </mark>
                   </p>
                   <ReceiptRule />
@@ -194,12 +234,12 @@ export function WriteBack() {
                     <span>THE RECEIPT</span>
                     <button
                       type="button"
-                      onClick={() => void clip.play("writeback", QUOTE.from, QUOTE.to)}
-                      className="-mr-2 inline-flex items-center gap-1.5 rounded-full px-2 py-1 font-mono tracking-[0.08em] text-[var(--receipt-ink)] hover:bg-black/[0.06]"
-                      aria-label={clip.playing ? "Stop" : "Hear Dana say it (00:26)"}
+                      onClick={() => hear(shown)}
+                      className="-mr-2 inline-flex cursor-pointer items-center gap-1.5 rounded-full px-2 py-1 font-mono tracking-[0.08em] text-[var(--receipt-ink)] hover:bg-black/[0.06]"
+                      aria-label={playingFn === shown ? "Stop" : `Hear Dana say it (${q.at})`}
                     >
-                      {clip.playing ? <span className="h-2 w-2 rounded-[1px] bg-accent" aria-hidden /> : <span aria-hidden>▶</span>}
-                      {clip.playing ? "PLAYING" : "HEAR IT"}
+                      {playingFn === shown ? <span className="h-2 w-2 rounded-[1px] bg-accent" aria-hidden /> : <span aria-hidden>▶</span>}
+                      {playingFn === shown ? "PLAYING" : "HEAR IT"}
                     </button>
                   </div>
                 </Receipt>
@@ -211,7 +251,10 @@ export function WriteBack() {
           {done && (
             <button
               type="button"
-              onClick={play}
+              onClick={() => {
+                clip.stop();
+                play();
+              }}
               className="on-wood-2 animate-fade-in absolute -bottom-9 right-2 motion-reduce:hidden rounded-full px-2 py-1 font-hand text-[19px] hover:underline"
             >
               ↺ watch it again

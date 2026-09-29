@@ -37,7 +37,11 @@ const BULLETS = [
   },
 ] as const;
 
-type Slip = { i: number; key: number; leaving?: boolean };
+type Slip = { i: number; key: number; leaving?: boolean; swipe?: number };
+
+/** "00:26" -> "0:26", for spoken labels. */
+const spoken = (at: string) => at.replace(/^0(\d:)/, "$1");
+const first = (who: string) => who.split(" ")[0];
 
 /**
  * "Pull the receipt": the hero's note card sits on a tiny thermal printer. Click a
@@ -87,19 +91,33 @@ function usePrinter() {
     return () => window.removeEventListener("footnote:hear", on);
   }, [print]);
 
-  return {
-    slips,
-    active,
-    visible,
-    setVisible,
-    pick: (i: number) => {
+  /** Shows footnote i's slip: prints it if another is out, or re-swipes its highlight if it's already there. */
+  const show = useCallback(
+    (i: number) => {
       setTouched(true);
-      print(i);
+      const current = slips.find((s) => !s.leaving);
+      if (current && current.i === i) {
+        setActive(i);
+        setSlips((s) => s.map((x) => (x.key === current.key ? { ...x, swipe: (x.swipe ?? 0) + 1 } : x)));
+      } else print(i);
     },
-  };
+    [slips, print],
+  );
+
+  return { slips, active, visible, setVisible, show };
 }
 
-function NoteCard({ active, onPick, className }: { active: number; onPick: (i: number) => void; className?: string }) {
+function NoteCard({
+  active,
+  playing,
+  onPick,
+  className,
+}: {
+  active: number;
+  playing: number | null;
+  onPick: (i: number) => void;
+  className?: string;
+}) {
   return (
     <div
       className={cx("paper paper-white relative z-[2] rounded-[2px] px-6 pb-6 pt-6 sm:px-7", className)}
@@ -115,10 +133,15 @@ function NoteCard({ active, onPick, className }: { active: number; onPick: (i: n
             <button
               type="button"
               onClick={() => onPick(i)}
-              aria-label={`${x.text}. Print its receipt.`}
-              aria-pressed={active === i}
+              aria-label={
+                playing === i
+                  ? `Footnote ${i + 1}: stop playing ${first(x.who)} at ${spoken(x.at)}`
+                  : `Footnote ${i + 1}: hear ${first(x.who)} at ${spoken(x.at)}. ${x.text}`
+              }
+              aria-pressed={playing === i}
+              data-footnote={i + 1}
               className={cx(
-                "group/b -mx-2 flex w-[calc(100%+16px)] items-baseline gap-2.5 rounded-[3px] px-2 py-0.5 text-left font-serif text-[17.5px] leading-snug transition-colors hover:bg-accent-softer/70",
+                "group/b -mx-2 flex cursor-pointer w-[calc(100%+16px)] items-baseline gap-2.5 rounded-[3px] px-2 py-0.5 text-left font-serif text-[17.5px] leading-snug transition-colors hover:bg-accent-softer/70",
                 x.origin === "you" ? "text-ink" : "text-ink-2",
               )}
             >
@@ -127,7 +150,7 @@ function NoteCard({ active, onPick, className }: { active: number; onPick: (i: n
                 {x.text.slice(0, x.text.lastIndexOf(" ") + 1)}
                 <span className="whitespace-nowrap">
                   {x.text.slice(x.text.lastIndexOf(" ") + 1)}
-                  <span className="fn-mark" data-active={active === i} aria-hidden>
+                  <span className="fn-mark" data-active={active === i} data-playing={playing === i || undefined} aria-hidden>
                     {i + 1}
                   </span>
                 </span>
@@ -157,10 +180,12 @@ function NoteCard({ active, onPick, className }: { active: number; onPick: (i: n
 function ReceiptSlip({
   i,
   leaving,
+  swipe = 0,
   clip,
 }: {
   i: number;
   leaving?: boolean;
+  swipe?: number;
   clip: ReturnType<typeof useSampleClip>;
 }) {
   const b = BULLETS[i];
@@ -179,7 +204,11 @@ function ReceiptSlip({
         </p>
         <blockquote className="mt-1.5 text-[13px] leading-[1.6] text-[var(--receipt-ink)]">
           {b.before}{" "}
-          <mark className={cx("hl bg-transparent text-inherit", !leaving && "hl-swipe")} style={{ ["--hl-delay" as string]: "1250ms" }}>
+          <mark
+            key={swipe}
+            className={cx("hl bg-transparent text-inherit", !leaving && "hl-swipe")}
+            style={{ ["--hl-delay" as string]: swipe ? "0ms" : "1250ms" }}
+          >
             {b.quote}
           </mark>
         </blockquote>
@@ -221,7 +250,7 @@ function Printer({ slips, clip, className }: { slips: Slip[]; clip: ReturnType<t
         aria-live="polite"
       >
         {slips.map((s) => (
-          <ReceiptSlip key={s.key} i={s.i} leaving={s.leaving} clip={clip} />
+          <ReceiptSlip key={s.key} i={s.i} leaving={s.leaving} swipe={s.swipe} clip={clip} />
         ))}
         {!current && <div className="h-[170px] [grid-area:1/1]" />}
       </div>
@@ -234,7 +263,18 @@ export function HeroCards({ layout }: { layout: "desk" | "flow" }) {
   const printer = usePrinter();
   const clip = useSampleClip();
   const root = useRef<HTMLDivElement>(null);
-  const { setVisible } = printer;
+  const { setVisible, show } = printer;
+  const playingIdx = clip.playing?.startsWith("hero-") ? Number(clip.playing.slice(5)) : null;
+  /** A footnote: its receipt prints (or re-highlights) and the cited seconds play. Again stops. */
+  const hear = (i: number) => {
+    if (playingIdx === i) {
+      clip.stop();
+      return;
+    }
+    show(i);
+    const b = BULLETS[i];
+    void clip.play(`hero-${i}`, b.from, b.to);
+  };
   useEffect(() => {
     const el = root.current;
     if (!el || !("IntersectionObserver" in window)) return;
@@ -247,7 +287,7 @@ export function HeroCards({ layout }: { layout: "desk" | "flow" }) {
     return (
       <div ref={root} className="relative mx-auto mt-10 w-full max-w-[400px] pb-6">
         <div className="arrive rotate-[1.2deg]">
-          <NoteCard active={printer.active} onPick={printer.pick} />
+          <NoteCard active={printer.active} playing={playingIdx} onPick={hear} />
           <Printer slips={printer.slips} clip={clip} className="-rotate-[1deg]" />
         </div>
       </div>
@@ -262,7 +302,7 @@ export function HeroCards({ layout }: { layout: "desk" | "flow" }) {
         </svg>
       </p>
       <div className="arrive [--d:260ms] [--r-from:6deg]">
-        <NoteCard active={printer.active} onPick={printer.pick} className="lift" />
+        <NoteCard active={printer.active} playing={playingIdx} onPick={hear} className="lift" />
         <Printer slips={printer.slips} clip={clip} className="-rotate-[1.2deg]" />
       </div>
     </div>
